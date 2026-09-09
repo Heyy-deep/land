@@ -358,6 +358,12 @@
               <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
               <span>Bhulekh Khasra Grid Lines</span>
             </label>
+            <div class="pt-spacing-xs border-t border-outline-variant/30 mt-1">
+              <button id="btn-export-geojson-gis" class="w-full flex items-center justify-center gap-1 px-2 py-1 bg-primary text-on-primary text-legal-code font-legal-code font-bold rounded hover:bg-primary-container transition-colors shadow-sm">
+                <span class="material-symbols-outlined text-[14px]">download</span>
+                Export RFC 7946 GeoJSON
+              </button>
+            </div>
           </div>
         </div>
       `;
@@ -370,6 +376,33 @@
           if (onParcelSelect) onParcelSelect(parcelId);
         });
       });
+
+      const exportGeoJsonBtn = container.querySelector('#btn-export-geojson-gis');
+      if (exportGeoJsonBtn) {
+        exportGeoJsonBtn.addEventListener('click', () => {
+          GISEngine.downloadCadastralGeoJSON();
+        });
+      }
+    },
+
+    // RFC 7946 GeoJSON Direct File Download Utility
+    downloadCadastralGeoJSON: function() {
+      const store = window.NLAMS_STORE;
+      const geojson = store ? store.getCadastralGeoJSON() : { type: "FeatureCollection", features: [] };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `nlams-cadastral-parcels-${new Date().toISOString().slice(0,10)}.geojson`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      if (window.NLAMS_API && window.NLAMS_STORE) {
+        window.NLAMS_STORE.logAudit(
+          window.NLAMS_STORE.currentUser.name,
+          window.NLAMS_STORE.currentUser.badge,
+          'Exported Cadastral Parcel Layer as RFC 7946 GeoJSON FeatureCollection'
+        );
+      }
     }
   };
 
