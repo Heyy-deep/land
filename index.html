@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>National Land Acquisition & Management System (NLAMS) | DoLR, GoI</title>
+  <meta name="description" content="Official Portal of Land Resources, Ministry of Rural Development, Government of India. Real-time National Land Acquisition & Management System for end-to-end digital monitoring and decision support."/>
+  
+  <!-- Material Symbols and Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container": "#eaedff",
+            "secondary": "#904d00",
+            "on-tertiary-container": "#5dbe73",
+            "background": "#faf8ff",
+            "surface-container-high": "#e2e7ff",
+            "surface-tint": "#395e9d",
+            "surface-container-low": "#f2f3ff",
+            "on-tertiary-fixed-variant": "#005323",
+            "on-primary-container": "#89abf0",
+            "on-primary": "#ffffff",
+            "on-primary-fixed": "#001a40",
+            "on-surface-variant": "#434750",
+            "primary-fixed": "#d7e2ff",
+            "surface-variant": "#dae2fd",
+            "on-error": "#ffffff",
+            "tertiary": "#003112",
+            "secondary-container": "#fe932c",
+            "surface-container-lowest": "#ffffff",
+            "primary": "#00285b",
+            "on-secondary-fixed": "#2f1500",
+            "inverse-surface": "#283044",
+            "surface-container-highest": "#dae2fd",
+            "surface": "#faf8ff",
+            "outline-variant": "#c3c6d2",
+            "error-container": "#ffdad6",
+            "on-secondary-container": "#663500",
+            "surface-dim": "#d2d9f4",
+            "secondary-fixed-dim": "#ffb77d",
+            "on-error-container": "#93000a",
+            "surface-bright": "#faf8ff",
+            "tertiary-fixed": "#95f8a7",
+            "tertiary-container": "#004a1e",
+            "on-primary-fixed-variant": "#1d4584",
+            "inverse-on-surface": "#eef0ff",
+            "outline": "#747781",
+            "primary-container": "#133e7c",
+            "tertiary-fixed-dim": "#79db8d",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "primary-fixed-dim": "#acc7ff",
+            "secondary-fixed": "#ffdcc3",
+            "on-background": "#131b2e",
+            "on-tertiary-fixed": "#00210a",
+            "inverse-primary": "#acc7ff",
+            "on-secondary": "#ffffff",
+            "on-surface": "#131b2e",
+            "on-secondary-fixed-variant": "#6e3900"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          spacing: {
+            "spacing-2xs": "0.125rem",
+            "spacing-xs": "0.25rem",
+            "spacing-sm": "0.5rem",
+            "spacing-md": "0.75rem",
+            "spacing-lg": "1rem",
+            "spacing-xl": "1.5rem",
+            "spacing-2xl": "2rem",
+            "spacing-3xl": "3rem",
+            "spacing-4xl": "4rem",
+            "gutter-desktop": "1.5rem",
+            "gutter-tablet": "1rem",
+            "gutter-mobile": "0.75rem",
+            "container-max": "80rem"
+          },
+          fontFamily: {
+            "headline-xl": ["\"Source Serif 4\"", "serif"],
+            "headline-lg": ["\"Source Serif 4\"", "serif"],
+            "headline-md": ["\"Source Serif 4\"", "serif"],
+            "headline-sm": ["\"Source Serif 4\"", "serif"],
+            "body-lg": ["\"Source Sans 3\"", "sans-serif"],
+            "body-md": ["\"Source Sans 3\"", "sans-serif"],
+            "body-sm": ["\"Source Sans 3\"", "sans-serif"],
+            "label-md": ["\"Source Sans 3\"", "sans-serif"],
+            "label-sm": ["\"Source Sans 3\"", "sans-serif"],
+            "legal-code": ["\"Source Sans 3\"", "monospace"]
+          },
+          fontSize: {
+            "headline-xl": ["2.25rem", { lineHeight: "2.75rem", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-lg": ["1.75rem", { lineHeight: "2.25rem", letterSpacing: "-0.015em", fontWeight: "600" }],
+            "headline-md": ["1.25rem", { lineHeight: "1.625rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-sm": ["1.125rem", { lineHeight: "1.5rem", fontWeight: "600" }],
+            "body-lg": ["1.125rem", { lineHeight: "1.75rem", fontWeight: "400" }],
+            "body-md": ["0.9375rem", { lineHeight: "1.5rem", fontWeight: "400" }],
+            "body-sm": ["0.8125rem", { lineHeight: "1.25rem", fontWeight: "400" }],
+            "label-md": ["0.875rem", { lineHeight: "1.25rem", letterSpacing: "0.01em", fontWeight: "600" }],
+            "label-sm": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.04em", fontWeight: "600" }],
+            "legal-code": ["0.75rem", { lineHeight: "1rem", letterSpacing: "0.08em", fontWeight: "700" }]
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      ::-webkit-scrollbar { display: none; }
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: block;
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #c3c6d2;
+      border-radius: 4px;
+    }
+    .active-nav-tab {
+      background-color: #133e7c !important;
+      color: #ffffff !important;
+      font-weight: 700;
+    }
+    .active-role-pill {
+      background-color: #00285b !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(0, 40, 91, 0.35);
+    }
+  </style>
+</head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased">
+
+  <!-- ======================================================== -->
+  <!-- 1. OFFICIAL CIVIC HEADER (Matching Stitch Slide 1 & 2) -->
+  <!-- ======================================================== -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <!-- Indian Tricolor Ribbon -->
+    <div class="w-full flex h-1">
+      <div class="flex-1 bg-secondary-container"></div>
+      <div class="flex-1 bg-surface-container-lowest"></div>
+      <div class="flex-1 bg-tertiary-container"></div>
+    </div>
+
+    <!-- Official Top Utility Strip -->
+    <div class="w-full bg-surface-container-low px-gutter-desktop">
+      <div class="max-w-container-max mx-auto h-8 flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant">
+        <div class="flex items-center gap-spacing-md">
+          <span class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px] text-secondary">flag</span>
+            Official Portal of Land Resources | Ministry of Rural Development | Government of India
+          </span>
+        </div>
+        <div class="flex items-center gap-spacing-xl">
+          <!-- Accessibility Font Resizer -->
+          <div class="flex items-center gap-spacing-xs">
+            <button id="font-decrease" aria-label="Decrease Font Size" class="px-spacing-xs py-spacing-2xs rounded hover:bg-surface-container-high hover:text-on-surface font-bold">A-</button>
+            <button id="font-reset" aria-label="Default Font Size" class="px-spacing-xs py-spacing-2xs rounded hover:bg-surface-container-high hover:text-on-surface font-bold">A</button>
+            <button id="font-increase" aria-label="Increase Font Size" class="px-spacing-xs py-spacing-2xs rounded hover:bg-surface-container-high hover:text-on-surface font-bold">A+</button>
+          </div>
+          <!-- Language Selector -->
+          <div class="flex items-center gap-spacing-xs text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm leading-none">translate</span>
+            <select aria-label="Language Selection" class="bg-transparent text-on-surface-variant font-label-sm text-label-sm focus:outline-none cursor-pointer">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="mr">मराठी</option>
+              <option value="bn">বাংলা</option>
+              <option value="te">తెలుగు</option>
+            </select>
+          </div>
+          <!-- STQC Badge -->
+          <div class="hidden md:flex items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-[14px] text-tertiary">verified_user</span>
+            <span class="font-legal-code text-legal-code">STQC LEVEL-3 / ISO 27001</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Official Branding Strip with Emblem -->
+    <div class="w-full bg-surface-container-lowest px-gutter-desktop border-b border-outline-variant/30">
+      <div class="h-20 max-w-container-max mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-spacing-md cursor-pointer" id="brand-home-link">
+          <!-- Ashoka Emblem / Civic Shield Vector Icon -->
+          <div class="w-12 h-12 rounded bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+            <span class="material-symbols-outlined text-3xl">account_balance</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">राष्ट्रीय भूमि अधिग्रहण एवं प्रबंधन प्रणाली</span>
+            <span class="font-headline-md text-headline-md text-primary font-bold leading-tight">National Land Acquisition & Management System (NLAMS)</span>
+            <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Department of Land Resources • Ministry of Rural Development</span>
+          </div>
+        </div>
+
+        <!-- Right User & Helpline Strip -->
+        <div class="flex items-center gap-spacing-lg">
+          <div class="hidden lg:flex flex-col items-end">
+            <span class="font-label-sm text-label-sm text-secondary uppercase font-bold">24x7 Citizen & Nodal Helpline</span>
+            <span class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[18px]">support_agent</span> 1800-11-5263
+            </span>
+          </div>
+          <div class="h-10 w-px bg-outline-variant/40 hidden sm:block"></div>
+          <!-- Active User Badge -->
+          <div class="flex items-center gap-spacing-sm bg-surface-container-low px-spacing-md py-spacing-xs rounded-lg border border-outline-variant/30">
+            <div class="flex flex-col text-right">
+              <span id="active-user-name" class="font-label-md text-label-md text-on-surface font-bold">Dr. A. K. Vardhan, IAS</span>
+              <span id="active-user-role-label" class="font-legal-code text-legal-code text-on-surface-variant uppercase">Central Ministry | DoLR HQ</span>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold shadow-sm">
+              <span class="material-symbols-outlined text-[20px]">person</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 2. QUICK ROLE SWITCHER & EVALUATOR TOOLBAR (STICKY) -->
+    <!-- ======================================================== -->
+    <div class="w-full bg-primary px-gutter-desktop shadow-md">
+      <div class="max-w-container-max mx-auto h-11 flex flex-wrap items-center justify-between gap-spacing-sm">
+        <!-- Dashboard Navigation Switcher -->
+        <nav id="main-dash-nav" class="flex items-center h-full gap-spacing-xs overflow-x-auto">
+          <button data-view="view-login" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">lock</span> SSO Portal
+          </button>
+          <button data-view="view-national" class="dash-nav-btn active-nav-tab px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">analytics</span> 1. National Dashboard
+          </button>
+          <button data-view="view-state" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">map</span> 2. State Dashboard
+          </button>
+          <button data-view="view-district" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">share_location</span> 3. District / CALA
+          </button>
+          <button data-view="view-agency" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">add_box</span> 4. Implementing Agency
+          </button>
+          <button data-view="view-citizen" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-[16px]">badge</span> 5. Citizen Portal
+          </button>
+        </nav>
+
+        <!-- Real-Time Demo Sync Button -->
+        <div class="flex items-center gap-spacing-sm py-1">
+          <button id="btn-trigger-demo" class="px-spacing-sm py-1 bg-secondary-container text-on-secondary-container hover:bg-secondary font-label-sm text-label-sm font-bold rounded flex items-center gap-1 shadow-sm transition-transform active:scale-95" title="Advances a proposal or parcel through the shared database and updates all 5 dashboards in real time">
+            <span class="material-symbols-outlined text-[16px] animate-spin">autorenew</span>
+            <span>Trigger Live Lifecycle Action</span>
+          </button>
+          <div class="hidden xl:flex items-center gap-1 bg-primary-container px-spacing-sm py-1 rounded text-primary-fixed text-legal-code font-legal-code">
+            <span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse"></span>
+            <span>POSTGRESQL + POSTGIS SHARED DB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN ROUTED CONTAINER (pt-36 to accommodate headers) -->
+  <!-- ======================================================== -->
+  <main class="w-full pt-36 bg-surface min-h-screen">
+
+    <!-- TOAST NOTIFICATION TRAY -->
+    <div id="toast-tray" class="fixed top-36 right-6 z-50 flex flex-col gap-spacing-sm max-w-md pointer-events-none"></div>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 0: SSO PORTAL & AUTHENTICATION (Stitch Slide 1) -->
+    <!-- ======================================================== -->
+    <section id="view-login" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
+      <div class="relative max-w-container-max mx-auto flex flex-col items-center">
+        <!-- Cadastral Grid Watermark Background -->
+        <div class="absolute inset-0 pointer-events-none opacity-20 mix-blend-multiply overflow-hidden -z-10">
+          <svg class="w-full h-full text-surface-tint" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="loginGrid" width="120" height="120" patternUnits="userSpaceOnUse">
+                <path d="M 120 0 L 0 0 0 120" fill="none" stroke="currentColor" stroke-dasharray="2,4" stroke-width="0.75"/>
+                <polygon points="10,10 75,18 110,65 30,85" fill="none" stroke="currentColor" stroke-width="1.2" stroke-opacity="0.35"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#loginGrid)"></rect>
+          </svg>
+        </div>
+
+        <!-- Verified Trust Strip -->
+        <div class="w-full max-w-2xl mb-spacing-md bg-surface-container-lowest shadow-sm rounded px-spacing-md py-spacing-xs flex items-center justify-between border border-outline-variant/30">
+          <div class="flex items-center gap-spacing-xs text-tertiary font-label-sm text-label-sm">
+            <span class="material-symbols-outlined text-base text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+            <span>Secure Government Gateway • 256-Bit SSL Encrypted • UIDAI & DigiLocker Compliant</span>
+          </div>
+          <div class="hidden sm:flex items-center gap-spacing-2xs text-on-surface-variant font-legal-code text-legal-code">
+            <span class="inline-block w-2 h-2 rounded-full bg-on-tertiary-container animate-pulse"></span>
+            <span>AUTH NODE #DEL-04</span>
+          </div>
+        </div>
+
+        <!-- Authentication Master Card -->
+        <div class="w-full max-w-2xl bg-surface-container-lowest shadow-xl rounded-xl overflow-hidden border border-outline-variant/40">
+          <div class="bg-surface-container-low px-spacing-xl pt-spacing-xl pb-spacing-lg">
+            <div class="flex items-start justify-between gap-spacing-md">
+              <div class="flex items-center gap-spacing-md">
+                <div class="w-14 h-14 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-md">
+                  <span class="material-symbols-outlined text-3xl">account_balance</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-headline-sm text-headline-sm text-primary font-bold leading-snug">Single Sign-On (SSO) Portal</span>
+                  <span class="font-label-md text-label-md text-secondary font-bold">एकल साइन-ऑन पोर्टल</span>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant mt-spacing-2xs">Sign in to access Land Acquisition, Cadastral Mapping, and Compensation Disbursal records.</p>
+                </div>
+              </div>
+              <span class="hidden md:inline-flex px-spacing-sm py-spacing-2xs bg-surface-container-highest text-primary font-legal-code text-legal-code uppercase rounded">
+                DoLR / NLAMS
+              </span>
+            </div>
+
+            <!-- Mode Switcher Tabs -->
+            <div class="mt-spacing-lg grid grid-cols-2 bg-surface-container rounded-lg p-spacing-2xs shadow-inner">
+              <button id="login-tab-signin" class="py-spacing-xs font-label-md text-label-md rounded-md bg-surface-container-lowest text-primary shadow-sm flex items-center justify-center gap-spacing-xs transition-all">
+                <span class="material-symbols-outlined text-base">login</span>
+                <span>Sign In / लॉगिन</span>
+              </button>
+              <button id="login-tab-register" class="py-spacing-xs font-label-md text-label-md rounded-md text-on-surface-variant hover:text-primary flex items-center justify-center gap-spacing-xs transition-all">
+                <span class="material-symbols-outlined text-base">person_add</span>
+                <span>New Registration / नया पंजीकरण</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Form Body -->
+          <form id="nlams-auth-form" class="p-spacing-xl space-y-spacing-lg" onsubmit="event.preventDefault();">
+            <!-- 1. Role Selection Dropdown -->
+            <div class="space-y-spacing-xs">
+              <div class="flex items-center justify-between">
+                <label class="font-label-md text-label-md text-on-surface" for="user-role-select">
+                  Select Official Role / उपयोगकर्ता भूमिका <span class="text-error font-bold">*</span>
+                </label>
+                <span class="font-legal-code text-legal-code text-secondary uppercase bg-secondary-fixed/50 px-spacing-xs rounded">Mandatory</span>
+              </div>
+              <div class="relative">
+                <select id="user-role-select" class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded px-spacing-md py-spacing-sm pr-10 border border-outline-variant shadow-sm appearance-none focus:outline-none focus:bg-surface-container-low transition-colors cursor-pointer" required="">
+                  <option value="central-ministry">Central Ministry / Department of Land Resources (DoLR)</option>
+                  <option value="state-revenue">State Revenue Department / Inspector of Survey & Records</option>
+                  <option value="dro-cala">Competent Authority / District Revenue Officer (DRO / CALA)</option>
+                  <option value="requiring-body">Land Requiring Body (NHAI, Railways, Defence, State Agencies)</option>
+                  <option value="citizen">Citizen / Land Owner / Affected Family (नागरिक / भू-स्वामी)</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+              </div>
+              <!-- Dynamic Role Privilege Notice Pill -->
+              <div id="role-privilege-pill" class="bg-surface-container-low text-primary px-spacing-md py-spacing-xs rounded flex items-center gap-spacing-xs font-body-sm text-body-sm border border-outline-variant/30">
+                <span class="material-symbols-outlined text-base text-primary">info</span>
+                <span id="role-desc">DoLR Apex Dashboard: Review national multi-state mega-corridor status, oversee MIS disbursal audits, and policy reports.</span>
+              </div>
+            </div>
+
+            <!-- 2. Authentication Protocol Selector -->
+            <div class="space-y-spacing-xs">
+              <label class="font-label-md text-label-md text-on-surface">
+                Authentication Method / प्रमाणीकरण विधि <span class="text-error font-bold">*</span>
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-spacing-xs">
+                <label class="flex items-center gap-spacing-xs p-spacing-sm rounded bg-surface-container-high text-primary cursor-pointer shadow-sm border border-primary/20">
+                  <input type="radio" name="auth-method" value="aadhaar" checked class="accent-primary w-4 h-4"/>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md truncate">Aadhaar / UID (OTP)</span>
+                    <span class="font-legal-code text-legal-code text-on-surface-variant">Instant e-KYC</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-spacing-xs p-spacing-sm rounded bg-surface-container-lowest hover:bg-surface-container-low text-on-surface cursor-pointer shadow-sm border border-outline-variant/40">
+                  <input type="radio" name="auth-method" value="dsc" class="accent-primary w-4 h-4"/>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md truncate">Digital Signature</span>
+                    <span class="font-legal-code text-legal-code text-on-surface-variant">DSC / e-Mudhra Token</span>
+                  </div>
+                </label>
+                <label class="flex items-center gap-spacing-xs p-spacing-sm rounded bg-surface-container-lowest hover:bg-surface-container-low text-on-surface cursor-pointer shadow-sm border border-outline-variant/40">
+                  <input type="radio" name="auth-method" value="parichay" class="accent-primary w-4 h-4"/>
+                  <div class="flex flex-col min-w-0">
+                    <span class="font-label-md text-label-md truncate">Parichay / Email</span>
+                    <span class="font-legal-code text-legal-code text-on-surface-variant">Govt NIC Mail SSO</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- 3. Aadhaar UID & OTP Section -->
+            <div class="bg-surface-container-low rounded-lg p-spacing-md space-y-spacing-md border border-outline-variant/40">
+              <div class="space-y-spacing-xs">
+                <div class="flex items-center justify-between">
+                  <label class="font-label-md text-label-md text-on-surface">
+                    Aadhaar Number / 12-Digit UID <span class="text-error font-bold">*</span>
+                  </label>
+                  <button type="button" id="btn-toggle-mask" class="font-label-sm text-label-sm text-primary hover:text-primary-container flex items-center gap-spacing-2xs">
+                    <span class="material-symbols-outlined text-sm">visibility</span>
+                    <span id="mask-status-text">Show Unmasked</span>
+                  </button>
+                </div>
+                <div class="grid grid-cols-3 gap-spacing-xs sm:gap-spacing-md">
+                  <div class="relative">
+                    <input type="password" id="login-uid-1" maxlength="4" value="9842" placeholder="XXXX" class="w-full text-center tracking-widest font-mono text-body-lg bg-surface-container-lowest text-on-surface py-spacing-sm rounded border border-outline-variant shadow-sm focus:outline-none focus:bg-surface-container-high"/>
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-on-tertiary-container font-bold text-xs">●</span>
+                  </div>
+                  <div class="relative">
+                    <input type="password" id="login-uid-2" maxlength="4" value="5174" placeholder="XXXX" class="w-full text-center tracking-widest font-mono text-body-lg bg-surface-container-lowest text-on-surface py-spacing-sm rounded border border-outline-variant shadow-sm focus:outline-none focus:bg-surface-container-high"/>
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-on-tertiary-container font-bold text-xs">●</span>
+                  </div>
+                  <div class="relative">
+                    <input type="text" id="login-uid-3" maxlength="4" value="8921" placeholder="8921" class="w-full text-center tracking-widest font-mono text-body-lg bg-surface-container-lowest text-primary font-bold py-spacing-sm rounded border border-outline-variant shadow-sm focus:outline-none focus:bg-surface-container-high"/>
+                    <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-tertiary-container text-base" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-spacing-2xs">
+                  <span class="font-legal-code text-legal-code text-on-surface-variant">Linked to Registered Mobile: +91 ••••• ••418</span>
+                  <div class="flex items-center gap-spacing-xs">
+                    <button type="button" id="btn-get-otp" class="px-spacing-sm py-spacing-2xs bg-primary text-on-primary font-label-sm text-label-sm rounded hover:bg-primary-container shadow-sm transition-colors flex items-center gap-spacing-2xs">
+                      <span class="material-symbols-outlined text-xs">send_to_mobile</span>
+                      <span>Get OTP / ओटीपी प्राप्त करें</span>
+                    </button>
+                    <span id="otp-countdown" class="font-legal-code text-legal-code text-secondary font-bold">Resend in 00:42</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6-Digit Split OTP Input -->
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface">
+                  Enter 6-Digit One Time Password (OTP) <span class="text-error font-bold">*</span>
+                </label>
+                <div class="grid grid-cols-6 gap-spacing-xs sm:gap-spacing-sm">
+                  <input type="text" maxlength="1" value="7" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                  <input type="text" maxlength="1" value="4" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                  <input type="text" maxlength="1" value="2" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                  <input type="text" maxlength="1" value="9" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                  <input type="text" maxlength="1" value="8" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                  <input type="text" maxlength="1" value="3" class="otp-box w-full text-center font-mono text-headline-sm font-bold bg-surface-container-lowest text-primary py-spacing-xs rounded border border-outline-variant shadow-sm focus:bg-surface-container-high focus:outline-none"/>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant italic">OTP dispatched to UIDAI-linked mobile phone & DigiLocker address.</p>
+              </div>
+
+              <!-- High-Contrast Captcha Verification Row -->
+              <div class="space-y-spacing-xs pt-spacing-2xs">
+                <label class="font-label-md text-label-md text-on-surface" for="captcha-code-input">
+                  Security Captcha / सुरक्षा कोड <span class="text-error font-bold">*</span>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm items-center">
+                  <div class="flex items-center justify-between bg-surface-container-highest px-spacing-md py-spacing-xs rounded shadow-inner border border-outline-variant/50">
+                    <div class="relative select-none font-mono text-headline-sm tracking-widest font-bold text-primary italic transform -skew-x-6">
+                      <span class="inline-block text-secondary">N</span>
+                      <span class="inline-block text-primary underline">8</span>
+                      <span class="inline-block text-tertiary">K</span>
+                      <span class="inline-block text-primary">4</span>
+                      <span class="inline-block text-secondary">W</span>
+                      <div class="absolute inset-x-0 top-1/2 h-0.5 bg-primary/20 -rotate-6 pointer-events-none"></div>
+                    </div>
+                    <div class="flex items-center gap-spacing-xs text-on-surface-variant">
+                      <button type="button" class="p-1 hover:text-primary rounded hover:bg-surface-container" title="Audio Captcha">
+                        <span class="material-symbols-outlined text-lg">volume_up</span>
+                      </button>
+                      <button type="button" class="p-1 hover:text-primary rounded hover:bg-surface-container" title="Refresh Captcha">
+                        <span class="material-symbols-outlined text-lg">sync</span>
+                      </button>
+                    </div>
+                  </div>
+                  <input type="text" id="captcha-code-input" maxlength="6" value="N8K4W" class="w-full uppercase font-mono text-body-md tracking-wider bg-surface-container-lowest text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant shadow-sm focus:outline-none focus:bg-surface-container-high" placeholder="Enter characters above" required=""/>
+                </div>
+              </div>
+
+              <!-- Statutory Consent Checkbox -->
+              <div class="pt-spacing-xs">
+                <label class="flex items-start gap-spacing-sm cursor-pointer select-none">
+                  <input type="checkbox" checked required class="mt-1 accent-primary w-4 h-4 rounded"/>
+                  <span class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    I hereby consent to provide my Aadhaar number and OTP for authentication with UIDAI for accessing land acquisition records, cadastre survey maps, and compensation awards under the RFCTLARR Act, 2013 and Aadhaar Act regulations.
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- 4. Action Buttons -->
+            <div class="space-y-spacing-sm pt-spacing-2xs">
+              <button type="submit" id="btn-login-submit" class="w-full group relative overflow-hidden py-spacing-md px-spacing-lg rounded bg-primary text-on-primary font-label-md text-label-md uppercase tracking-wider shadow-md hover:bg-primary-container transition-all flex items-center justify-center gap-spacing-sm font-bold">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-secondary-container transition-all group-hover:w-full opacity-20"></div>
+                <span class="material-symbols-outlined text-xl">verified</span>
+                <span class="relative z-10">Verify OTP & Secure Login / सुरक्षित लॉगिन करें</span>
+              </button>
+
+              <div class="relative flex items-center justify-center py-spacing-2xs">
+                <div class="absolute inset-0 flex items-center"><div class="w-full bg-surface-variant h-px"></div></div>
+                <span class="relative bg-surface-container-lowest px-spacing-sm font-label-sm text-label-sm text-on-surface-variant uppercase">Or Authenticate Via</span>
+              </div>
+
+              <button type="button" id="btn-digilocker-login" class="w-full py-spacing-sm px-spacing-md rounded bg-surface-container-lowest text-primary hover:bg-surface-container-low border border-outline-variant shadow-sm font-label-md text-label-md flex items-center justify-center gap-spacing-md transition-colors font-semibold">
+                <span class="material-symbols-outlined text-secondary text-xl">fingerprint</span>
+                <span>Login with DigiLocker / MeriPehchaan (National SSO)</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Security Certification Badges Strip -->
+          <div class="bg-surface-container-high/60 px-spacing-xl py-spacing-md flex flex-wrap items-center justify-around gap-spacing-md text-on-surface-variant border-t border-outline-variant/30">
+            <div class="flex items-center gap-spacing-xs font-legal-code text-legal-code">
+              <span class="material-symbols-outlined text-base text-on-tertiary-container">military_tech</span>
+              <span>STQC CERTIFIED (LEVEL-2)</span>
+            </div>
+            <div class="flex items-center gap-spacing-xs font-legal-code text-legal-code">
+              <span class="material-symbols-outlined text-base text-primary">security</span>
+              <span>UIDAI AUTHORIZED AUA/KUA</span>
+            </div>
+            <div class="flex items-center gap-spacing-xs font-legal-code text-legal-code">
+              <span class="material-symbols-outlined text-base text-secondary">verified</span>
+              <span>CERT-IN SECURITY AUDITED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Desk Box -->
+        <div class="w-full max-w-2xl mt-spacing-lg bg-surface-container-lowest rounded-xl p-spacing-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-spacing-md border border-outline-variant/30">
+          <div class="flex items-start gap-spacing-md">
+            <div class="w-10 h-10 rounded bg-secondary-fixed text-secondary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-xl">contact_support</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-label-md text-label-md text-primary font-bold">Need Aadhaar Link or Cadastral Role Mapping Assistance?</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">Toll-free Nodal Land Helpline: <strong class="text-primary font-bold">1800-11-5263</strong> (09:00 AM - 06:00 PM IST)</span>
+            </div>
+          </div>
+          <button type="button" class="shrink-0 px-spacing-md py-spacing-xs rounded bg-surface-container-low text-primary hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors border border-outline-variant/30">
+            Find Local CALA Cell →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 1: NATIONAL DASHBOARD - CENTRAL MINISTRY (Slide 2) -->
+    <!-- ======================================================== -->
+    <section id="view-national" class="app-view w-full px-gutter-desktop py-spacing-xl">
+      <div class="max-w-container-max mx-auto flex flex-col gap-spacing-xl">
+        <!-- Top Command & Filter Strip -->
+        <div class="flex flex-col gap-spacing-md bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-spacing-md">
+            <div>
+              <div class="flex items-center gap-spacing-xs mb-spacing-2xs">
+                <span class="inline-flex items-center gap-1.5 px-spacing-xs py-0.5 rounded bg-primary text-on-primary font-legal-code text-legal-code uppercase font-bold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed animate-pulse"></span>
+                  RFCTLARR Act 2013 Statutory Monitor
+                </span>
+                <span class="text-on-surface-variant font-label-sm text-label-sm">| 28 States & 8 UTs Active Coverage</span>
+              </div>
+              <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight">
+                National Cadastral & Land Acquisition Overview
+              </h1>
+              <div class="font-label-md text-label-md text-secondary font-semibold">
+                राष्ट्रीय भूमि अधिग्रहण एवं संवितरण विश्लेषण | Real-time PFMS & Cadastral GIS Integration
+              </div>
+            </div>
+
+            <!-- Action Utilities -->
+            <div class="flex flex-wrap items-center gap-spacing-sm">
+              <div class="flex items-center gap-spacing-xs bg-surface-container px-spacing-sm py-spacing-xs rounded shadow-sm">
+                <span class="material-symbols-outlined text-[16px] text-tertiary">sync</span>
+                <span class="font-legal-code text-legal-code text-on-surface-variant">Live GIS Sync: <strong>4 mins ago</strong></span>
+              </div>
+              <button id="btn-export-gazette" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs bg-surface-container-lowest hover:bg-surface-container text-primary font-label-sm text-label-sm rounded shadow-sm border border-outline-variant transition-colors">
+                <span class="material-symbols-outlined text-[16px]">file_download</span>
+                Export Gazette MIS
+              </button>
+              <button id="btn-export-ledger" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm rounded shadow-sm transition-colors font-bold">
+                <span class="material-symbols-outlined text-[16px]">table_chart</span>
+                PFMS Ledger Sync
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Pills Row -->
+          <div class="bg-surface-container-low p-spacing-sm rounded shadow-sm flex flex-wrap items-center justify-between gap-spacing-sm border border-outline-variant/30">
+            <div class="flex flex-wrap items-center gap-spacing-xs">
+              <span class="font-label-sm text-label-sm text-on-surface-variant mr-spacing-xs flex items-center gap-1 font-bold">
+                <span class="material-symbols-outlined text-[14px]">tune</span> Filter:
+              </span>
+              <select class="bg-surface-container-lowest text-primary font-semibold text-label-sm px-spacing-sm py-spacing-2xs rounded border border-outline-variant outline-none cursor-pointer">
+                <option>Fiscal: FY 2024-25</option>
+                <option>Fiscal: FY 2023-24</option>
+              </select>
+              <select class="bg-surface-container-lowest text-primary font-semibold text-label-sm px-spacing-sm py-spacing-2xs rounded border border-outline-variant outline-none cursor-pointer">
+                <option>Sector: All Infrastructure (NHAI, Railways, Metro)</option>
+                <option>Sector: Highways (NHAI)</option>
+                <option>Sector: Dedicated Freight Corridors</option>
+              </select>
+              <select class="bg-surface-container-lowest text-primary font-semibold text-label-sm px-spacing-sm py-spacing-2xs rounded border border-outline-variant outline-none cursor-pointer">
+                <option>Statutory Stage: All (3A to Award Disbursal)</option>
+                <option>Stage: Sec 3A Prelim</option>
+                <option>Stage: Sec 3D Declared</option>
+                <option>Stage: Sec 3G Awarded</option>
+              </select>
+            </div>
+            <button type="button" class="text-secondary hover:text-primary font-label-sm text-label-sm flex items-center gap-1 font-bold">
+              <span class="material-symbols-outlined text-[14px]">refresh</span> Reset All
+            </button>
+          </div>
+        </div>
+
+        <!-- Top 4 KPI Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-spacing-md">
+          <!-- KPI 1: Land Acquired -->
+          <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden border border-outline-variant/30">
+            <div class="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-primary-fixed/40 pointer-events-none"></div>
+            <div>
+              <div class="flex items-center justify-between mb-spacing-xs">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant font-bold">Total Land Acquired</span>
+                <span class="inline-flex items-center text-tertiary-container font-label-sm text-label-sm bg-surface-container px-spacing-xs py-0.5 rounded font-bold">
+                  <span class="material-symbols-outlined text-[12px]">trending_up</span> +8.4% YoY
+                </span>
+              </div>
+              <div class="flex items-baseline gap-spacing-xs mb-spacing-xs">
+                <span id="nat-stat-land" class="font-headline-xl text-headline-xl text-primary font-bold">184,920</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">Hectares</span>
+              </div>
+              <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-spacing-xs">
+                <div class="bg-primary h-full rounded-full" style="width: 88.1%;"></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-spacing-xs text-on-surface-variant font-body-sm text-body-sm">
+              <span>Target: 210,000 Ha</span>
+              <span class="font-semibold text-tertiary">88.1% Achieved</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Active Projects -->
+          <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden border border-outline-variant/30">
+            <div class="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-surface-container pointer-events-none"></div>
+            <div>
+              <div class="flex items-center justify-between mb-spacing-xs">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant font-bold">Active Projects Monitored</span>
+                <span class="material-symbols-outlined text-primary text-[18px]">account_tree</span>
+              </div>
+              <div class="flex items-baseline gap-spacing-xs mb-spacing-xs">
+                <span id="nat-stat-projects" class="font-headline-xl text-headline-xl text-primary font-bold">1,428</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">Projects / 412 Dist.</span>
+              </div>
+              <div class="flex items-center gap-spacing-xs font-body-sm text-body-sm text-on-surface-variant mb-spacing-xs">
+                <span class="text-primary font-semibold">942</span> Linear Infra
+                <span>•</span>
+                <span class="text-primary font-semibold">486</span> Industrial/Urban
+              </div>
+            </div>
+            <div class="flex items-center gap-spacing-xs pt-spacing-xs">
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase px-spacing-xs py-0.5 bg-surface-container text-tertiary rounded">
+                <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> 1,104 On Schedule
+              </span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold tracking-wider uppercase px-spacing-xs py-0.5 bg-error-container text-on-error-container rounded">
+                <span class="w-1.5 h-1.5 rounded-full bg-error"></span> 324 Watch
+              </span>
+            </div>
+          </div>
+
+          <!-- KPI 3: PFMS DBT Disbursed -->
+          <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden border border-outline-variant/30">
+            <div class="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-secondary-fixed/40 pointer-events-none"></div>
+            <div>
+              <div class="flex items-center justify-between mb-spacing-xs">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant font-bold">Compensation Disbursed (PFMS)</span>
+                <span class="inline-flex items-center text-secondary font-label-sm text-label-sm bg-surface-container px-spacing-xs py-0.5 rounded font-bold">
+                  <span class="material-symbols-outlined text-[12px]">currency_rupee</span> DBT Direct
+                </span>
+              </div>
+              <div class="flex items-baseline gap-spacing-xs mb-spacing-xs">
+                <span id="nat-stat-disbursed" class="font-headline-xl text-headline-xl text-primary font-bold">₹48,650</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">Crore ($5.85B)</span>
+              </div>
+              <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-spacing-xs">
+                <div class="bg-tertiary h-full rounded-full" style="width: 96.2%;"></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-spacing-xs text-on-surface-variant font-body-sm text-body-sm">
+              <span>Aadhaar PFMS Rate: 96.2%</span>
+              <span class="text-tertiary font-semibold">+14.1% vs FY23</span>
+            </div>
+          </div>
+
+          <!-- KPI 4: R&R Families Settled -->
+          <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden border border-outline-variant/30">
+            <div class="absolute -top-6 -right-6 w-20 h-20 rounded-full bg-surface-variant/40 pointer-events-none"></div>
+            <div>
+              <div class="flex items-center justify-between mb-spacing-xs">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant font-bold">Families Rehabilitated (R&R)</span>
+                <span class="material-symbols-outlined text-secondary text-[18px]">family_restroom</span>
+              </div>
+              <div class="flex items-baseline gap-spacing-xs mb-spacing-xs">
+                <span id="nat-stat-rehab" class="font-headline-xl text-headline-xl text-primary font-bold">92,410</span>
+                <span class="font-label-md text-label-md text-on-surface-variant">/ 104,200</span>
+              </div>
+              <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mb-spacing-xs">
+                <div class="bg-secondary h-full rounded-full" style="width: 88.7%;"></div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-spacing-xs text-on-surface-variant font-body-sm text-body-sm">
+              <span>Sec 31 Land/Housing Grants</span>
+              <span class="font-semibold text-secondary">88.7% Settled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main GIS & Analytics Grid (8 cols map + 4 cols escalations) -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-spacing-lg">
+          <!-- Left: Thematic GIS India Map -->
+          <div class="xl:col-span-8 flex flex-col gap-spacing-lg">
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-spacing-sm pb-spacing-md border-b border-surface-container">
+                <div>
+                  <div class="flex items-center gap-spacing-xs">
+                    <span class="material-symbols-outlined text-primary text-[20px]">public</span>
+                    <h2 class="font-headline-md text-headline-md text-primary font-bold">
+                      State-Wise Cadastral GIS Acquisition Progress
+                    </h2>
+                  </div>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Spatial polygon tracking of declared Sections 3A, 3D, and 3G under national corridors
+                  </p>
+                </div>
+                <!-- Map Legend -->
+                <div class="flex items-center gap-spacing-sm flex-wrap">
+                  <div class="flex items-center gap-spacing-xs bg-surface-container-low px-spacing-sm py-spacing-2xs rounded font-legal-code text-legal-code text-on-surface-variant border border-outline-variant/30">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-[#15803d]"></span>&gt;85%</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-[#d97706]"></span>65-85%</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-[#ba1a1a]"></span>&lt;65%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Map Container Target -->
+              <div id="national-gis-map-container" class="relative w-full bg-surface-container-low rounded-lg p-spacing-md overflow-hidden flex items-center justify-center min-h-[460px] my-spacing-sm"></div>
+
+              <!-- Map Legend Bottom -->
+              <div class="flex flex-wrap items-center justify-between gap-spacing-sm pt-spacing-sm text-on-surface-variant font-body-sm text-body-sm border-t border-surface-container">
+                <div class="flex items-center gap-spacing-md">
+                  <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-[#fe932c] rounded-full inline-block"></span> Western DFC RoW</span>
+                  <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-[#395e9d] rounded-full inline-block"></span> Eastern DFC RoW</span>
+                  <span class="flex items-center gap-1.5"><span class="w-4 h-1 bg-[#004a1e] rounded-full inline-block"></span> Industrial Corridors</span>
+                </div>
+                <div class="font-legal-code text-legal-code">
+                  Total Survey Cadastres: <strong>1,492,800 Khasra Plots Verified</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub Charts: State Bar Charts & Outflow Curves -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-spacing-lg">
+              <!-- Bar Chart: Top & Lagging States -->
+              <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-spacing-md">
+                  <div>
+                    <h3 class="font-headline-sm text-headline-sm text-primary font-bold">State Acquisition Progress</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Target benchmark set at 80% completion</p>
+                  </div>
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">bar_chart</span>
+                </div>
+                <div class="space-y-spacing-sm">
+                  <div>
+                    <div class="flex justify-between font-label-sm text-label-sm mb-1">
+                      <span class="font-semibold text-on-surface">Gujarat</span>
+                      <span class="font-bold text-tertiary">94.2% (28,140 Ha)</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+                      <div class="h-full bg-tertiary rounded-full" style="width: 94.2%;"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between font-label-sm text-label-sm mb-1">
+                      <span class="font-semibold text-on-surface">Maharashtra</span>
+                      <span class="font-bold text-tertiary">91.4% (38,410 Ha)</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+                      <div class="h-full bg-tertiary rounded-full" style="width: 91.4%;"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between font-label-sm text-label-sm mb-1">
+                      <span class="font-semibold text-on-surface">Tamil Nadu</span>
+                      <span class="font-bold text-tertiary">86.8% (19,850 Ha)</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+                      <div class="h-full bg-tertiary rounded-full" style="width: 86.8%;"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between font-label-sm text-label-sm mb-1">
+                      <span class="font-semibold text-on-surface">Uttar Pradesh</span>
+                      <span class="font-bold text-secondary">78.5% (32,290 Ha)</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+                      <div class="h-full bg-secondary-container rounded-full" style="width: 78.5%;"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between font-label-sm text-label-sm mb-1">
+                      <span class="font-semibold text-on-surface">Odisha</span>
+                      <span class="font-bold text-error">61.3% (9,410 Ha)</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2.5 rounded-full overflow-hidden">
+                      <div class="h-full bg-error rounded-full" style="width: 61.3%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="pt-spacing-md flex items-center justify-between text-on-surface-variant font-legal-code text-legal-code">
+                  <span>National Target Line: 80.0%</span>
+                  <span class="text-tertiary font-bold">19 States Above Quorum</span>
+                </div>
+              </div>
+
+              <!-- Velocity Trends -->
+              <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-spacing-xs">
+                  <div>
+                    <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Acquisition & Disbursal Velocity</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">FY 2024-25 Land Possession vs PFMS Outflow</p>
+                  </div>
+                  <div class="flex items-center gap-spacing-xs font-legal-code text-legal-code">
+                    <span class="flex items-center gap-1 text-primary"><span class="w-2.5 h-2.5 bg-primary rounded-full"></span> Land</span>
+                    <span class="flex items-center gap-1 text-secondary"><span class="w-2.5 h-2.5 bg-secondary-container rounded-full"></span> PFMS</span>
+                  </div>
+                </div>
+                <!-- Inline SVG Chart -->
+                <div class="w-full py-spacing-xs">
+                  <svg class="w-full h-36" viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="20" y1="120" x2="350" y2="120" stroke="#dae2fd" stroke-width="1"></line>
+                    <line x1="20" y1="85" x2="350" y2="85" stroke="#dae2fd" stroke-width="1" stroke-dasharray="3 3"></line>
+                    <line x1="20" y1="50" x2="350" y2="50" stroke="#dae2fd" stroke-width="1" stroke-dasharray="3 3"></line>
+                    <path d="M 25,108 Q 65,100 95,90 T 165,75 T 235,45 T 305,32 T 345,22" fill="none" stroke="#00285b" stroke-width="2.5"></path>
+                    <path d="M 25,114 Q 65,110 95,98 T 165,82 T 235,58 T 305,38 T 345,28" fill="none" stroke="#fe932c" stroke-width="2.5" stroke-dasharray="5 2"></path>
+                    <g transform="translate(235, 45)">
+                      <circle r="4" fill="#00285b"></circle>
+                      <rect x="-35" y="-22" width="70" height="15" rx="2" fill="#133e7c"></rect>
+                      <text x="0" y="-12" text-anchor="middle" fill="#ffffff" font-size="7" font-weight="bold" font-family="Source Sans 3">Oct: 22.4k Ha</text>
+                    </g>
+                    <text x="25" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Apr</text>
+                    <text x="85" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Jun</text>
+                    <text x="145" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Aug</text>
+                    <text x="205" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Oct</text>
+                    <text x="265" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Dec</text>
+                    <text x="325" y="134" text-anchor="middle" fill="#747781" font-size="8" font-family="Source Sans 3">Feb</text>
+                  </svg>
+                </div>
+                <div class="bg-surface-container-low p-spacing-xs rounded flex items-center justify-between text-on-surface font-body-sm text-body-sm border border-outline-variant/30">
+                  <span class="flex items-center gap-1 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-[15px] text-tertiary">check_circle</span>
+                    Q3 Disbursal Spike: JMS expedited awards in NHAI corridors
+                  </span>
+                  <span class="font-bold text-primary">₹5,140 Cr / Mo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Escalations & Statutory Pipeline Donut -->
+          <div class="xl:col-span-4 flex flex-col gap-spacing-lg">
+            <!-- Nodal Escalations Card -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col flex-1">
+              <div class="flex items-center justify-between pb-spacing-sm border-b border-surface-container">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-error text-[20px]">notification_important</span>
+                  <h2 class="font-headline-md text-headline-md text-primary font-bold">Nodal Escalations</h2>
+                </div>
+                <span class="inline-flex items-center px-spacing-xs py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">
+                  14 Critical Watch
+                </span>
+              </div>
+
+              <!-- Escalation Items -->
+              <div class="flex flex-col gap-spacing-sm flex-1 mt-spacing-md">
+                <div class="p-spacing-sm rounded bg-surface-container-low border border-outline-variant/30">
+                  <div class="flex items-start justify-between gap-spacing-xs mb-1">
+                    <span class="font-label-md text-label-md text-primary font-bold leading-tight">
+                      Delhi-Varanasi HSR Corridor (Pkg-IV)
+                    </span>
+                    <span class="px-spacing-xs py-0.5 rounded bg-error text-on-error font-legal-code text-legal-code uppercase whitespace-nowrap">
+                      74d Overdue
+                    </span>
+                  </div>
+                  <div class="text-on-surface-variant font-body-sm text-body-sm mb-spacing-xs">
+                    District Varanasi & Prayagraj, UP | NHSRCL
+                  </div>
+                  <div class="p-spacing-xs bg-surface-container-lowest rounded mb-spacing-xs font-body-sm text-body-sm text-on-surface border border-outline-variant/20">
+                    <strong class="text-error">Bottleneck:</strong> Pending Joint Measurement Survey (JMS) sign-off by CALA Office.
+                  </div>
+                  <div class="flex items-center justify-between font-legal-code text-legal-code text-on-surface-variant">
+                    <span>Impact: <strong>340 Ha | ₹1,280 Cr</strong></span>
+                    <button class="text-primary hover:underline font-bold flex items-center gap-0.5">
+                      Issue Sec 20E Notice <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="p-spacing-sm rounded bg-surface-container-low border border-outline-variant/30">
+                  <div class="flex items-start justify-between gap-spacing-xs mb-1">
+                    <span class="font-label-md text-label-md text-primary font-bold leading-tight">
+                      NH-66 Coastal Highway Expansion
+                    </span>
+                    <span class="px-spacing-xs py-0.5 rounded bg-secondary-fixed-dim text-on-secondary-fixed font-legal-code text-legal-code uppercase whitespace-nowrap">
+                      42d Overdue
+                    </span>
+                  </div>
+                  <div class="text-on-surface-variant font-body-sm text-body-sm mb-spacing-xs">
+                    Dakshina Kannada & Udupi, Karnataka | NHAI
+                  </div>
+                  <div class="p-spacing-xs bg-surface-container-lowest rounded mb-spacing-xs font-body-sm text-body-sm text-on-surface border border-outline-variant/20">
+                    <strong class="text-secondary">Bottleneck:</strong> Commercial timber/arecanut valuation dispute.
+                  </div>
+                  <div class="flex items-center justify-between font-legal-code text-legal-code text-on-surface-variant">
+                    <span>Impact: <strong>112 Ha | 148 Families</strong></span>
+                    <button class="text-primary hover:underline font-bold flex items-center gap-0.5">
+                      Tribunal Review <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-spacing-md mt-spacing-sm border-t border-surface-container">
+                <button class="w-full py-spacing-xs px-spacing-md bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-label-sm font-bold rounded text-center transition-colors">
+                  Convene Inter-Ministerial Review (Sec 15)
+                </button>
+              </div>
+            </div>
+
+            <!-- Statutory Pipeline Stage Distribution -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col">
+              <div class="flex items-center justify-between mb-spacing-sm">
+                <div>
+                  <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Statutory Stage Distribution</h3>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Pipeline balance under RFCTLARR 2013</p>
+                </div>
+                <span class="material-symbols-outlined text-on-surface-variant text-[18px]">donut_large</span>
+              </div>
+              <div class="w-full bg-surface-container h-4 rounded overflow-hidden flex my-spacing-sm">
+                <div class="h-full bg-primary-container" style="width: 28%;" title="Section 3A: 28%"></div>
+                <div class="h-full bg-primary" style="width: 36%;" title="Section 3D: 36%"></div>
+                <div class="h-full bg-secondary" style="width: 24%;" title="Section 3G: 24%"></div>
+                <div class="h-full bg-tertiary" style="width: 12%;" title="Physical Possession: 12%"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-spacing-sm pt-spacing-xs">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="w-3 h-3 rounded bg-primary-container shrink-0"></span>
+                  <div class="flex flex-col">
+                    <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Sec 3A Prelim</span>
+                    <span class="font-bold text-on-surface text-body-sm">28% (51,770 Ha)</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="w-3 h-3 rounded bg-primary shrink-0"></span>
+                  <div class="flex flex-col">
+                    <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Sec 3D Declared</span>
+                    <span class="font-bold text-on-surface text-body-sm">36% (66,570 Ha)</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="w-3 h-3 rounded bg-secondary shrink-0"></span>
+                  <div class="flex flex-col">
+                    <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Sec 3G Awarded</span>
+                    <span class="font-bold text-on-surface text-body-sm">24% (44,380 Ha)</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="w-3 h-3 rounded bg-tertiary shrink-0"></span>
+                  <div class="flex flex-col">
+                    <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Possession Handed</span>
+                    <span class="font-bold text-on-surface text-body-sm">12% (22,200 Ha)</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-spacing-md pt-spacing-sm border-t border-surface-container flex items-center justify-between text-on-surface-variant font-legal-code text-legal-code">
+                <span>Average Lifecycle: <strong>14.2 Months</strong></span>
+                <span class="text-tertiary font-semibold">Statutory Target &lt;18 Mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cryptographic Seal Footer Banner -->
+        <div class="bg-surface-container p-spacing-md rounded-xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-spacing-md border border-outline-variant/30">
+          <div class="flex items-center gap-spacing-md">
+            <div class="w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm text-primary">
+              <span class="material-symbols-outlined text-[28px]">verified</span>
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-spacing-xs font-label-md text-label-md text-primary font-bold">
+                <span>Official Gazette Compliance Cryptographic Seal</span>
+                <span class="px-spacing-xs py-0.5 bg-tertiary-container text-on-tertiary font-legal-code text-legal-code rounded">
+                  SHA-256 PERFECTED
+                </span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                All cadastral transformations and PFMS disbursements are attested under RFCTLARR Act 2013 and verified against Central PFMS Transaction Ledger Node DEL-04.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-spacing-lg shrink-0">
+            <div class="flex flex-col items-end text-right font-legal-code text-legal-code text-on-surface-variant">
+              <span>Attested By: <strong>Joint Sec. (Land Records)</strong></span>
+              <span>Token: <strong>#IND-DLR-2025-8842-Q3</strong></span>
+            </div>
+            <button class="px-spacing-md py-spacing-xs bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm rounded transition-colors font-bold">
+              Verify Audit Hash
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 2: STATE DASHBOARD - MAHARASHTRA (Slide 3) -->
+    <!-- ======================================================== -->
+    <section id="view-state" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
+      <div class="max-w-container-max mx-auto flex flex-col gap-spacing-xl">
+        <!-- Sub-Header & Executive Breadcrumb Context -->
+        <div class="flex flex-col gap-spacing-sm bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30">
+          <div class="flex flex-wrap items-center justify-between gap-spacing-md">
+            <nav class="flex items-center gap-spacing-xs text-on-surface-variant font-legal-code text-legal-code uppercase">
+              <span class="hover:text-primary cursor-pointer">National Portal</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span class="hover:text-primary cursor-pointer">State Directorate</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span class="text-primary font-bold">Maharashtra State Land Acquisition & Requisition Portal (MS-LARP)</span>
+            </nav>
+            <div class="flex items-center gap-spacing-sm">
+              <span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-2xs bg-surface-container-low rounded font-legal-code text-legal-code text-on-surface-variant border border-outline-variant/30">
+                <span class="material-symbols-outlined text-[14px] text-tertiary">lock</span>
+                RFCTLARR Act 2013 Statutory Node
+              </span>
+              <span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-2xs bg-surface-container-highest text-primary font-legal-code text-legal-code rounded">
+                <span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+                PFMS API Online (Live Sync)
+              </span>
+            </div>
+          </div>
+          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-spacing-lg mt-spacing-2xs">
+            <div class="space-y-spacing-2xs">
+              <h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
+                State Land Acquisition Operations Dashboard - Maharashtra
+              </h1>
+              <p class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">
+                राज्य भूमि अधिग्रहण एवं प्रबंधन डैशबोर्ड (महाराष्ट्र शासन) • महसूल व वन विभाग
+              </p>
+            </div>
+            <!-- Quick Filter Ribbon -->
+            <div class="flex flex-wrap items-center gap-spacing-sm">
+              <select id="state-district-filter" class="bg-surface-container-low text-on-surface font-label-md text-label-md px-spacing-md py-spacing-xs rounded outline-none border border-outline-variant/40 cursor-pointer">
+                <option value="ALL">All 36 Districts</option>
+                <option value="Pune">Pune Collectorate</option>
+                <option value="Thane">Thane Collectorate</option>
+                <option value="Palghar">Palghar Coastal</option>
+                <option value="Raigad">Raigad Belt</option>
+                <option value="Solapur">Solapur Division</option>
+              </select>
+              <button id="btn-state-sync" class="inline-flex items-center gap-spacing-xs px-spacing-md py-spacing-xs bg-primary text-on-primary hover:bg-primary-container rounded transition-colors font-label-md text-label-md font-semibold shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                Sync PFMS Outlays
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget Outlay & Direct DBT Utilization Card -->
+        <section class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-lg">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-spacing-lg">
+            <div class="flex flex-col gap-spacing-2xs">
+              <div class="flex items-center gap-spacing-xs">
+                <span class="material-symbols-outlined text-primary text-[22px]">account_balance_wallet</span>
+                <h2 class="font-headline-md text-headline-md text-primary font-semibold">State Acquisition Budget Outlay & Direct DBT Utilization</h2>
+              </div>
+              <p class="font-body-md text-body-md text-on-surface-variant">
+                Consolidated statutory treasury disbursement tracking across 36 District CALA offices.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-spacing-lg bg-surface-container-low px-spacing-lg py-spacing-sm rounded border border-outline-variant/30">
+              <div class="flex flex-col">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Total State Allocated</span>
+                <span class="font-headline-sm text-headline-sm font-bold text-on-surface">₹14,850.00 Cr</span>
+              </div>
+              <div class="h-8 w-px bg-outline-variant/30 hidden sm:block"></div>
+              <div class="flex flex-col">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Disbursed (PFMS DBT)</span>
+                <span id="state-stat-disbursed" class="font-headline-sm text-headline-sm font-bold text-tertiary-container">₹11,420.50 Cr (76.9%)</span>
+              </div>
+              <div class="h-8 w-px bg-outline-variant/30 hidden sm:block"></div>
+              <div class="flex flex-col">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant">Pending / Escrow</span>
+                <span id="state-stat-pending" class="font-headline-sm text-headline-sm font-bold text-secondary">₹3,429.50 Cr (23.1%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multi-Segment Progress Bar -->
+          <div class="flex flex-col gap-spacing-xs">
+            <div class="h-5 w-full bg-surface-container rounded-full overflow-hidden flex shadow-inner">
+              <div class="h-full bg-tertiary-container" style="width: 58.2%;" title="Paid to Landowners (PFMS DBT): 58.2%"></div>
+              <div class="h-full bg-primary-container" style="width: 14.5%;" title="R&R Rehabilitation Escrow: 14.5%"></div>
+              <div class="h-full bg-secondary-container" style="width: 4.2%;" title="Statutory Survey Charges: 4.2%"></div>
+              <div class="h-full bg-surface-container-high" style="width: 23.1%;" title="Available Balance: 23.1%"></div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-spacing-md pt-spacing-2xs">
+              <div class="flex items-center gap-spacing-xs">
+                <span class="w-3 h-3 rounded bg-tertiary-container"></span>
+                <span class="font-label-sm text-label-sm text-on-surface">Direct DBT to Landowners (58.2%)</span>
+              </div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="w-3 h-3 rounded bg-primary-container"></span>
+                <span class="font-label-sm text-label-sm text-on-surface">R&R Rehabilitation Escrow (14.5%)</span>
+              </div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="w-3 h-3 rounded bg-secondary-container"></span>
+                <span class="font-label-sm text-label-sm text-on-surface">Survey & Admin Charges (4.2%)</span>
+              </div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="w-3 h-3 rounded bg-surface-container-high"></span>
+                <span class="font-label-sm text-label-sm text-on-surface">Available Treasury Head (23.1%)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 State Metric Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-spacing-md pt-spacing-xs">
+            <div class="flex items-center gap-spacing-md p-spacing-md bg-surface-container-low rounded border border-outline-variant/20">
+              <div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[26px]">folder_open</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant truncate">Active State Projects</span>
+                <span id="state-active-proj-count" class="font-headline-sm text-headline-sm font-bold text-on-surface">214 Projects</span>
+                <span class="font-body-sm text-body-sm text-tertiary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">trending_up</span> +14 from last quarter
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-spacing-md p-spacing-md bg-surface-container-low rounded border border-outline-variant/20">
+              <div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[26px]">layers</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant truncate">Hectares in Possession</span>
+                <span id="state-stat-ha" class="font-headline-sm text-headline-sm font-bold text-on-surface">38,410.60 Ha</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant truncate">Target: 44,200 Ha (86.9%)</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-spacing-md p-spacing-md bg-surface-container-low rounded border border-outline-variant/20">
+              <div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[26px]">groups</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant truncate">DBT Beneficiary Families</span>
+                <span id="state-stat-families" class="font-headline-sm text-headline-sm font-bold text-on-surface">48,320 Families</span>
+                <span class="font-body-sm text-body-sm text-tertiary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span> 99.1% Aadhaar Seeding
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-spacing-md p-spacing-md bg-surface-container-low rounded border border-outline-variant/20">
+              <div class="w-12 h-12 rounded bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[26px]">timelapse</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-legal-code text-legal-code uppercase text-on-surface-variant truncate">Avg Award Turnaround</span>
+                <span class="font-headline-sm text-headline-sm font-bold text-on-surface">9.4 Months</span>
+                <span class="font-body-sm text-body-sm text-primary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">speed</span> 2.8 mo faster than mandate
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Comprehensive State Requisition Matrix Table -->
+        <section class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-spacing-md">
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="material-symbols-outlined text-primary text-[22px]">table_view</span>
+                <h2 class="font-headline-md text-headline-md text-primary font-semibold">State Cadastral Requisition Matrix</h2>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Complete register of linear and mega-industrial infrastructure acquisition petitions under RFCTLARR 2013.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-spacing-sm">
+              <div class="relative w-72">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                <input id="search-projects-input" type="text" placeholder="Search Project ID, Gazette Ref..." class="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant pl-9 pr-spacing-md py-spacing-xs rounded font-body-sm text-body-sm outline-none border border-outline-variant/30 focus:bg-surface-container"/>
+              </div>
+              <button id="btn-quick-new-req" class="inline-flex items-center gap-spacing-xs px-spacing-md py-spacing-xs bg-primary-container text-on-primary hover:bg-primary rounded font-label-md text-label-md transition-colors shadow-sm font-semibold">
+                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                New Proposal
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="w-full overflow-x-auto rounded bg-surface-container-low border border-outline-variant/30">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container text-on-surface-variant font-legal-code text-legal-code uppercase tracking-wider">
+                  <th class="py-spacing-sm px-spacing-md font-bold">Project Ref & Name</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">District / Division</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Required Land</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Statutory Status</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Budget & PFMS Outlay</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Gazette SLA</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="state-projects-table-body" class="divide-y divide-surface-container text-body-md font-body-md text-on-surface">
+                <!-- Dynamically Rendered from store.projects -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- District Breakdown Charts (Donut + Progress Bars) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-lg">
+          <!-- Donut: District Share -->
+          <div class="lg:col-span-5 bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between gap-spacing-md">
+            <div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-primary text-[22px]">pie_chart</span>
+                  <h3 class="font-headline-md text-headline-md text-primary font-semibold">District Project Share</h3>
+                </div>
+                <span class="px-spacing-xs py-0.5 bg-surface-container rounded font-legal-code text-legal-code text-on-surface-variant">36 Districts</span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Percentage of total acquired acreage and project concentration index by priority district.
+              </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-spacing-xl py-spacing-md">
+              <div class="relative w-44 h-44 shrink-0 flex items-center justify-center">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#133e7c" stroke-width="12" stroke-dasharray="65.34 251.32"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#00285b" stroke-width="12" stroke-dasharray="55.29 251.32" stroke-dashoffset="-65.34"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#004a1e" stroke-width="12" stroke-dasharray="45.24 251.32" stroke-dashoffset="-120.63"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#fe932c" stroke-width="12" stroke-dasharray="35.18 251.32" stroke-dashoffset="-165.87"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#904d00" stroke-width="12" stroke-dasharray="27.65 251.32" stroke-dashoffset="-201.05"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#dae2fd" stroke-width="12" stroke-dasharray="22.62 251.32" stroke-dashoffset="-228.7"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                  <span class="font-headline-lg text-headline-lg font-bold text-primary leading-none">214</span>
+                  <span class="font-legal-code text-legal-code uppercase text-on-surface-variant tracking-wider mt-1">Projects</span>
+                  <span class="font-label-sm text-label-sm font-semibold text-tertiary-container">38,410 Ha</span>
+                </div>
+              </div>
+
+              <!-- Legend -->
+              <div class="flex flex-col gap-spacing-xs w-full text-body-sm font-body-sm">
+                <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+                  <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary-container"></span> Thane</span>
+                  <span class="font-legal-code font-bold">56 (26%)</span>
+                </div>
+                <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+                  <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary"></span> Pune</span>
+                  <span class="font-legal-code font-bold">47 (22%)</span>
+                </div>
+                <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+                  <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-tertiary-container"></span> Palghar</span>
+                  <span class="font-legal-code font-bold">39 (18%)</span>
+                </div>
+                <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+                  <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-secondary-container"></span> Raigad</span>
+                  <span class="font-legal-code font-bold">30 (14%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grouped Horizontal Bars: Collectorates -->
+          <div class="lg:col-span-7 bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col justify-between gap-spacing-md">
+            <div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-primary text-[22px]">bar_chart</span>
+                  <h3 class="font-headline-md text-headline-md text-primary font-semibold">Stage Progression in Top Collectorates</h3>
+                </div>
+                <div class="flex items-center gap-spacing-sm text-legal-code font-legal-code">
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary-container"></span> Possession</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container"></span> Award</span>
+                  <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> Scrutiny</span>
+                </div>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Breakdown of parcel pipeline milestones from initial scrutiny through statutory possession.
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-spacing-md py-spacing-xs">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between text-body-sm font-body-sm">
+                  <span class="font-semibold text-on-surface">Thane Collectorate</span>
+                  <span class="text-on-surface-variant font-legal-code">56 Projects • 8,240 Ha</span>
+                </div>
+                <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+                  <div class="bg-tertiary-container h-full" style="width: 48%"></div>
+                  <div class="bg-primary-container h-full" style="width: 25%"></div>
+                  <div class="bg-primary-fixed-dim h-full" style="width: 17%"></div>
+                  <div class="bg-secondary h-full" style="width: 10%"></div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between text-body-sm font-body-sm">
+                  <span class="font-semibold text-on-surface">Pune Collectorate</span>
+                  <span class="text-on-surface-variant font-legal-code">47 Projects • 7,190 Ha</span>
+                </div>
+                <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+                  <div class="bg-tertiary-container h-full" style="width: 52%"></div>
+                  <div class="bg-primary-container h-full" style="width: 28%"></div>
+                  <div class="bg-primary-fixed-dim h-full" style="width: 12%"></div>
+                  <div class="bg-secondary h-full" style="width: 8%"></div>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between text-body-sm font-body-sm">
+                  <span class="font-semibold text-on-surface">Palghar Collectorate</span>
+                  <span class="text-on-surface-variant font-legal-code">39 Projects • 6,420 Ha</span>
+                </div>
+                <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+                  <div class="bg-tertiary-container h-full" style="width: 33%"></div>
+                  <div class="bg-primary-container h-full" style="width: 21%"></div>
+                  <div class="bg-primary-fixed-dim h-full" style="width: 36%"></div>
+                  <div class="bg-secondary h-full" style="width: 10%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-spacing-sm bg-surface-container-high rounded flex items-center justify-between gap-spacing-sm">
+              <span class="font-body-sm text-body-sm text-on-surface">
+                <strong>Notification Action:</strong> Palghar requires expedited Section 19 declaration to prevent 12-month lapse under Section 25.
+              </span>
+              <button id="btn-issue-state-directive" class="px-spacing-sm py-1 bg-primary text-on-primary font-label-sm text-label-sm font-semibold rounded transition-colors shrink-0">
+                Issue State Directive
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 3: DISTRICT / CALA FIELD DASHBOARD (Slide 4) -->
+    <!-- ======================================================== -->
+    <section id="view-district" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
+      <div class="max-w-container-max mx-auto flex flex-col gap-spacing-xl">
+        <!-- CALA Header Banner -->
+        <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex flex-wrap items-center justify-between gap-spacing-md">
+            <nav class="flex items-center gap-spacing-xs text-label-sm font-label-sm text-on-surface-variant">
+              <span class="hover:text-primary cursor-pointer">National Portal</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span class="hover:text-primary cursor-pointer">Maharashtra</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span class="text-primary font-bold bg-surface-container-high px-spacing-sm py-spacing-2xs rounded">Pune District CALA Clearance Desk</span>
+            </nav>
+            <div class="flex items-center gap-spacing-sm">
+              <button id="btn-export-field-notes" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded bg-surface-container-low text-primary text-label-sm font-label-sm hover:bg-surface-container border border-outline-variant/30 transition-colors">
+                <span class="material-symbols-outlined text-[16px]">description</span>
+                Export Field Notes
+              </button>
+              <button id="btn-cala-bulk-action" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded bg-primary text-on-primary text-label-sm font-label-sm hover:bg-primary-container font-semibold shadow-sm transition-colors">
+                <span class="material-symbols-outlined text-[16px]">checklist</span>
+                Approve Active Scrutiny
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-spacing-md p-spacing-md rounded bg-surface-container-low border border-outline-variant/30">
+            <div class="flex flex-wrap items-center gap-spacing-md">
+              <div class="flex items-center gap-spacing-xs bg-surface-container-highest px-spacing-sm py-spacing-2xs rounded">
+                <span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+                <span class="text-label-sm font-label-sm text-primary font-bold">CALA Jurisdiction:</span>
+                <span class="text-label-sm font-label-sm text-on-surface">Pune Division (Metro Line 3 & Ring Road)</span>
+              </div>
+              <div class="flex items-center gap-spacing-xs bg-surface-container-highest px-spacing-sm py-spacing-2xs rounded">
+                <span class="material-symbols-outlined text-secondary text-[18px]">gavel</span>
+                <span class="text-label-sm font-label-sm text-secondary font-bold">Statutory Authority:</span>
+                <span class="text-label-sm font-label-sm text-on-surface">RFCTLARR 2013 Sec 3C Hearings & Sec 3G Awards</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-spacing-md">
+              <div class="flex items-center gap-spacing-xs px-spacing-md py-spacing-2xs rounded bg-surface-container text-on-surface font-legal-code text-legal-code font-bold">
+                <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                <span>ACTIVE QUEUE: 38 PENDING</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Split Panel: Interactive GIS Map & Cadastral Scrutiny Queue -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-spacing-lg items-start">
+          <!-- Left Panel: GIS Map (7 cols) -->
+          <div class="xl:col-span-7 flex flex-col bg-surface-container-lowest rounded-xl shadow-md overflow-hidden border border-outline-variant/30">
+            <div class="p-spacing-md bg-surface-container-low flex flex-col gap-spacing-sm border-b border-outline-variant/30">
+              <div class="flex flex-wrap items-center justify-between gap-spacing-sm">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-primary text-[22px]">travel_explore</span>
+                  <div>
+                    <h2 class="font-headline-sm text-headline-sm text-primary tracking-tight leading-tight font-bold">Cadastral GIS Land Parcel Viewer</h2>
+                    <span class="text-legal-code font-legal-code text-on-surface-variant uppercase">Khasra & Survey Grid Vector Engine v4.2</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-spacing-xs bg-surface-container px-spacing-sm py-spacing-2xs rounded text-legal-code font-legal-code text-on-surface font-semibold">
+                  <span class="material-symbols-outlined text-[14px] text-tertiary">my_location</span>
+                  <span>18.5204° N, 73.8567° E | EPSG:7755 (Pune Urban RoW Corridor)</span>
+                </div>
+              </div>
+
+              <!-- Cadastral Legend Bar -->
+              <div class="px-spacing-md py-spacing-xs bg-surface-container flex flex-wrap items-center justify-between gap-spacing-sm text-legal-code font-legal-code font-bold rounded">
+                <span class="flex items-center gap-1 text-tertiary"><span class="w-3 h-3 rounded-full bg-[#15803d]"></span> POSSESSED / SEC 3G PASSED</span>
+                <span class="flex items-center gap-1 text-secondary"><span class="w-3 h-3 rounded-full bg-[#d97706]"></span> PENDING SCRUTINY / JMS</span>
+                <span class="flex items-center gap-1 text-error"><span class="w-3 h-3 rounded-full bg-[#dc2626]"></span> OBJECTION / STAY (SEC 15)</span>
+              </div>
+            </div>
+
+            <!-- Vector Map Mount -->
+            <div id="district-cadastral-gis-mount" class="relative w-full p-spacing-sm bg-surface-dim"></div>
+          </div>
+
+          <!-- Right Panel: Scrutiny Queue & Parcel Action Controls (5 cols) -->
+          <div class="xl:col-span-5 flex flex-col gap-spacing-lg">
+            <!-- Scrutiny Docket Card -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-md border border-outline-variant/30 flex flex-col gap-spacing-md">
+              <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-primary text-[22px]">fact_check</span>
+                  <h3 class="font-headline-sm text-headline-sm text-primary font-bold">CALA Digital Scrutiny Docket</h3>
+                </div>
+                <span class="px-spacing-xs py-0.5 rounded bg-primary-container text-on-primary font-legal-code text-legal-code font-bold">
+                  LIVE QUEUE
+                </span>
+              </div>
+
+              <div id="docket-parcel-details" class="p-spacing-md bg-surface-container-low rounded border border-outline-variant/30 space-y-spacing-xs">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <span class="font-headline-sm text-headline-sm text-primary font-bold" id="docket-gut-title">Gut No. 143/3A</span>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant" id="docket-project-name">Pune Metro Line 3 Extension (Pkg 2)</p>
+                  </div>
+                  <span id="docket-status-badge" class="px-spacing-xs py-1 rounded bg-secondary-fixed text-on-secondary-fixed font-legal-code text-legal-code font-bold">
+                    PENDING SCRUTINY
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-spacing-sm py-spacing-xs text-body-sm font-body-sm">
+                  <div>
+                    <span class="text-on-surface-variant block">Owner:</span>
+                    <strong id="docket-owner-name" class="text-on-surface">Anant Govind Joshi</strong>
+                  </div>
+                  <div>
+                    <span class="text-on-surface-variant block">Area Extent:</span>
+                    <strong id="docket-area" class="text-on-surface">1.42 Ha (14,200 m²)</strong>
+                  </div>
+                  <div>
+                    <span class="text-on-surface-variant block">Classification:</span>
+                    <span id="docket-type" class="text-on-surface">Jirayat Tier-1</span>
+                  </div>
+                  <div>
+                    <span class="text-on-surface-variant block">Corridor Overlap:</span>
+                    <span id="docket-overlap" class="text-secondary font-bold">84.2% RoW</span>
+                  </div>
+                </div>
+
+                <!-- Bhulekh Integration Pill -->
+                <div class="p-spacing-xs bg-surface-container-lowest rounded flex items-center justify-between text-legal-code font-legal-code border border-outline-variant/30">
+                  <span class="flex items-center gap-1 text-tertiary">
+                    <span class="material-symbols-outlined text-[15px]">verified</span> RoR / 7/12 Extract Verified
+                  </span>
+                  <span class="text-primary font-bold">BHOOMI-API: #MH712-4019</span>
+                </div>
+              </div>
+
+              <!-- Statutory Action Buttons -->
+              <div class="space-y-spacing-xs">
+                <label class="font-label-sm text-label-sm text-on-surface-variant font-bold">CALA Statutory Action:</label>
+                <div class="grid grid-cols-2 gap-spacing-sm">
+                  <button id="btn-cala-approve" class="py-spacing-sm px-spacing-md bg-tertiary text-on-tertiary hover:bg-tertiary-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                    Approve Scrutiny
+                  </button>
+                  <button id="btn-cala-award" class="py-spacing-sm px-spacing-md bg-primary text-on-primary hover:bg-primary-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">gavel</span>
+                    Declare 3G Award
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 gap-spacing-sm pt-spacing-2xs">
+                  <button id="btn-cala-disburse" class="py-spacing-sm px-spacing-md bg-secondary-container text-on-secondary-container hover:bg-secondary rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">payments</span>
+                    Disburse PFMS DBT
+                  </button>
+                  <button id="btn-cala-possession" class="py-spacing-sm px-spacing-md bg-surface-container-high text-primary hover:bg-surface-container-highest rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-[18px]">done_all</span>
+                    Mark Possessed
+                  </button>
+                </div>
+              </div>
+
+              <!-- Parcel List Queue -->
+              <div class="mt-spacing-sm pt-spacing-sm border-t border-surface-container">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-bold block mb-spacing-xs">All Parcels in Hinjewadi RoW</span>
+                <div id="cala-parcels-list" class="space-y-spacing-xs max-h-56 overflow-y-auto custom-scroll pr-1">
+                  <!-- Dynamically populated from store.parcels -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 4: IMPLEMENTING AGENCY (Land Requiring Body) -->
+    <!-- ======================================================== -->
+    <section id="view-agency" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
+      <div class="max-w-container-max mx-auto flex flex-col gap-spacing-xl">
+        <!-- Header Banner -->
+        <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row sm:items-center justify-between gap-spacing-md">
+          <div>
+            <div class="flex items-center gap-spacing-xs mb-1">
+              <span class="px-spacing-xs py-0.5 rounded bg-secondary-container text-on-secondary-container font-legal-code text-legal-code uppercase font-bold">
+                Land Requiring Body Portal
+              </span>
+              <span class="text-on-surface-variant font-label-sm">NHAI, Railways, Metro & State Infra Bodies</span>
+            </div>
+            <h1 class="font-headline-xl text-headline-xl text-primary font-bold">
+              Project Requisition & Proposal Management Desk
+            </h1>
+            <p class="font-body-md text-body-md text-on-surface-variant">
+              Submit digital Form 1 proposals, upload corridor shapefiles, and track statutory clearance workflows.
+            </p>
+          </div>
+          <button id="btn-switch-submit-form" class="px-spacing-lg py-spacing-sm bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold rounded shadow-sm flex items-center gap-spacing-xs transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[18px]">post_add</span>
+            Submit Form 1 Proposal
+          </button>
+        </div>
+
+        <!-- Proposal Submission Wizard Card -->
+        <div id="proposal-form-container" class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-md border border-outline-variant/30">
+          <div class="flex items-center justify-between pb-spacing-md border-b border-surface-container mb-spacing-lg">
+            <div class="flex items-center gap-spacing-xs">
+              <span class="material-symbols-outlined text-primary text-[24px]">description</span>
+              <div>
+                <h2 class="font-headline-sm text-headline-sm text-primary font-bold">Statutory Land Requisition Form (Form 1)</h2>
+                <span class="text-legal-code font-legal-code text-on-surface-variant">Under Section 3A / RFCTLARR Act 2013</span>
+              </div>
+            </div>
+            <span class="px-spacing-sm py-spacing-2xs bg-surface-container rounded text-primary font-legal-code text-legal-code font-bold">
+              STEP 1 OF 3: PROJECT PARTICULARS
+            </span>
+          </div>
+
+          <form id="form-new-proposal" class="space-y-spacing-lg" onsubmit="event.preventDefault();">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-spacing-md">
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-name">
+                  Project Title / Name <span class="text-error font-bold">*</span>
+                </label>
+                <input id="prop-name" type="text" value="Pune-Nashik Semi High-Speed Rail Corridor" placeholder="e.g. Pune Outer Ring Road Package 3" required class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md"/>
+              </div>
+
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-agency">
+                  Implementing Agency / Requiring Body <span class="text-error font-bold">*</span>
+                </label>
+                <select id="prop-agency" class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md cursor-pointer">
+                  <option value="NHAI">National Highways Authority of India (NHAI)</option>
+                  <option value="MSRDC">Maharashtra State Road Development Corp (MSRDC)</option>
+                  <option value="Railways/MRIDC" selected>Maharashtra Rail Infrastructure Dev Corp (MRIDC)</option>
+                  <option value="MIDC">Maharashtra Industrial Dev Corp (MIDC)</option>
+                  <option value="PMRDA">Pune Metropolitan Region Dev Authority (PMRDA)</option>
+                </select>
+              </div>
+
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-sector">
+                  Infrastructure Sector <span class="text-error font-bold">*</span>
+                </label>
+                <select id="prop-sector" class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md cursor-pointer">
+                  <option value="High-Speed Rail / Passenger Transit" selected>High-Speed Rail / Passenger Transit</option>
+                  <option value="Expressway / Green Highway Corridor">Expressway / Green Highway Corridor</option>
+                  <option value="Industrial Node / Multi-Modal Logistics Hub">Industrial Node / Multi-Modal Logistics Hub</option>
+                  <option value="Renewable Energy / Solar Transmission Corridor">Renewable Energy / Solar Transmission Corridor</option>
+                </select>
+              </div>
+
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-district">
+                  Primary District & Division <span class="text-error font-bold">*</span>
+                </label>
+                <select id="prop-district" class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md cursor-pointer">
+                  <option value="Pune" selected>Pune District (Haveli & Khed Taluka)</option>
+                  <option value="Nashik">Nashik District (Sinnar Taluka)</option>
+                  <option value="Ahmednagar">Ahmednagar District (Sangamner)</option>
+                  <option value="Thane">Thane District (Bhiwandi Division)</option>
+                </select>
+              </div>
+
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-land-ha">
+                  Estimated Total Land Required (Hectares) <span class="text-error font-bold">*</span>
+                </label>
+                <input id="prop-land-ha" type="number" step="0.01" value="1240.50" placeholder="e.g. 540.25" required class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md"/>
+              </div>
+
+              <div class="space-y-spacing-xs">
+                <label class="font-label-md text-label-md text-on-surface font-semibold" for="prop-budget-cr">
+                  Estimated Compensation & R&R Budget (₹ Crore) <span class="text-error font-bold">*</span>
+                </label>
+                <input id="prop-budget-cr" type="number" step="0.1" value="1950.0" placeholder="e.g. 850.0" required class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md"/>
+              </div>
+            </div>
+
+            <!-- Upload Documents Section with Version Control -->
+            <div class="p-spacing-md bg-surface-container-low rounded border border-outline-variant/30 space-y-spacing-sm">
+              <span class="font-label-md text-label-md text-primary font-bold block">
+                Statutory Supporting Documents & GIS Vector Data (Secure Repository v1.0)
+              </span>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-spacing-sm">
+                <div class="p-spacing-sm bg-surface-container-lowest rounded border border-outline-variant/40 flex items-center justify-between">
+                  <div class="flex items-center gap-spacing-xs">
+                    <span class="material-symbols-outlined text-primary text-[20px]">map</span>
+                    <div>
+                      <span class="font-label-sm text-label-sm font-bold block">RoW Alignment Shapefile</span>
+                      <span class="text-legal-code font-legal-code text-on-surface-variant">pune_nashik_row.kml</span>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-tertiary text-base">check_circle</span>
+                </div>
+
+                <div class="p-spacing-sm bg-surface-container-lowest rounded border border-outline-variant/40 flex items-center justify-between">
+                  <div class="flex items-center gap-spacing-xs">
+                    <span class="material-symbols-outlined text-primary text-[20px]">article</span>
+                    <div>
+                      <span class="font-label-sm text-label-sm font-bold block">Social Impact (SIA) Terms</span>
+                      <span class="text-legal-code font-legal-code text-on-surface-variant">sia_scoping_report.pdf</span>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-tertiary text-base">check_circle</span>
+                </div>
+
+                <div class="p-spacing-sm bg-surface-container-lowest rounded border border-outline-variant/40 flex items-center justify-between">
+                  <div class="flex items-center gap-spacing-xs">
+                    <span class="material-symbols-outlined text-secondary text-[20px]">cloud_upload</span>
+                    <div>
+                      <span class="font-label-sm text-label-sm font-bold block">Draft Section 3A Schedule</span>
+                      <span class="text-legal-code font-legal-code text-on-surface-variant">Ready for upload</span>
+                    </div>
+                  </div>
+                  <span class="text-primary font-legal-code text-legal-code font-bold">Browse</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex items-center justify-end gap-spacing-sm pt-spacing-sm">
+              <button type="button" class="px-spacing-md py-spacing-sm bg-surface-container text-on-surface hover:bg-surface-container-high rounded font-label-md text-label-md transition-colors">
+                Save Draft (Form 1)
+              </button>
+              <button type="submit" id="btn-submit-proposal-final" class="px-spacing-xl py-spacing-sm bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold rounded shadow-md flex items-center gap-spacing-xs transition-colors">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                Submit to CALA Scrutiny Queue
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Project Milestone Tracker Card -->
+        <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
+            <h3 class="font-headline-sm text-headline-sm text-primary font-bold">
+              Standardized 8-Stage Lifecycle Progress for Active Corridors
+            </h3>
+            <span class="font-legal-code text-legal-code text-tertiary font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">sync</span> LIVE SYNCHRONIZED
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-spacing-sm pt-spacing-xs text-body-sm font-body-sm">
+            <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+              <span class="font-legal-code text-legal-code text-primary uppercase font-bold block">1. Proposal Submission</span>
+              <p class="text-on-surface font-semibold mt-1">Form 1 + KML Coordinates</p>
+              <span class="text-[11px] text-tertiary flex items-center gap-1 mt-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> Instant Project ID
+              </span>
+            </div>
+
+            <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+              <span class="font-legal-code text-legal-code text-primary uppercase font-bold block">2. Digital Scrutiny</span>
+              <p class="text-on-surface font-semibold mt-1">Bhulekh / RoR Cross Check</p>
+              <span class="text-[11px] text-tertiary flex items-center gap-1 mt-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> CALA Queue Integration
+              </span>
+            </div>
+
+            <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+              <span class="font-legal-code text-legal-code text-primary uppercase font-bold block">3. Statutory Gazette</span>
+              <p class="text-on-surface font-semibold mt-1">Section 11 / Section 19</p>
+              <span class="text-[11px] text-tertiary flex items-center gap-1 mt-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> Digital DSC Attestation
+              </span>
+            </div>
+
+            <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+              <span class="font-legal-code text-legal-code text-primary uppercase font-bold block">4. Award & PFMS DBT</span>
+              <p class="text-on-surface font-semibold mt-1">Section 3G + Solatium</p>
+              <span class="text-[11px] text-tertiary flex items-center gap-1 mt-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> Direct to Aadhaar Bank
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- VIEW 5: CITIZEN PORTAL (Affected Landowners & Families) -->
+    <!-- ======================================================== -->
+    <section id="view-citizen" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
+      <div class="max-w-container-max mx-auto flex flex-col gap-spacing-xl">
+        <!-- Citizen Welcome & Khasra Search Card -->
+        <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-spacing-md">
+            <div>
+              <div class="flex items-center gap-spacing-xs mb-1">
+                <span class="px-spacing-xs py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-legal-code uppercase font-bold">
+                  Direct Citizen Transparency Portal
+                </span>
+                <span class="text-on-surface-variant font-label-sm">RFCTLARR Act 2013 Beneficiary Rights</span>
+              </div>
+              <h1 class="font-headline-xl text-headline-xl text-primary font-bold">
+                My Land Parcel, Award & Compensation Status
+              </h1>
+              <p class="font-body-md text-body-md text-on-surface-variant">
+                Search your survey number to track gazette notices, compensation disbursals, R&R entitlements, or file a hearing petition.
+              </p>
+            </div>
+            <div class="flex items-center gap-spacing-sm bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30">
+              <span class="material-symbols-outlined text-primary text-[28px]">fingerprint</span>
+              <div class="flex flex-col">
+                <span class="font-label-sm text-label-sm font-bold text-on-surface">Ramesh Narayan Patil</span>
+                <span class="font-legal-code text-legal-code text-on-surface-variant">Aadhaar: •••• •••• 8921 (Verified)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Khasra / Gut Search Bar -->
+          <div class="flex flex-col sm:flex-row items-center gap-spacing-sm pt-spacing-xs">
+            <div class="relative flex-1 w-full">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+              <input id="citizen-khasra-search" type="text" value="Gut No. 142/1" placeholder="Enter Khasra / Survey Gut No. or Village (e.g. Gut 142/1, Gut 143/3A)..." class="w-full bg-surface-container-low text-on-surface pl-10 pr-spacing-md py-spacing-sm rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md"/>
+            </div>
+            <button id="btn-citizen-search" class="w-full sm:w-auto px-spacing-xl py-spacing-sm bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold rounded shadow-sm flex items-center justify-center gap-spacing-xs transition-colors">
+              <span class="material-symbols-outlined text-[18px]">travel_explore</span>
+              Track My Land Parcel
+            </button>
+          </div>
+        </div>
+
+        <!-- Parcel Details & Live Status Tracker -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-lg">
+          <!-- Left: Parcel Information & Compensation Calculator (7 cols) -->
+          <div class="lg:col-span-7 flex flex-col gap-spacing-lg">
+            <!-- Active Land Parcel Status Card -->
+            <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-md border border-outline-variant/30 flex flex-col gap-spacing-md">
+              <div class="flex items-start justify-between border-b border-surface-container pb-spacing-sm">
+                <div>
+                  <div class="flex items-center gap-spacing-xs">
+                    <h2 id="cit-gut-title" class="font-headline-md text-headline-md text-primary font-bold">Gut No. 142/1</h2>
+                    <span id="cit-status-pill" class="px-spacing-xs py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-legal-code text-legal-code font-bold uppercase">
+                      POSSESSED / CLEARED
+                    </span>
+                  </div>
+                  <span id="cit-project-name" class="font-body-sm text-body-sm text-on-surface-variant">Pune Metro Line 3 Extension (Hinjewadi Sector)</span>
+                </div>
+                <button class="text-primary hover:underline font-legal-code text-legal-code flex items-center gap-1 font-bold">
+                  <span class="material-symbols-outlined text-[14px]">download</span> Download 3G Award
+                </button>
+              </div>
+
+              <!-- Key Parcel Metrics Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-spacing-md py-spacing-xs">
+                <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+                  <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Acquired Extent</span>
+                  <strong id="cit-area" class="font-headline-sm text-headline-sm text-on-surface">0.94 Ha</strong>
+                  <span class="text-[11px] text-on-surface-variant">9,400 m² (92% Overlap)</span>
+                </div>
+
+                <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+                  <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Land Classification</span>
+                  <strong id="cit-type" class="font-headline-sm text-headline-sm text-on-surface truncate block">Jirayat Tier-1</strong>
+                  <span class="text-[11px] text-tertiary font-semibold">Agricultural Patta</span>
+                </div>
+
+                <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
+                  <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Total Award Value</span>
+                  <strong id="cit-total-val" class="font-headline-sm text-headline-sm text-primary">₹47.00 L</strong>
+                  <span class="text-[11px] text-tertiary font-bold">PFMS DBT Credited</span>
+                </div>
+              </div>
+
+              <!-- Compensation Formula Breakdown under RFCTLARR Act 2013 -->
+              <div class="p-spacing-md bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-spacing-xs">
+                <span class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[18px]">calculate</span>
+                  Statutory Compensation Breakdown (RFCTLARR Act 2013 Sec 26-30)
+                </span>
+                <div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant">
+                  <div class="flex justify-between">
+                    <span>Base Market Value (Circle Rate × Factor):</span>
+                    <strong class="text-on-surface">₹23,50,000</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>100% Solatium Award (Mandatory Sec 30):</span>
+                    <strong class="text-tertiary">+ ₹23,50,000</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Additional Statutory Interest @ 12% p.a.:</span>
+                    <strong class="text-primary">+ ₹1,40,000 (Included)</strong>
+                  </div>
+                  <div class="flex justify-between pt-spacing-xs border-t border-surface-container font-semibold text-on-surface">
+                    <span>Final Disbursal Amount:</span>
+                    <span id="cit-calc-final" class="font-bold text-primary font-headline-sm">₹47,00,000</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DBT Payment Confirmation -->
+              <div class="p-spacing-md bg-tertiary-fixed/40 rounded-lg flex items-start gap-spacing-md border border-tertiary-fixed">
+                <span class="material-symbols-outlined text-tertiary text-2xl shrink-0">account_balance</span>
+                <div class="flex flex-col">
+                  <span class="font-label-md text-label-md text-tertiary font-bold">PFMS Direct Benefit Transfer Successful</span>
+                  <p id="cit-dbt-desc" class="font-body-sm text-body-sm text-on-surface mt-0.5">
+                    Amount of ₹47,00,000 credited to SBI A/c •••• 4120 via PFMS Treasury Node. UTR: #SBIN00482910 on 14-Oct-2024.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Statutory Timeline & File Objection Form (5 cols) -->
+          <div class="lg:col-span-5 flex flex-col gap-spacing-lg">
+            <!-- 8-Stage Timeline Progress -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+              <h3 class="font-headline-sm text-headline-sm text-primary font-bold">Statutory Milestone Journey</h3>
+              <div class="space-y-spacing-sm text-body-sm font-body-sm">
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">1</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Proposal Submission (Form 1)</span>
+                    <span class="text-on-surface-variant text-xs">PMRDA submitted corridor RoW</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">2</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Digital Scrutiny & JMS Survey</span>
+                    <span class="text-on-surface-variant text-xs">Khasra verified with MahaBhumi</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">3</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Section 11 & 19 Gazette Declaration</span>
+                    <span class="text-on-surface-variant text-xs">Published in Gazette 04-Sep-2024</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">4</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Award Declaration (Sec 3G)</span>
+                    <span class="text-on-surface-variant text-xs">₹47.00 Lakhs determined</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">5</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Compensation DBT Disbursed</span>
+                    <span class="text-on-surface-variant text-xs">Direct Aadhaar bank credit</span>
+                  </div>
+                </div>
+                <div class="flex items-start gap-spacing-sm">
+                  <span class="w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 text-xs font-bold">6</span>
+                  <div class="flex flex-col">
+                    <span class="font-semibold text-on-surface">Physical Possession</span>
+                    <span class="text-on-surface-variant text-xs">Handed over to Metro Executing Agency</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- File Section 15 Objection / Grievance Card -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+              <div class="flex items-center gap-spacing-xs border-b border-surface-container pb-spacing-xs">
+                <span class="material-symbols-outlined text-secondary text-[22px]">gavel</span>
+                <h3 class="font-headline-sm text-headline-sm text-primary font-bold">File Section 15 Hearing Objection</h3>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                If there is any discrepancy in tree valuation, borewell assets, or cadastral boundary, submit your statutory objection directly to CALA.
+              </p>
+
+              <form id="form-file-objection" class="space-y-spacing-sm" onsubmit="event.preventDefault();">
+                <div class="space-y-spacing-2xs">
+                  <label class="font-label-sm text-label-sm text-on-surface font-semibold" for="obj-type">Objection Category:</label>
+                  <select id="obj-type" class="w-full bg-surface-container-low text-on-surface py-spacing-xs px-spacing-sm rounded border border-outline-variant/40 font-body-sm outline-none cursor-pointer">
+                    <option value="Tree / Well / Structure Valuation Dispute">Tree / Well / Structure Valuation Dispute</option>
+                    <option value="Cadastral Boundary / Area Mismatch">Cadastral Boundary / Area Mismatch</option>
+                    <option value="Title / Apportionment Claim">Title / Apportionment Claim</option>
+                    <option value="R&R Resettlement Entitlement">R&R Resettlement Entitlement</option>
+                  </select>
+                </div>
+
+                <div class="space-y-spacing-2xs">
+                  <label class="font-label-sm text-label-sm text-on-surface font-semibold" for="obj-grounds">Statement of Grounds:</label>
+                  <textarea id="obj-grounds" rows="3" placeholder="State specific grounds (e.g. 15 mature mango trees omitted from horticulture survey)..." class="w-full bg-surface-container-low text-on-surface p-spacing-sm rounded border border-outline-variant/40 font-body-sm outline-none resize-none focus:bg-surface-container"></textarea>
+                </div>
+
+                <button type="submit" id="btn-submit-objection" class="w-full py-spacing-xs bg-secondary text-on-secondary hover:bg-secondary-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                  <span class="material-symbols-outlined text-[18px]">send</span>
+                  Submit Objection to District CALA Desk
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- CIVIC FOOTER (Matching Stitch Slide 1 & 2) -->
+  <!-- ======================================================== -->
+  <footer class="w-full bg-inverse-surface text-inverse-on-surface mt-spacing-4xl border-t border-outline-variant/20">
+    <div class="max-w-container-max mx-auto px-gutter-desktop py-spacing-3xl">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-spacing-2xl">
+        <div class="flex flex-col gap-spacing-md">
+          <span class="font-headline-sm text-headline-sm text-surface-bright font-bold">Administrative Office</span>
+          <p class="font-body-sm text-body-sm text-outline-variant leading-relaxed">
+            Department of Land Resources<br/>
+            Ministry of Rural Development<br/>
+            NITI Aayog Complex, Sansad Marg<br/>
+            New Delhi - 110001, India
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-spacing-md">
+          <span class="font-headline-sm text-headline-sm text-surface-bright font-bold">Dispute & Support Desk</span>
+          <p class="font-body-sm text-body-sm text-outline-variant leading-relaxed">
+            Toll Free Land Dispute Redressal: <strong class="text-surface-bright">1800-11-LANDS</strong><br/>
+            Alternate Desk: <strong class="text-surface-bright">1800-11-5263</strong><br/>
+            Hours: 24 Hours, 7 Days a Week<br/>
+            Email: helpdesk-nlams@gov.in
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-spacing-md">
+          <span class="font-headline-sm text-headline-sm text-surface-bright font-bold">Statutory Information</span>
+          <div class="flex flex-col gap-spacing-xs font-body-sm text-body-sm">
+            <a class="text-outline-variant hover:text-surface-bright transition-colors" href="#">Right to Information (RTI)</a>
+            <a class="text-outline-variant hover:text-surface-bright transition-colors" href="#">RFCTLARR Act, 2013 Directives</a>
+            <a class="text-outline-variant hover:text-surface-bright transition-colors" href="#">Citizen Charter & Service Levels</a>
+            <a class="text-outline-variant hover:text-surface-bright transition-colors" href="#">Public Audit & Vigilance Notice</a>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-spacing-md">
+          <span class="font-headline-sm text-headline-sm text-surface-bright font-bold">Standards & Compliance</span>
+          <div class="flex flex-col gap-spacing-xs font-body-sm text-body-sm text-outline-variant">
+            <div class="flex items-center gap-spacing-xs">
+              <span class="material-symbols-outlined text-base text-tertiary-fixed">verified_user</span>
+              <span>GIGW 3.0 Certified Standard</span>
+            </div>
+            <div class="flex items-center gap-spacing-xs">
+              <span class="material-symbols-outlined text-base text-tertiary-fixed">shield</span>
+              <span>STQC Audit Validated</span>
+            </div>
+            <span class="font-label-sm text-label-sm text-surface-dim mt-spacing-xs">Hosted by National Informatics Centre (NIC)</span>
+            <span class="font-label-sm text-label-sm text-surface-dim">Digital India Corporation Initiative</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-spacing-3xl pt-spacing-xl border-t border-outline-variant/30 flex flex-col md:flex-row items-center justify-between gap-spacing-lg font-body-sm text-body-sm text-outline-variant">
+        <div class="flex flex-wrap items-center gap-spacing-lg font-label-sm text-label-sm">
+          <a class="hover:text-surface-bright transition-colors" href="#">Terms & Conditions</a>
+          <a class="hover:text-surface-bright transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-surface-bright transition-colors" href="#">Hyperlinking Policy</a>
+          <a class="hover:text-surface-bright transition-colors" href="#">Copyright Statement</a>
+          <a class="hover:text-surface-bright transition-colors" href="#">Security Guidelines</a>
+        </div>
+        <div class="flex flex-col md:flex-row items-center gap-spacing-md font-legal-code text-legal-code text-surface-dim">
+          <span>Last Audited & Updated: October 2024</span>
+          <span>•</span>
+          <span>Version 4.2.1-PROD</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/store.js"></script>
+  <script src="js/gis-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
