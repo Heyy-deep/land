@@ -228,7 +228,20 @@
 
       const store = window.NLAMS_STORE;
       const parcels = store ? store.parcels : [];
-      const selected = parcels.find(p => p.id === activeParcelId) || parcels[2]; // Default Gut 143/3A
+      const rawSelected = parcels.find(p => p.id === activeParcelId || (p.properties && p.properties.id === activeParcelId)) || parcels[2] || parcels[0] || {};
+      const selected = rawSelected.properties ? { ...rawSelected.properties, coordinates: rawSelected.properties.svgCoordinates || { x: 290, y: 250 } } : { ...rawSelected };
+      if (!selected.coordinates) {
+        selected.coordinates = { x: 290, y: 250 };
+      }
+      if (!selected.gutNumber) selected.gutNumber = 'Gut No. 143/3A';
+      if (!selected.village) selected.village = 'Shivaji Nagar';
+      if (!selected.statusLabel) selected.statusLabel = 'Scrutiny Pending';
+      if (!selected.ownerName) selected.ownerName = 'Smt. Kamalabai S. Jadhav';
+      if (!selected.areaHa) selected.areaHa = 1.42;
+      if (!selected.areaSqM) selected.areaSqM = 14200;
+      if (!selected.landType) selected.landType = 'Agricultural (Jirayat)';
+      if (!selected.overlapPercent) selected.overlapPercent = 100;
+      if (!selected.totalCompensation) selected.totalCompensation = 2840000;
 
       container.innerHTML = `
         <div class="relative w-full h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30">
