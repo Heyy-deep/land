@@ -4,3 +4,13 @@ node_modules/
 .vscode/
 .idea/
 .vercel
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+nlams_local.db
+*.db
+*.sqlite3
+.env
+uploads/

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  nlams-postgis:
+    image: postgis/postgis:16-3.4
+    container_name: nlams-postgis-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: nlams_db
+      POSTGRES_USER: nlams_user
+      POSTGRES_PASSWORD: nlams_secure_password
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nlams_user -d nlams_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgis_data:
+    driver: local
