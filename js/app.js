@@ -76,15 +76,15 @@
 
   // Nav Tab Template Definitions (Preserves exact DOM classes, markup, and styling)
   const NAV_TAB_TEMPLATES = {
-    'view-login': '<button data-view="view-login" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">lock</span> SSO Portal</button>',
-    'view-national': '<button data-view="view-national" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">analytics</span> 1. National Dashboard</button>',
-    'view-state': '<button data-view="view-state" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">map</span> 2. State Dashboard</button>',
-    'view-district': '<button data-view="view-district" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">share_location</span> 3. District / CALA</button>',
-    'view-agency': '<button data-view="view-agency" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">add_box</span> 4. Implementing Agency</button>',
-    'view-citizen': '<button data-view="view-citizen" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">badge</span> 5. Citizen Portal</button>'
+    'view-login': '<button data-view="view-login" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">lock</span> SSO Portal</button>',
+    'view-national': '<button data-view="view-national" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">analytics</span> 1. National Dashboard</button>',
+    'view-state': '<button data-view="view-state" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">map</span> 2. State Dashboard</button>',
+    'view-district': '<button data-view="view-district" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">share_location</span> 3. District / CALA</button>',
+    'view-agency': '<button data-view="view-agency" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">add_box</span> 4. Implementing Agency</button>',
+    'view-citizen': '<button data-view="view-citizen" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">badge</span> 5. Citizen Portal</button>'
   };
 
-  const LOGOUT_TAB_TEMPLATE = '<button id="btn-navbar-logout" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / लॉग आउट</button>';
+  const LOGOUT_TAB_TEMPLATE = '<button id="btn-navbar-logout" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / लॉग आउट</button>';
 
   function isUserAuthenticated() {
     return sessionStorage.getItem('nlams_is_authenticated') === 'true';
@@ -97,8 +97,12 @@
   function handleLogout() {
     sessionStorage.removeItem('nlams_is_authenticated');
     sessionStorage.removeItem('nlams_session_role');
+    updateActiveUserBadge({ name: 'Public Portal', badge: 'Not Authenticated', jurisdiction: 'Guest' });
     showToast('Session Terminated', 'Logged out successfully from NLAMS. Returning to SSO Portal.', 'info');
     renderNavbar();
+    if (window.location.hash !== '#/login') {
+      window.history.replaceState(null, '', '#/login');
+    }
     switchView('view-login', true);
   }
 
@@ -111,6 +115,8 @@
       const savedRole = getUserRole();
       store.setUserRole(savedRole);
       updateActiveUserBadge(store.currentUser);
+    } else {
+      updateActiveUserBadge({ name: 'Public Portal', badge: 'Not Authenticated', jurisdiction: 'Guest' });
     }
     renderNavbar();
 
@@ -140,9 +146,11 @@
       const currentRole = getUserRole();
       const roleConfig = ROLE_DASHBOARD_MAP[currentRole] || ROLE_DASHBOARD_MAP['central-ministry'];
       switchView(roleConfig.viewId, true);
-    } else if (initialHash && HASH_TO_VIEW_MAP[initialHash]) {
-      switchView(HASH_TO_VIEW_MAP[initialHash], true);
     } else {
+      // Pre-authentication: unauthenticated users are restricted to view-login
+      if (initialHash && initialHash !== '#/login') {
+        window.history.replaceState(null, '', '#/login');
+      }
       switchView('view-login', true);
     }
 
@@ -170,18 +178,10 @@
     if (!navContainer) return;
 
     if (!isUserAuthenticated()) {
-      // Before login (landing/logged-out state): navbar continues showing all tabs as-is (Requirement 4)
-      navContainer.innerHTML = [
-        NAV_TAB_TEMPLATES['view-login'],
-        NAV_TAB_TEMPLATES['view-national'],
-        NAV_TAB_TEMPLATES['view-state'],
-        NAV_TAB_TEMPLATES['view-district'],
-        NAV_TAB_TEMPLATES['view-agency'],
-        NAV_TAB_TEMPLATES['view-citizen']
-      ].join('');
+      // Pre-authentication state (logged-out): show ONLY 'SSO Portal' tab
+      navContainer.innerHTML = NAV_TAB_TEMPLATES['view-login'];
     } else {
-      // After login (post-login state): render ONLY the ONE tab corresponding to their role's dashboard (Requirements 1, 2, 3)
-      // Hide the other 4 tabs entirely (removed from DOM)
+      // Post-login state: render ONLY the ONE tab matching user's role + Sign Out button
       const currentRole = getUserRole();
       const roleConfig = ROLE_DASHBOARD_MAP[currentRole] || ROLE_DASHBOARD_MAP['central-ministry'];
       const authorizedTabHtml = NAV_TAB_TEMPLATES[roleConfig.viewId];
@@ -205,7 +205,10 @@
 
     const logoutBtn = document.getElementById('btn-navbar-logout');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', handleLogout);
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleLogout();
+      });
     }
 
     highlightActiveNavTab(currentViewId);
@@ -253,6 +256,20 @@
         switchView(allowedViewId, true);
         return;
       }
+    } else {
+      // Unauthenticated state: block direct URL navigation to any dashboard
+      if (targetView !== 'view-login') {
+        showToast(
+          'Authentication Required (401)',
+          'Access Denied: Please sign in through the SSO Portal to access dashboard resources.',
+          'warning'
+        );
+        if (window.location.hash !== '#/login') {
+          window.history.replaceState(null, '', '#/login');
+        }
+        switchView('view-login', true);
+        return;
+      }
     }
 
     switchView(targetView);
@@ -293,25 +310,33 @@
   function switchView(viewId, bypassGuard = false) {
     if (!views[viewId]) return;
 
-    // RBAC Route Protection Middleware (Requirement 5)
-    if (isUserAuthenticated() && !bypassGuard) {
-      const userRole = getUserRole();
-      const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
-      const allowedViewId = roleConfig.viewId;
-
-      if (viewId === 'view-login') {
-        handleLogout();
-        return;
-      }
-
-      if (viewId !== allowedViewId) {
-        console.warn(`[RBAC Guard] Access Denied: Role '${userRole}' attempted access to '${viewId}'. Enforcing '${allowedViewId}'.`);
-        showToast(
-          'Access Restricted (403)',
-          `Role-Based Access Control: Your account (${store.currentUser.badge || userRole}) is restricted to ${roleConfig.dashboardName}.`,
-          'warning'
-        );
-        viewId = allowedViewId;
+    // RBAC Route Protection Guard
+    if (!bypassGuard) {
+      if (!isUserAuthenticated()) {
+        if (viewId !== 'view-login') {
+          showToast(
+            'Authentication Required (401)',
+            'Access Denied: Please sign in through the SSO Portal to access this dashboard.',
+            'warning'
+          );
+          if (window.location.hash !== '#/login') {
+            window.history.replaceState(null, '', '#/login');
+          }
+          switchView('view-login', true);
+          return;
+        }
+      } else {
+        const userRole = getUserRole();
+        const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+        if (viewId !== roleConfig.viewId && viewId !== 'view-login') {
+          showToast(
+            'Access Denied (403)',
+            `Role '${store.currentUser.badge || userRole}' is restricted to ${roleConfig.dashboardName}.`,
+            'warning'
+          );
+          switchView(roleConfig.viewId, true);
+          return;
+        }
       }
     }
 
