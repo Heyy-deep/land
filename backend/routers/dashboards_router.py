@@ -79,11 +79,12 @@ def get_national_dashboard(
 # 2. State Dashboard (State Government)
 @router.get("/state")
 def get_state_dashboard(
+    state: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Server-side scoping: Default to user's state or 'Maharashtra'
-    target_state = current_user.jurisdiction_scope if current_user.jurisdiction_scope != "ALL" else "Maharashtra"
+    # Server-side scoping: Query param, user jurisdiction, or default to West Bengal
+    target_state = state or (current_user.jurisdiction_scope if current_user.jurisdiction_scope != "ALL" else "West Bengal")
 
     state_projects = db.query(Project).filter(Project.state == target_state).all()
 
@@ -126,10 +127,12 @@ def get_state_dashboard(
 # 3. District / Field Dashboard (CALA Desk & Field Officers)
 @router.get("/district")
 def get_district_dashboard(
+    district: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target_district = current_user.jurisdiction_scope if current_user.jurisdiction_scope not in ("ALL", "Maharashtra") else "Pune"
+    # Server-side scoping: Query param, user jurisdiction, or default to Hooghly
+    target_district = district or (current_user.jurisdiction_scope if current_user.jurisdiction_scope not in ("ALL", "West Bengal", "Maharashtra") else "Hooghly")
 
     parcels = db.query(LandParcel).filter(LandParcel.district == target_district).all()
     projects = db.query(Project).filter(Project.district == target_district).all()
@@ -199,7 +202,7 @@ def get_citizen_dashboard(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    target_parcel_id = current_user.linked_parcel_id or "GUT-142-1"
+    target_parcel_id = current_user.linked_parcel_id or "WB-HGY-DNK-01"
 
     parcel = db.query(LandParcel).filter(LandParcel.id == target_parcel_id).first()
     if not parcel:

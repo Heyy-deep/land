@@ -1216,21 +1216,24 @@
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-spacing-lg mt-spacing-2xs">
             <div class="space-y-spacing-2xs">
               <h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
-                State Land Acquisition Operations Dashboard - Maharashtra
+                State Land Acquisition Operations Dashboard - West Bengal
               </h1>
               <p class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">
-                राज्य भूमि अधिग्रहण एवं प्रबंधन डैशबोर्ड (महाराष्ट्र शासन) • महसूल व वन विभाग
+                রাজ্য ভূমি অধিগ্রহণ ও ব্যবস্থাপনা ড্যাশবোর্ড (পশ্চিমবঙ্গ সরকার) • ভূমি ও ভূমি সংস্কার দপ্তর
               </p>
             </div>
             <!-- Quick Filter Ribbon -->
             <div class="flex flex-wrap items-center gap-spacing-sm">
               <select id="state-district-filter" class="bg-surface-container-low text-on-surface font-label-md text-label-md px-spacing-md py-spacing-xs rounded outline-none border border-outline-variant/40 cursor-pointer">
-                <option value="ALL">All 36 Districts</option>
-                <option value="Pune">Pune Collectorate</option>
-                <option value="Thane">Thane Collectorate</option>
-                <option value="Palghar">Palghar Coastal</option>
-                <option value="Raigad">Raigad Belt</option>
-                <option value="Solapur">Solapur Division</option>
+                <option value="ALL">All Districts (West Bengal)</option>
+                <option value="Hooghly" selected>Hooghly (EDFC & NH-319B)</option>
+                <option value="Howrah">Howrah (Kona & Salap)</option>
+                <option value="North 24 Parganas">North 24 Parganas (Barasat)</option>
+                <option value="Kolkata">Kolkata Metropolitan (KMDA)</option>
+                <option value="South 24 Parganas">South 24 Parganas (Alipore)</option>
+                <option value="Paschim Bardhaman">Paschim Bardhaman (Asansol)</option>
+                <option value="Purba Bardhaman">Purba Bardhaman</option>
+                <option value="Nadia">Nadia (Krishnanagar)</option>
               </select>
               <button id="btn-state-sync" class="inline-flex items-center gap-spacing-xs px-spacing-md py-spacing-xs bg-primary text-on-primary hover:bg-primary-container rounded transition-colors font-label-md text-label-md font-semibold shadow-sm">
                 <span class="material-symbols-outlined text-[18px]">receipt_long</span>
@@ -1350,6 +1353,11 @@
               </div>
             </div>
           </div>
+        </section>
+
+        <!-- Interactive West Bengal State District Choropleth Map -->
+        <section class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div id="state-choropleth-mount" class="w-full"></div>
         </section>
 
         <!-- Comprehensive State Requisition Matrix Table -->
@@ -1475,8 +1483,8 @@
             <div class="flex flex-col gap-spacing-md py-spacing-xs">
               <div class="flex flex-col gap-1">
                 <div class="flex items-center justify-between text-body-sm font-body-sm">
-                  <span class="font-semibold text-on-surface">Thane Collectorate</span>
-                  <span class="text-on-surface-variant font-legal-code">56 Projects • 8,240 Ha</span>
+                  <span class="font-semibold text-on-surface">Hooghly Collectorate (EDFC)</span>
+                  <span class="text-on-surface-variant font-legal-code">7 Projects • 342.8 Ha</span>
                 </div>
                 <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
                   <div class="bg-tertiary-container h-full" style="width: 48%"></div>
@@ -1488,8 +1496,8 @@
 
               <div class="flex flex-col gap-1">
                 <div class="flex items-center justify-between text-body-sm font-body-sm">
-                  <span class="font-semibold text-on-surface">Pune Collectorate</span>
-                  <span class="text-on-surface-variant font-legal-code">47 Projects • 7,190 Ha</span>
+                  <span class="font-semibold text-on-surface">Howrah Collectorate (Kona)</span>
+                  <span class="text-on-surface-variant font-legal-code">4 Projects • 188.4 Ha</span>
                 </div>
                 <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
                   <div class="bg-tertiary-container h-full" style="width: 52%"></div>
@@ -1618,7 +1626,7 @@
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
               <span class="hover:text-primary cursor-pointer">Maharashtra</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span class="text-primary font-bold bg-surface-container-high px-spacing-sm py-spacing-2xs rounded">Pune District CALA Clearance Desk</span>
+              <span class="text-primary font-bold bg-surface-container-high px-spacing-sm py-spacing-2xs rounded">Hooghly District CALA Clearance Desk (DLLRO Chinsurah)</span>
             </nav>
             <div class="flex items-center gap-spacing-sm">
               <button id="btn-export-field-notes" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded bg-surface-container-low text-primary text-label-sm font-label-sm hover:bg-surface-container border border-outline-variant/30 transition-colors">
@@ -1637,7 +1645,7 @@
               <div class="flex items-center gap-spacing-xs bg-surface-container-highest px-spacing-sm py-spacing-2xs rounded">
                 <span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
                 <span class="text-label-sm font-label-sm text-primary font-bold">CALA Jurisdiction:</span>
-                <span class="text-label-sm font-label-sm text-on-surface">Pune Division (Metro Line 3 & Ring Road)</span>
+                <span class="text-label-sm font-label-sm text-on-surface">Hooghly Division (EDFC Dankuni Terminal & NH-319B)</span>
               </div>
               <div class="flex items-center gap-spacing-xs bg-surface-container-highest px-spacing-sm py-spacing-2xs rounded">
                 <span class="material-symbols-outlined text-secondary text-[18px]">gavel</span>

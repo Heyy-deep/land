@@ -8,7 +8,7 @@
 
   // Selected Active State
   let currentViewId = 'view-national';
-  let selectedParcelId = 'GUT-143-3A';
+  let selectedParcelId = 'WB-HGY-DNK-01';
 
   // DOM Elements Cache
   let views = {};
@@ -376,9 +376,13 @@
           showToast('Access Restricted', 'State drilldown view is restricted to Central Ministry / State Revenue.', 'info');
           return;
         }
+        window.NLAMS_SELECTED_STATE = selectedState;
         showToast(`Drilling down to ${selectedState}`, 'Redirecting to State Directorate Dashboard...', 'info');
         switchView('view-state', true);
       });
+    } else if (viewId === 'view-state') {
+      mountStateGIS();
+      renderStateProjectsTable();
     } else if (viewId === 'view-district') {
       mountDistrictGIS();
     }
@@ -968,7 +972,25 @@
   }
 
   // 3. State Dashboard Controller (Scoped to Maharashtra)
+  function mountStateGIS() {
+    const targetState = window.NLAMS_SELECTED_STATE || (store.currentUser?.role === 'state-revenue' && store.currentUser?.jurisdiction?.includes('Maharashtra') ? 'Maharashtra' : 'West Bengal');
+    window.GISEngine.renderStateChoropleth('state-choropleth-mount', targetState, (district) => {
+      const distFilter = document.getElementById('state-district-filter');
+      if (distFilter) {
+        for (let i = 0; i < distFilter.options.length; i++) {
+          if (distFilter.options[i].value.toLowerCase() === district.toLowerCase()) {
+            distFilter.selectedIndex = i;
+            break;
+          }
+        }
+      }
+      renderStateProjectsTable(district);
+      showToast(`Filtered by ${district}`, `Showing projects in ${district} district.`, 'info');
+    });
+  }
+
   function setupStateDashboard() {
+    mountStateGIS();
     const distFilter = document.getElementById('state-district-filter');
     if (distFilter) {
       distFilter.addEventListener('change', () => {
@@ -1023,7 +1045,9 @@
     if (projCountEl) projCountEl.textContent = `${stats.totalProjects} Projects`;
 
     // Strict State-Level Scoping: Maharashtra Only
-    let filtered = store.projects.filter(p => p.state === 'Maharashtra');
+    const targetState = window.NLAMS_SELECTED_STATE || (store.currentUser?.role === 'state-revenue' && store.currentUser?.jurisdiction?.includes('Maharashtra') ? 'Maharashtra' : 'West Bengal');
+    let filtered = store.projects.filter(p => p.state.toLowerCase() === targetState.toLowerCase());
+    if (filtered.length === 0) { filtered = store.projects.filter(p => p.state.toLowerCase().includes('bengal')); }
     if (filterDistrict !== 'ALL') {
       filtered = filtered.filter(p => p.district.toLowerCase().includes(filterDistrict.toLowerCase()));
     }
@@ -1116,7 +1140,7 @@
   }
 
   // 4. District / CALA Dashboard Controller
-  let activeSigningProjectId = 'REQ-MH-THN-2023-0892';
+  let activeSigningProjectId = 'REQ-WB-HGY-2023-0101';
 
   function setupDistrictDashboard() {
     const btnApprove = document.getElementById('btn-cala-approve');
@@ -1295,7 +1319,7 @@
   }
 
   // Selected Map-Picker coordinates state
-  let currentPickedCoords = { lat: 18.5913, lng: 73.7389 };
+  let currentPickedCoords = { lat: 22.6865, lng: 88.2985 };
   let mapPickerInstance = null;
 
   function initMapPicker() {
@@ -1420,7 +1444,10 @@
       const found = store.parcels.find(p => {
         const props = p.properties || p;
         return (
-          props.gutNumber.toLowerCase().includes(q.toLowerCase()) ||
+          (props.gutNumber && props.gutNumber.toLowerCase().includes(q.toLowerCase())) ||
+          (props.khasraNo && props.khasraNo.toLowerCase().includes(q.toLowerCase())) ||
+          (props.village && props.village.toLowerCase().includes(q.toLowerCase())) ||
+          (props.ownerName && props.ownerName.toLowerCase().includes(q.toLowerCase())) ||
           props.id.toLowerCase().includes(q.toLowerCase()) ||
           (props.projectId && props.projectId.toLowerCase().includes(q.toLowerCase()))
         );
@@ -1432,7 +1459,7 @@
         renderCitizenParcel(props.id);
         showToast('Parcel Record Found', `Loaded record for ${props.gutNumber} (${props.village})`, 'success');
       } else {
-        showToast('No Record Found', `No cadastral parcel matched '${q}'. Try 'Gut No. 142/1' or 'Gut No. 143/3A'`, 'warning');
+        showToast('No Record Found', `No cadastral parcel matched '${q}'. Try 'RS/LR-412/1', 'Dag No. 412/1', or 'Dankuni'`, 'warning');
       }
     };
 
@@ -1850,12 +1877,9 @@
 
   // Drilldown helper
   window.drillToState = function(stateName) {
-    if (stateName === 'Maharashtra') {
-      switchView('view-state', true);
-      showToast('State Directorate Loaded', 'Viewing Maharashtra Revenue & Cadastral Matrix.', 'info');
-    } else {
-      showToast(`State Directorate: ${stateName}`, `Displaying ${stateName} state corridor pipeline metrics.`, 'info');
-    }
+    window.NLAMS_SELECTED_STATE = stateName;
+    switchView('view-state', true);
+    showToast(`State Directorate: ${stateName}`, `Displaying ${stateName} state corridor pipeline metrics.`, 'info');
   };
 
   // 7. Global Demo Triggers & Accessibility

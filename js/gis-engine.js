@@ -1,13 +1,47 @@
 /**
  * NLAMS - GIS & Vector Visualization Engine
  * Handles Thematic State Choropleth Maps, Cadastral Parcel Vectors, and SVG Charts
+ * Grounded in West Bengal / Hooghly Cadastral Boundaries and National Corridors
  */
 
 (function(window) {
   'use strict';
 
+  // GeoJSON to SVG Projection Utility
+  function projectBounds(geoJsonFeatures, svgWidth = 720, svgHeight = 460, padding = 40) {
+    let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+
+    geoJsonFeatures.forEach(feat => {
+      const coords = feat.geometry.type === 'Polygon' ? feat.geometry.coordinates[0] :
+                     feat.geometry.type === 'MultiPolygon' ? feat.geometry.coordinates[0][0] : [];
+      coords.forEach(([lon, lat]) => {
+        if (lon < minLon) minLon = lon;
+        if (lon > maxLon) maxLon = lon;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      });
+    });
+
+    const lonSpan = maxLon - minLon || 1;
+    const latSpan = maxLat - minLat || 1;
+
+    return {
+      project: function(lon, lat) {
+        const x = padding + ((lon - minLon) / lonSpan) * (svgWidth - 2 * padding);
+        const y = padding + ((maxLat - lat) / latSpan) * (svgHeight - 2 * padding);
+        return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+      },
+      toSvgPoints: function(coordinates) {
+        return coordinates.map(([lon, lat]) => {
+          const pt = this.project(lon, lat);
+          return `${pt.x},${pt.y}`;
+        }).join(' ');
+      }
+    };
+  }
+
   const GISEngine = {
-    // Render State-Level Thematic SVG Map of India (for National Dashboard)
+    // 1. Render State-Level Thematic SVG Map of India (for National Dashboard)
     renderNationalMap: function(containerId, onStateSelect) {
       const container = document.getElementById(containerId);
       if (!container) return;
@@ -21,7 +55,7 @@
               </filter>
             </defs>
 
-            <!-- Northern States (J&K, Ladakh, HP, Punjab, Uttarakhand) -->
+            <!-- Northern States -->
             <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Jammu & Kashmir" data-pct="88.4"
                   d="M 230,45 L 260,35 L 290,45 L 310,75 L 285,110 L 255,100 L 235,80 Z"
                   fill="#15803d" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
@@ -35,7 +69,7 @@
             <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Punjab" data-pct="87.2"
                   d="M 210,122 L 235,122 L 240,150 L 210,145 Z"
                   fill="#15803d" fill-opacity="0.8" stroke="#ffffff" stroke-width="1.5">
-              <title>Punjab (87.2%)</title>
+              <title>Punjab (87.2%) - Ludhiana EDFC Origin Node</title>
             </path>
             <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Uttarakhand" data-pct="76.8"
                   d="M 265,120 L 295,125 L 285,155 L 255,145 Z"
@@ -59,7 +93,7 @@
             <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Uttar Pradesh" data-pct="78.5"
                   d="M 235,155 L 340,165 L 345,215 L 265,225 L 235,190 Z"
                   fill="#d97706" fill-opacity="0.9" stroke="#ffffff" stroke-width="1.5">
-              <title>Uttar Pradesh (78.5%) - Jewar & Varanasi HSR</title>
+              <title>Uttar Pradesh (78.5%) - EDFC / Varanasi HSR Corridor</title>
             </path>
 
             <!-- Gujarat -->
@@ -83,11 +117,11 @@
               <title>Bihar (54.8%) - Land Registry Digitization Lag</title>
             </path>
 
-            <!-- West Bengal -->
-            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="West Bengal" data-pct="68.2"
-                  d="M 400,195 L 430,205 L 415,275 L 385,255 L 395,225 Z"
-                  fill="#d97706" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
-              <title>West Bengal (68.2%)</title>
+            <!-- West Bengal (Featured Deep-Dive State) -->
+            <path id="path-wb" class="state-poly cursor-pointer transition-all filter drop-shadow hover:scale-[1.02]" data-state="West Bengal" data-pct="74.2"
+                  d="M 400,195 L 430,205 L 425,245 L 435,270 L 415,285 L 388,260 L 395,225 Z"
+                  fill="#15803d" fill-opacity="0.95" stroke="#fe932c" stroke-width="2.5">
+              <title>West Bengal (74.2%) - EDFC Dankuni Terminal & Hooghly Priority Hub</title>
             </path>
 
             <!-- North East Region -->
@@ -97,11 +131,11 @@
               <title>North-Eastern States / Assam (86.1%)</title>
             </path>
 
-            <!-- Maharashtra (Benchmark State) -->
+            <!-- Maharashtra -->
             <path id="path-mh" class="state-poly cursor-pointer transition-all filter drop-shadow hover:scale-[1.01]" data-state="Maharashtra" data-pct="91.4"
                   d="M 165,275 L 260,265 L 285,355 L 195,365 L 160,315 Z"
-                  fill="#15803d" fill-opacity="0.95" stroke="#ffffff" stroke-width="2.5">
-              <title>Maharashtra (91.4%) - Top Performer</title>
+                  fill="#15803d" fill-opacity="0.9" stroke="#ffffff" stroke-width="2.0">
+              <title>Maharashtra (91.4%) - Western Corridor</title>
             </path>
 
             <!-- Odisha -->
@@ -118,71 +152,73 @@
               <title>Chhattisgarh (72.6%)</title>
             </path>
 
-            <!-- Telangana & Andhra Pradesh -->
-            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Telangana & Andhra Pradesh" data-pct="84.7"
-                  d="M 235,325 L 310,320 L 295,395 L 235,375 Z"
-                  fill="#15803d" fill-opacity="0.8" stroke="#ffffff" stroke-width="1.5">
-              <title>Telangana & Andhra Pradesh (84.7%)</title>
+            <!-- Southern States -->
+            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Andhra Pradesh" data-pct="84.2"
+                  d="M 260,345 L 315,315 L 310,410 L 255,395 Z"
+                  fill="#15803d" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+              <title>Andhra Pradesh (84.2%)</title>
             </path>
-
-            <!-- Karnataka -->
-            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Karnataka" data-pct="74.2"
-                  d="M 195,355 L 255,350 L 245,435 L 190,415 Z"
-                  fill="#d97706" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
-              <title>Karnataka (74.2%)</title>
-            </path>
-
-            <!-- Tamil Nadu & Kerala -->
-            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Tamil Nadu & Kerala" data-pct="86.8"
-                  d="M 230,410 L 285,415 L 260,490 L 215,480 L 210,430 Z"
+            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Karnataka" data-pct="88.7"
+                  d="M 185,355 L 255,355 L 235,435 L 175,395 Z"
                   fill="#15803d" fill-opacity="0.9" stroke="#ffffff" stroke-width="1.5">
-              <title>Tamil Nadu & Kerala (86.8%)</title>
+              <title>Karnataka (88.7%)</title>
+            </path>
+            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Tamil Nadu" data-pct="89.5"
+                  d="M 225,420 L 275,415 L 255,485 L 215,465 Z"
+                  fill="#15803d" fill-opacity="0.9" stroke="#ffffff" stroke-width="1.5">
+              <title>Tamil Nadu (89.5%)</title>
+            </path>
+            <path class="state-poly hover:fill-opacity-100 cursor-pointer transition-all" data-state="Kerala" data-pct="71.2"
+                  d="M 195,435 L 220,430 L 205,485 L 190,470 Z"
+                  fill="#d97706" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+              <title>Kerala (71.2%)</title>
             </path>
 
-            <!-- Linear Corridor Overlays (NHAI / DFC Lines) -->
-            <!-- Western DFC: Delhi to JNPT (Mumbai) -->
-            <path d="M 235,165 Q 185,220 180,305" fill="none" stroke="#fe932c" stroke-width="3.5" stroke-dasharray="6 4" stroke-linecap="round">
+            <!-- Major Industrial Corridors -->
+            <!-- Western DFC: Dadri to JNPT -->
+            <path d="M 235,170 Q 155,230 165,315" fill="none" stroke="#fe932c" stroke-width="3.5" stroke-dasharray="6 3" stroke-linecap="round">
               <title>Western Dedicated Freight Corridor (WDFC)</title>
             </path>
-            <!-- Eastern DFC: Ludhiana to Dankuni -->
-            <path d="M 220,135 Q 295,190 405,250" fill="none" stroke="#395e9d" stroke-width="3" stroke-dasharray="5 3" stroke-linecap="round">
-              <title>Eastern Dedicated Freight Corridor (EDFC)</title>
+            <!-- Eastern DFC: Ludhiana to Dankuni (Kolkata/Hooghly) -->
+            <path d="M 220,135 Q 295,190 415,270" fill="none" stroke="#133e7c" stroke-width="4.0" stroke-dasharray="6 3" stroke-linecap="round">
+              <title>Eastern Dedicated Freight Corridor (EDFC: Ludhiana -> Dankuni)</title>
             </path>
-            <!-- Golden Quadrilateral Chennai to Mumbai branch -->
+            <!-- Bengaluru-Mumbai Industrial Corridor (BMIC) -->
             <path d="M 180,310 Q 215,380 260,425" fill="none" stroke="#004a1e" stroke-width="2.5" stroke-linecap="round">
               <title>Bengaluru-Mumbai Industrial Corridor (BMIC)</title>
             </path>
 
-            <!-- Pinned Marker for Nodal Inspection (Maharashtra) -->
-            <g transform="translate(205, 305)">
-              <circle r="8" fill="#133e7c" class="animate-ping opacity-60"></circle>
-              <circle r="5" fill="#133e7c" stroke="#ffffff" stroke-width="2"></circle>
+            <!-- Pinned Marker for Hooghly / Kolkata (EDFC Terminal) -->
+            <g transform="translate(415, 270)">
+              <circle r="9" fill="#fe932c" class="animate-ping opacity-75"></circle>
+              <circle r="6" fill="#133e7c" stroke="#ffffff" stroke-width="2.5"></circle>
+              <text x="12" y="4" font-size="10" font-weight="bold" fill="#00285b" class="drop-shadow-sm">Dankuni (EDFC)</text>
             </g>
           </svg>
 
-          <!-- Floating Inspection Card Over Maharashtra -->
+          <!-- Floating Inspection Card Over West Bengal / Selected State -->
           <div id="state-inspection-card" class="absolute bottom-4 left-4 max-w-xs bg-surface-container-lowest p-spacing-sm rounded-DEFAULT shadow-md text-on-surface z-20 pointer-events-auto border border-outline-variant/30">
             <div class="flex items-center justify-between gap-spacing-xs border-b border-surface-container pb-spacing-2xs mb-spacing-2xs">
               <div class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-                <span id="card-state-name" class="font-headline-sm text-headline-sm text-primary font-bold">Maharashtra</span>
+                <span id="card-state-name" class="font-headline-sm text-headline-sm text-primary font-bold">West Bengal</span>
               </div>
               <span id="card-state-pct" class="inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-DEFAULT bg-tertiary-fixed text-on-tertiary-fixed">
-                91.4% Target
+                74.2% Target
               </span>
             </div>
             <div class="space-y-1 font-body-sm text-body-sm">
               <div class="flex justify-between text-on-surface-variant">
                 <span>Parcels Acquired:</span>
-                <strong id="card-state-ha" class="text-on-surface font-semibold">38,410 Ha</strong>
+                <strong id="card-state-ha" class="text-on-surface font-semibold">1,842.8 Ha</strong>
               </div>
               <div class="flex justify-between text-on-surface-variant">
                 <span>PFMS DBT Disbursed:</span>
-                <strong id="card-state-dbt" class="text-primary font-semibold">₹11,420 Cr</strong>
+                <strong id="card-state-dbt" class="text-primary font-semibold">₹2,845 Cr</strong>
               </div>
               <div class="flex justify-between text-on-surface-variant">
-                <span>Priority Corridors:</span>
-                <span class="text-on-surface truncate text-right max-w-[140px]">Mumbai-Nagpur & WDFC</span>
+                <span>Priority Corridor:</span>
+                <span class="text-on-surface truncate text-right max-w-[140px]">EDFC Dankuni Terminal & NH-319B</span>
               </div>
             </div>
             <div class="mt-spacing-xs pt-spacing-2xs flex items-center justify-between text-[11px] text-primary font-semibold">
@@ -203,8 +239,19 @@
           const pct = p.getAttribute('data-pct');
           const cardState = document.getElementById('card-state-name');
           const cardPct = document.getElementById('card-state-pct');
+          const cardHa = document.getElementById('card-state-ha');
+          const cardDbt = document.getElementById('card-state-dbt');
+
           if (cardState) cardState.textContent = state;
           if (cardPct) cardPct.textContent = `${pct}% Target`;
+
+          if (state === 'West Bengal') {
+            if (cardHa) cardHa.textContent = '1,842.8 Ha';
+            if (cardDbt) cardDbt.textContent = '₹2,845 Cr';
+          } else if (state === 'Maharashtra') {
+            if (cardHa) cardHa.textContent = '38,410 Ha';
+            if (cardDbt) cardDbt.textContent = '₹11,420 Cr';
+          }
         });
 
         p.addEventListener('click', () => {
@@ -216,32 +263,151 @@
       const drillBtn = document.getElementById('btn-drill-state');
       if (drillBtn) {
         drillBtn.addEventListener('click', () => {
-          if (onStateSelect) onStateSelect('Maharashtra');
+          const currentState = document.getElementById('card-state-name')?.textContent || 'West Bengal';
+          if (onStateSelect) onStateSelect(currentState);
         });
       }
     },
 
-    // Render Cadastral Land Parcel Viewer (for District/CALA Dashboard)
+    // 2. Render State Choropleth Map (Districts of West Bengal)
+    renderStateChoropleth: function(containerId, stateName = 'West Bengal', onDistrictSelect) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      // Authentic West Bengal District Polygons (SVG Projection)
+      container.innerHTML = `
+        <div class="relative w-full h-[420px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col p-spacing-sm">
+          <div class="flex items-center justify-between pb-2 border-b border-surface-container">
+            <span class="font-headline-sm text-headline-sm text-primary font-bold">
+              ${stateName} District-Wise Acquisition Progress
+            </span>
+            <span class="text-legal-code font-legal-code text-on-surface-variant font-bold uppercase">
+              Choropleth (Completion Rate)
+            </span>
+          </div>
+
+          <div class="relative flex-1 flex items-center justify-center">
+            <svg class="w-full h-full select-none" viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="dist-glow">
+                  <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.12"/>
+                </filter>
+              </defs>
+
+              <!-- Hooghly District (Highlighted Demo Node) -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Hooghly" data-pct="74.2"
+                       points="210,170 250,150 270,185 245,215 205,200"
+                       fill="#15803d" fill-opacity="0.9" stroke="#ffffff" stroke-width="2">
+                <title>Hooghly (74.2%) - DLLRO Chinsurah / EDFC Terminal</title>
+              </polygon>
+              <text x="225" y="185" fill="#ffffff" font-size="10" font-weight="bold" class="pointer-events-none">Hooghly</text>
+
+              <!-- Howrah District -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Howrah" data-pct="73.8"
+                       points="215,205 255,195 260,230 220,240 210,215"
+                       fill="#15803d" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+                <title>Howrah (73.8%) - Kona Expressway & Salap</title>
+              </polygon>
+              <text x="225" y="222" fill="#ffffff" font-size="9" font-weight="bold" class="pointer-events-none">Howrah</text>
+
+              <!-- Kolkata Metropolitan -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Kolkata" data-pct="87.2"
+                       points="260,205 285,200 290,225 265,228"
+                       fill="#15803d" fill-opacity="0.95" stroke="#ffffff" stroke-width="1.5">
+                <title>Kolkata (87.2%) - KMDA Infrastructure Node</title>
+              </polygon>
+              <text x="268" y="218" fill="#ffffff" font-size="8" font-weight="bold" class="pointer-events-none">Kol</text>
+
+              <!-- North 24 Parganas -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="North 24 Parganas" data-pct="67.2"
+                       points="275,175 320,165 345,210 295,225 280,195"
+                       fill="#d97706" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+                <title>North 24 Parganas (67.2%) - Barasat / Rajarhat</title>
+              </polygon>
+              <text x="295" y="195" fill="#ffffff" font-size="9" font-weight="bold" class="pointer-events-none">North 24 Pgs</text>
+
+              <!-- South 24 Parganas -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="South 24 Parganas" data-pct="60.8"
+                       points="245,235 295,230 330,290 270,310 240,265"
+                       fill="#d97706" fill-opacity="0.8" stroke="#ffffff" stroke-width="1.5">
+                <title>South 24 Parganas (60.8%) - Alipore HQ</title>
+              </polygon>
+              <text x="265" y="275" fill="#ffffff" font-size="9" font-weight="bold" class="pointer-events-none">South 24 Pgs</text>
+
+              <!-- Paschim Bardhaman (Industrial) -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Paschim Bardhaman" data-pct="80.7"
+                       points="110,135 155,125 170,155 125,165"
+                       fill="#15803d" fill-opacity="0.9" stroke="#ffffff" stroke-width="1.5">
+                <title>Paschim Bardhaman (80.7%) - Asansol/Durgapur Industrial Belt</title>
+              </polygon>
+              <text x="120" y="150" fill="#ffffff" font-size="8" font-weight="bold" class="pointer-events-none">P. Bardhaman</text>
+
+              <!-- Purba Bardhaman -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Purba Bardhaman" data-pct="66.6"
+                       points="160,130 215,120 230,165 175,170"
+                       fill="#d97706" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+                <title>Purba Bardhaman (66.6%) - Agricultural Corridor</title>
+              </polygon>
+              <text x="180" y="148" fill="#ffffff" font-size="8" font-weight="bold" class="pointer-events-none">Bardhaman</text>
+
+              <!-- Nadia District -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Nadia" data-pct="62.5"
+                       points="240,115 285,120 295,165 255,160"
+                       fill="#d97706" fill-opacity="0.8" stroke="#ffffff" stroke-width="1.5">
+                <title>Nadia (62.5%) - Krishnanagar / NH-34</title>
+              </polygon>
+              <text x="255" y="142" fill="#ffffff" font-size="9" font-weight="bold" class="pointer-events-none">Nadia</text>
+
+              <!-- Paschim Medinipur -->
+              <polygon class="district-poly cursor-pointer transition-all hover:scale-[1.01]" data-district="Paschim Medinipur" data-pct="61.7"
+                       points="135,190 195,185 205,245 145,240"
+                       fill="#ba1a1a" fill-opacity="0.85" stroke="#ffffff" stroke-width="1.5">
+                <title>Paschim Medinipur (61.7%) - Kharagpur Freight Link</title>
+              </polygon>
+              <text x="150" y="218" fill="#ffffff" font-size="8" font-weight="bold" class="pointer-events-none">Medinipur</text>
+            </svg>
+
+            <!-- District Callout Box -->
+            <div id="district-info-pill" class="absolute bottom-2 right-2 bg-surface-container-high px-3 py-1.5 rounded shadow text-xs font-semibold text-on-surface flex items-center gap-2 border border-outline-variant/30">
+              <span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+              <span id="district-info-text">Selected: Hooghly (74.2% Complete • 7 Projects)</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const distPolys = container.querySelectorAll('.district-poly');
+      distPolys.forEach(dp => {
+        dp.addEventListener('click', () => {
+          const dist = dp.getAttribute('data-district');
+          const pct = dp.getAttribute('data-pct');
+          const infoText = document.getElementById('district-info-text');
+          if (infoText) infoText.textContent = `Selected: ${dist} (${pct}% Complete)`;
+          if (onDistrictSelect) onDistrictSelect(dist);
+        });
+      });
+    },
+
+    // 3. Render Cadastral Land Parcel Viewer (for District/CALA Dashboard)
     renderCadastralViewer: function(containerId, activeParcelId, onParcelSelect) {
       const container = document.getElementById(containerId);
       if (!container) return;
 
       const store = window.NLAMS_STORE;
       const parcels = store ? store.parcels : [];
-      const rawSelected = parcels.find(p => p.id === activeParcelId || (p.properties && p.properties.id === activeParcelId)) || parcels[2] || parcels[0] || {};
-      const selected = rawSelected.properties ? { ...rawSelected.properties, coordinates: rawSelected.properties.svgCoordinates || { x: 290, y: 250 } } : { ...rawSelected };
-      if (!selected.coordinates) {
-        selected.coordinates = { x: 290, y: 250 };
-      }
-      if (!selected.gutNumber) selected.gutNumber = 'Gut No. 143/3A';
-      if (!selected.village) selected.village = 'Shivaji Nagar';
-      if (!selected.statusLabel) selected.statusLabel = 'Scrutiny Pending';
-      if (!selected.ownerName) selected.ownerName = 'Smt. Kamalabai S. Jadhav';
+      const rawSelected = parcels.find(p => p.id === activeParcelId || (p.properties && p.properties.id === activeParcelId)) || parcels[0] || {};
+      const selected = rawSelected.properties ? { ...rawSelected.properties, coordinates: rawSelected.properties.svgCoordinates || { x: 230, y: 190 } } : { ...rawSelected };
+
+      if (!selected.coordinates) selected.coordinates = { x: 230, y: 190 };
+      if (!selected.gutNumber) selected.gutNumber = 'Dag No. 412/1';
+      if (!selected.village) selected.village = 'Dankuni (JL 34)';
+      if (!selected.statusLabel) selected.statusLabel = 'Possessed / Vested';
+      if (!selected.ownerName) selected.ownerName = 'Subrata Ghosh';
       if (!selected.areaHa) selected.areaHa = 1.42;
       if (!selected.areaSqM) selected.areaSqM = 14200;
-      if (!selected.landType) selected.landType = 'Agricultural (Jirayat)';
+      if (!selected.landType) selected.landType = 'Agricultural (Sali / Bastu)';
       if (!selected.overlapPercent) selected.overlapPercent = 100;
-      if (!selected.totalCompensation) selected.totalCompensation = 2840000;
+      if (!selected.totalCompensation) selected.totalCompensation = 31808000;
 
       container.innerHTML = `
         <div class="relative w-full h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30">
@@ -253,58 +419,87 @@
               </pattern>
               
               <linearGradient id="rowBufferGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#133e7c" stop-opacity="0.22" />
-                <stop offset="50%" stop-color="#fe932c" stop-opacity="0.32" />
-                <stop offset="100%" stop-color="#133e7c" stop-opacity="0.22" />
+                <stop offset="0%" stop-color="#133e7c" stop-opacity="0.25" />
+                <stop offset="50%" stop-color="#fe932c" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#133e7c" stop-opacity="0.25" />
               </linearGradient>
             </defs>
 
             <!-- Grid Background -->
             <rect width="100%" height="100%" fill="url(#cadastralGridPattern)"></rect>
 
-            <!-- Proposed 110m Wide Highway Right-of-Way (RoW) Corridor Buffer Polygon -->
-            <polygon points="20,180 620,40 760,110 90,320" fill="url(#rowBufferGrad)"></polygon>
-            <polyline points="20,180 620,40" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
-            <polyline points="90,320 760,110" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
-
-            <!-- Highway Center Line Alignment -->
-            <line x1="55" y1="250" x2="690" y2="75" stroke="#904d00" stroke-width="2" stroke-dasharray="8,6"></line>
-            <text x="310" y="145" transform="rotate(-15 310 145)" fill="#00285b" class="font-legal-code text-legal-code font-bold tracking-widest opacity-80 uppercase">
-              MSRDC Pkg-2 Outer Ring Road 110m RoW Alignment (Chainage: 42+180 to 44+600)
+            <!-- Authentic Mouza Boundaries (Hooghly Acquisition Corridor) -->
+            <!-- Mouza 1: Dankuni (JL 34) -->
+            <path d="M 120,60 L 380,40 L 410,260 L 150,280 Z" fill="#f8fafc" fill-opacity="0.12" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="170" y="75" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+              MOUZA: DANKUNI (JL NO. 34) • CHANDITALA-II
             </text>
 
-            <!-- Cadastral Parcels Layer -->
-            <!-- Parcel 1: Gut 142/1 - Possessed (Green) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-142-1"
-                     points="110,80 230,50 250,150 140,165" fill="#15803d" fill-opacity="0.5" stroke="#15803d" stroke-width="2"></polygon>
-            <text x="145" y="115" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Gut 142/1 [Possessed]</text>
-            <text x="145" y="130" fill="#003112" class="text-label-sm font-label-sm pointer-events-none">0.94 Ha</text>
+            <!-- Mouza 2: Janai (JL 49) -->
+            <path d="M 380,40 L 680,20 L 710,240 L 410,260 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="440" y="55" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+              MOUZA: JANAI (JL NO. 49) • CHANDITALA-II
+            </text>
 
-            <!-- Parcel 2: Gut 142/2 - Awarded (Green/Orange) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-142-2"
-                     points="230,50 350,30 380,120 250,150" fill="#15803d" fill-opacity="0.5" stroke="#15803d" stroke-width="2"></polygon>
-            <text x="270" y="90" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Gut 142/2 [3G Passed]</text>
+            <!-- Mouza 3: Begampur (JL 41) -->
+            <path d="M 150,280 L 410,260 L 440,510 L 170,530 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="180" y="300" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+              MOUZA: BEGAMPUR (JL NO. 41) • SH-13 CORRIDOR
+            </text>
 
-            <!-- Parcel 3: Gut 145 - Cleared -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-145"
-                     points="70,300 190,260 210,380 90,410" fill="#15803d" fill-opacity="0.4" stroke="#15803d" stroke-width="2"></polygon>
-            <text x="105" y="340" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Gut 145 [Cleared]</text>
+            <!-- Mouza 4: Garalgachha (JL 52) -->
+            <path d="M 410,260 L 710,240 L 740,490 L 440,510 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="470" y="280" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+              MOUZA: GARALGACHHA (JL NO. 52) • DANKUNI PS
+            </text>
 
-            <!-- Parcel 4: Gut 144/B - Mutation Err (Orange) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-144-B"
-                     points="380,120 510,95 540,210 410,230" fill="#d97706" fill-opacity="0.45" stroke="#d97706" stroke-width="2"></polygon>
-            <text x="420" y="160" fill="#663500" class="font-legal-code text-legal-code font-bold pointer-events-none">Gut 144/B [Mutation Err]</text>
+            <!-- Proposed 110m Wide EDFC Dankuni Freight Terminal & Rail Linkage Buffer -->
+            <polygon points="30,220 740,90 770,175 60,305" fill="url(#rowBufferGrad)"></polygon>
+            <polyline points="30,220 740,90" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
+            <polyline points="60,305 770,175" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
 
-            <!-- Parcel 5: Gut 147 - Objection / Court Stay (Red) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-147"
-                     points="460,260 590,230 630,360 490,390" fill="#dc2626" fill-opacity="0.55" stroke="#dc2626" stroke-width="2.5"></polygon>
-            <text x="500" y="310" fill="#93000a" class="font-legal-code text-legal-code font-bold pointer-events-none">Gut 147 [CIVIL STAY]</text>
-            <text x="500" y="325" fill="#93000a" class="text-label-sm font-label-sm pointer-events-none">Sec 15 Injunction</text>
+            <!-- Dedicated Freight Rail Center Line Alignment -->
+            <line x1="45" y1="262" x2="755" y2="132" stroke="#fe932c" stroke-width="3" stroke-dasharray="8,6"></line>
+            <text x="240" y="190" transform="rotate(-11 240 190)" fill="#00285b" class="font-legal-code text-legal-code font-bold tracking-widest opacity-90 uppercase">
+              EDFC Dankuni Freight Terminal & Rail Linkage 110m RoW Alignment (Chainage: 0+000 to 18+400)
+            </text>
 
-            <!-- Parcel 6: ACTIVE PARCEL Gut No. 143/3A (Amber/Orange Highlighted) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="GUT-143-3A"
-                     points="210,200 370,165 410,300 240,335" fill="#d97706" fill-opacity="0.65" stroke="#904d00" stroke-width="3" stroke-dasharray="4,2"></polygon>
-            <polygon points="210,200 370,165 410,300 240,335" fill="none" stroke="#ffffff" stroke-width="1.5" class="pointer-events-none"></polygon>
+            <!-- Cadastral Parcels Layer (Grounded in Authentic Hooghly Mouzas) -->
+            <!-- Parcel 1: WB-HGY-DNK-01 (Dankuni JL 34, Dag 412/1) - Possessed (Green) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-01"
+                     points="160,140 280,115 295,215 180,230" fill="#15803d" fill-opacity="0.55" stroke="#15803d" stroke-width="2.5"></polygon>
+            <text x="185" y="175" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/1 [Possessed]</text>
+            <text x="185" y="190" fill="#003112" class="text-label-sm font-label-sm pointer-events-none">Subrata Ghosh</text>
+
+            <!-- Parcel 2: WB-HGY-DNK-02 (Dankuni JL 34, Dag 412/2) - Scrutiny (Amber) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-02"
+                     points="290,110 400,90 415,185 305,205" fill="#d97706" fill-opacity="0.5" stroke="#d97706" stroke-width="2"></polygon>
+            <text x="315" y="145" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/2 [Scrutiny]</text>
+            <text x="315" y="160" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">A. Mukherjee</text>
+
+            <!-- Parcel 3: WB-HGY-JNI-03 (Janai JL 49, Dag 218/4) - Awarded (Blue) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-JNI-03"
+                     points="450,75 580,55 600,160 470,175" fill="#133e7c" fill-opacity="0.55" stroke="#133e7c" stroke-width="2.5"></polygon>
+            <text x="480" y="110" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 218/4 [Awarded]</text>
+            <text x="480" y="125" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">D. Banerjee (Sec 3G)</text>
+
+            <!-- Parcel 4: WB-HGY-BGP-04 (Begampur JL 41, Dag 105/3) - Scrutiny (Amber) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-BGP-04"
+                     points="220,320 340,300 360,400 240,415" fill="#d97706" fill-opacity="0.5" stroke="#d97706" stroke-width="2"></polygon>
+            <text x="245" y="360" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 105/3 [Scrutiny]</text>
+            <text x="245" y="375" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">Mousumi Das</text>
+
+            <!-- Parcel 5: WB-HGY-SNG-05 (Beraberi Singur JL 24, Dag 520/1A) - Awarded (Blue) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-SNG-05"
+                     points="490,270 630,245 660,370 520,390" fill="#133e7c" fill-opacity="0.55" stroke="#133e7c" stroke-width="2.5"></polygon>
+            <text x="525" y="315" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 520/1A [Awarded]</text>
+            <text x="525" y="330" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">P. P. Roy (PHE Scheme)</text>
+
+            <!-- Parcel 6: WB-HWH-SLP-06 (Salap JL 12, Dag 88/2) - Objection / Stay (Red) -->
+            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HWH-SLP-06"
+                     points="360,390 490,370 515,480 385,495" fill="#dc2626" fill-opacity="0.55" stroke="#dc2626" stroke-width="2.5"></polygon>
+            <text x="395" y="435" fill="#93000a" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 88/2 [CIVIL STAY]</text>
+            <text x="395" y="450" fill="#93000a" class="text-label-sm font-label-sm pointer-events-none">T. K. Mondal (Sec 64)</text>
           </svg>
 
           <!-- Selected Active Marker Pin -->
@@ -351,7 +546,7 @@
               </div>
               <div class="flex items-center gap-spacing-xs pt-spacing-xs text-tertiary text-label-sm font-label-sm font-semibold">
                 <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>MahaBhumi GIS & Bhulekh Database Synced</span>
+                <span>BanglarBhumi GIS & WBLA Database Synced</span>
               </div>
             </div>
           </div>
@@ -361,15 +556,15 @@
             <span class="text-legal-code font-legal-code uppercase text-on-surface-variant font-bold tracking-wider mb-spacing-2xs">Active Layers</span>
             <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
               <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>Village Cadastre (1:4000)</span>
+              <span>Mouza Cadastre (1:4000)</span>
             </label>
             <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
               <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>110m RoW Alignment Buffer</span>
+              <span>110m EDFC Alignment Buffer</span>
             </label>
             <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
               <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>Bhulekh Khasra Grid Lines</span>
+              <span>BanglarBhumi Khasra Grid</span>
             </label>
             <div class="pt-spacing-xs border-t border-outline-variant/30 mt-1">
               <button id="btn-export-geojson-gis" class="w-full flex items-center justify-center gap-1 px-2 py-1 bg-primary text-on-primary text-legal-code font-legal-code font-bold rounded hover:bg-primary-container transition-colors shadow-sm">
@@ -398,14 +593,14 @@
       }
     },
 
-    // RFC 7946 GeoJSON Direct File Download Utility
+    // 4. RFC 7946 GeoJSON Direct File Download Utility
     downloadCadastralGeoJSON: function() {
       const store = window.NLAMS_STORE;
       const geojson = store ? store.getCadastralGeoJSON() : { type: "FeatureCollection", features: [] };
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(geojson, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `nlams-cadastral-parcels-${new Date().toISOString().slice(0,10)}.geojson`);
+      downloadAnchor.setAttribute("download", `nlams-hooghly-cadastral-${new Date().toISOString().slice(0,10)}.geojson`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -413,7 +608,7 @@
         window.NLAMS_STORE.logAudit(
           window.NLAMS_STORE.currentUser.name,
           window.NLAMS_STORE.currentUser.badge,
-          'Exported Cadastral Parcel Layer as RFC 7946 GeoJSON FeatureCollection'
+          'Exported Hooghly Cadastral Parcel Layer as RFC 7946 GeoJSON FeatureCollection'
         );
       }
     }

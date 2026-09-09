@@ -7,29 +7,161 @@
 (function(window) {
   'use strict';
 
-  // Seed Projects Data (Multi-State National & State Specific)
+  // Seed Projects Data (West Bengal Hooghly Priority Hub + Multi-State National Corridors)
   const INITIAL_PROJECTS = [
     {
-      id: "REQ-MH-THN-2023-0892",
-      name: "Samruddhi Mahamarg Phase-II Spur",
-      agency: "MSRDC",
-      sector: "Expressway / Linear Infra",
-      state: "Maharashtra",
-      district: "Thane",
-      division: "Kalyan & Bhiwandi Taluka",
-      requiredLandHa: 1480.25,
-      khasraCount: 3420,
+      id: "REQ-WB-HGY-2023-0101",
+      name: "EDFC Land Acquisition (Dankuni Freight Terminal & Rail Linkage)",
+      agency: "DFCCIL / Railways / KMDA",
+      sector: "Dedicated Freight Corridor",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Chanditala-II & Dankuni Municipality",
+      requiredLandHa: 88.40,
+      khasraCount: 64,
       stage: "Possession",
-      statusBadge: "Possession",
-      budgetCr: 2450.0,
-      disbursedCr: 2352.0,
-      percentDisbursed: 96,
-      gazetteDate: "18-Jan-2024",
-      slaStatus: "Complete",
-      affectedFamilies: 2840,
-      rehabilitatedFamilies: 2710,
-      currentMilestone: "Physical Handover Completed",
-      coordinates: { lat: 19.2183, lng: 73.0867 }
+      statusBadge: "Possession (Sec 38)",
+      budgetCr: 450.0,
+      disbursedCr: 380.0,
+      percentDisbursed: 84,
+      gazetteDate: "12-Jan-2024",
+      slaStatus: "Vested in State",
+      affectedFamilies: 240,
+      rehabilitatedFamilies: 232,
+      currentMilestone: "Land Vested in DFCCIL. Rail Spur Construction Commenced.",
+      coordinates: { lat: 22.6850, lng: 88.2910 }
+    },
+    {
+      id: "REQ-WB-HGY-2023-0205",
+      name: "GAIL RoU Natural Gas Pipeline Corridor (Jagatballavpur - Dankuni Spur)",
+      agency: "GAIL (India) Ltd / KMDA",
+      sector: "Energy & Gas Grid",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Chanditala-II (Janai & Begampur)",
+      requiredLandHa: 42.60,
+      khasraCount: 48,
+      stage: "Awarded",
+      statusBadge: "Award (Sec 3G)",
+      budgetCr: 180.0,
+      disbursedCr: 145.0,
+      percentDisbursed: 81,
+      gazetteDate: "18-Mar-2024",
+      slaStatus: "PFMS DBT in Progress",
+      affectedFamilies: 160,
+      rehabilitatedFamilies: 140,
+      currentMilestone: "Section 3G Award Passed. PFMS DBT Payments Active.",
+      coordinates: { lat: 22.7050, lng: 88.2480 }
+    },
+    {
+      id: "REQ-WB-HGY-2024-0318",
+      name: "Varanasi-Kolkata Greenfield Expressway (NH-319B Hooghly Section)",
+      agency: "NHAI (PIU Kolkata)",
+      sector: "Greenfield Expressway",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Singur & Chanditala Alignment",
+      requiredLandHa: 124.50,
+      khasraCount: 112,
+      stage: "Notified",
+      statusBadge: "Notified (Sec 3D)",
+      budgetCr: 520.0,
+      disbursedCr: 180.0,
+      percentDisbursed: 35,
+      gazetteDate: "14-Aug-2024",
+      slaStatus: "Joint Measurement Survey (JMS)",
+      affectedFamilies: 380,
+      rehabilitatedFamilies: 50,
+      currentMilestone: "Section 3D Gazette Published. JMS Schedule Underway.",
+      coordinates: { lat: 22.7500, lng: 88.2700 }
+    },
+    {
+      id: "REQ-WB-HGY-2024-0402",
+      name: "SH-13 Dankuni-Champadanga 4-Lane Industrial Corridor Widening",
+      agency: "PWD (Roads Wing), West Bengal",
+      sector: "Highway Expressway",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Begampur & Chanditala Sub-Division",
+      requiredLandHa: 36.80,
+      khasraCount: 54,
+      stage: "Scrutinized",
+      statusBadge: "Scrutiny Cleared",
+      budgetCr: 210.0,
+      disbursedCr: 45.0,
+      percentDisbursed: 21,
+      gazetteDate: "Pending Gazette",
+      slaStatus: "Awaiting State Gazette Signing",
+      affectedFamilies: 190,
+      rehabilitatedFamilies: 0,
+      currentMilestone: "Digital Scrutiny Approved. Sent to State Gazette.",
+      coordinates: { lat: 22.7310, lng: 88.2650 }
+    },
+    {
+      id: "REQ-WB-HGY-2023-0511",
+      name: "Lower Damodar Flood Drainage & Embankment Resettlement",
+      agency: "Irrigation & Waterways Dept, WB",
+      sector: "Irrigation & Flood Control",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Arambagh & Khanakul Division",
+      requiredLandHa: 62.00,
+      khasraCount: 86,
+      stage: "Possession",
+      statusBadge: "Possession Complete",
+      budgetCr: 160.0,
+      disbursedCr: 150.0,
+      percentDisbursed: 94,
+      gazetteDate: "24-Oct-2023",
+      slaStatus: "Embankment Work Active",
+      affectedFamilies: 210,
+      rehabilitatedFamilies: 210,
+      currentMilestone: "Possession Handed Over. Model R&R Colony Allotted.",
+      coordinates: { lat: 22.8800, lng: 87.7800 }
+    },
+    {
+      id: "REQ-WB-HGY-2024-0619",
+      name: "400/220kV Rishra-Singur Power Transmission Corridor",
+      agency: "WBSEB / WBSETCL",
+      sector: "Power Transmission Grid",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Serampore & Singur Division",
+      requiredLandHa: 28.50,
+      khasraCount: 38,
+      stage: "Submitted",
+      statusBadge: "Submitted (Sec 4)",
+      budgetCr: 140.0,
+      disbursedCr: 0.0,
+      percentDisbursed: 0,
+      gazetteDate: "Pending Scrutiny",
+      slaStatus: "Under CALA Scrutiny",
+      affectedFamilies: 85,
+      rehabilitatedFamilies: 0,
+      currentMilestone: "Form 1 Proposal under Scrutiny by CALA Hooghly",
+      coordinates: { lat: 22.7600, lng: 88.3100 }
+    },
+    {
+      id: "REQ-WB-HGY-2024-0720",
+      name: "Chanditala-Singur Surface Water Treatment & Pipeline Scheme",
+      agency: "Public Health Engineering (PHE), WB",
+      sector: "Water Supply & Sanitation",
+      state: "West Bengal",
+      district: "Hooghly",
+      division: "Singur (Beraberi JL 24)",
+      requiredLandHa: 21.20,
+      khasraCount: 26,
+      stage: "Awarded",
+      statusBadge: "Award (Sec 23/30)",
+      budgetCr: 115.0,
+      disbursedCr: 95.0,
+      percentDisbursed: 83,
+      gazetteDate: "10-May-2024",
+      slaStatus: "DBT Disbursal Active",
+      affectedFamilies: 95,
+      rehabilitatedFamilies: 80,
+      currentMilestone: "Award Passed. Solatium and Interest Credited to Landowners.",
+      coordinates: { lat: 22.8120, lng: 88.2250 }
     },
     {
       id: "REQ-MH-PUN-2024-0112",
@@ -91,33 +223,11 @@
       disbursedCr: 702.0,
       percentDisbursed: 15,
       gazetteDate: "28-Oct-2024",
-      slaStatus: "74d Overdue (CALA Inaction)",
+      slaStatus: "Public Hearing Stage",
       affectedFamilies: 4100,
       rehabilitatedFamilies: 940,
-      currentMilestone: "Pending Joint Measurement Survey (JMS) Sign-off",
+      currentMilestone: "Joint Measurement Survey Completed",
       coordinates: { lat: 25.3176, lng: 82.9739 }
-    },
-    {
-      id: "REQ-MH-PLG-2024-0441",
-      name: "Vadhavan Port Freight Rail-Road Link",
-      agency: "JNPA / Railways",
-      sector: "Ports & Railways",
-      state: "Maharashtra",
-      district: "Palghar",
-      division: "Dahanu & Palghar Coastal",
-      requiredLandHa: 2110.50,
-      khasraCount: 4890,
-      stage: "Notified",
-      statusBadge: "Notified (Sec 3D)",
-      budgetCr: 3890.0,
-      disbursedCr: 1244.8,
-      percentDisbursed: 32,
-      gazetteDate: "12-Oct-2024",
-      slaStatus: "Objections Phase (Sec 3C)",
-      affectedFamilies: 3200,
-      rehabilitatedFamilies: 1200,
-      currentMilestone: "Hearing Objections under Section 3C",
-      coordinates: { lat: 19.9833, lng: 72.7167 }
     },
     {
       id: "REQ-TN-KAN-2024-0220",
@@ -140,353 +250,297 @@
       rehabilitatedFamilies: 2410,
       currentMilestone: "PFMS Direct Benefit Transfer 87% Completed",
       coordinates: { lat: 12.8342, lng: 79.7036 }
-    },
-    {
-      id: "REQ-MH-SOL-2024-0518",
-      name: "Nagpur-Goa Shaktipeeth Expressway Sec-1",
-      agency: "MSRDC",
-      sector: "Expressway / Green Corridor",
-      state: "Maharashtra",
-      district: "Solapur",
-      division: "Pandharpur Alignment",
-      requiredLandHa: 1820.00,
-      khasraCount: 2940,
-      stage: "Scrutinized",
-      statusBadge: "Scrutinized",
-      budgetCr: 2100.0,
-      disbursedCr: 315.0,
-      percentDisbursed: 15,
-      gazetteDate: "02-Nov-2024",
-      slaStatus: "Sec 3A Pending",
-      affectedFamilies: 1980,
-      rehabilitatedFamilies: 420,
-      currentMilestone: "Joint Measurement Survey (JMS) Complete",
-      coordinates: { lat: 17.6599, lng: 75.3218 }
-    },
-    {
-      id: "REQ-RJ-BIK-2024-0994",
-      name: "Green Energy Solar Park Transmission Link",
-      agency: "PGCIL",
-      sector: "Renewable Energy Grid",
-      state: "Rajasthan",
-      district: "Bikaner & Jodhpur",
-      division: "Thar Renewable Corridor",
-      requiredLandHa: 2450.00,
-      khasraCount: 3110,
-      stage: "Notified",
-      statusBadge: "Notified (Sec 3D)",
-      budgetCr: 1850.0,
-      disbursedCr: 592.0,
-      percentDisbursed: 32,
-      gazetteDate: "20-Sep-2024",
-      slaStatus: "31d Overdue (Forest Stage-II)",
-      affectedFamilies: 840,
-      rehabilitatedFamilies: 320,
-      currentMilestone: "Forest Clearance NOC Pending at State Level",
-      coordinates: { lat: 28.0229, lng: 73.3119 }
-    },
-    {
-      id: "REQ-MH-THN-2024-0988",
-      name: "Bhiwandi Multi-Modal Logistic Hub",
-      agency: "MIDC",
-      sector: "Industrial / Warehousing",
-      state: "Maharashtra",
-      district: "Thane",
-      division: "Bhiwandi Sub-Registry",
-      requiredLandHa: 940.00,
-      khasraCount: 1610,
-      stage: "Submitted",
-      statusBadge: "Submitted",
-      budgetCr: 1120.0,
-      disbursedCr: 0.0,
-      percentDisbursed: 0,
-      gazetteDate: "18-Aug-2024",
-      slaStatus: "Delayed by 14d",
-      affectedFamilies: 650,
-      rehabilitatedFamilies: 0,
-      currentMilestone: "Under Digital Scrutiny & SIA Scoping",
-      coordinates: { lat: 19.2967, lng: 73.0631 }
     }
   ];
 
-  // Cadastral Land Parcels (Standard RFC 7946 GeoJSON Feature Objects)
+  // Cadastral Land Parcels (Grounded in Authentic Hooghly Mouzas)
   const INITIAL_GEOJSON_PARCELS = [
     {
       type: "Feature",
-      id: "GUT-142-1",
+      id: "WB-HGY-DNK-01",
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            [73.7380, 18.5910],
-            [73.7420, 18.5900],
-            [73.7430, 18.5940],
-            [73.7390, 18.5950],
-            [73.7380, 18.5910]
+            [88.2910, 22.6850],
+            [88.2950, 22.6830],
+            [88.2960, 22.6870],
+            [88.2920, 22.6880],
+            [88.2910, 22.6850]
           ]
         ]
       },
       properties: {
-        id: "GUT-142-1",
-        gutNumber: "Gut No. 142/1",
-        khasraNo: "K-142/1",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Ramesh Narayan Patil",
-        ownerAadhaar: "9842-5174-8921",
-        ownerMobile: "+91 98450 12418",
-        areaHa: 0.94,
-        areaSqM: 9400,
-        landType: "Jirayat (Agricultural Tier-1)",
+        id: "WB-HGY-DNK-01",
+        gutNumber: "Dag No. 412/1",
+        khasraNo: "RS/LR-412/1",
+        village: "Dankuni (JL 34)",
+        taluka: "Chanditala-II",
+        district: "Hooghly",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2023-0101",
+        projectName: "EDFC Land Acquisition (Dankuni Freight Terminal & Rail Linkage)",
+        ownerName: "Subrata Ghosh",
+        ownerAadhaar: "•••• •••• 1012",
+        ownerMobile: "+91 98301 45210",
+        areaHa: 1.42,
+        areaSqM: 14200,
+        landType: "Agricultural (Sali / Bastu)",
+        baseMarketRatePerSqM: 1000,
+        solatiumPercent: 100,
+        interestPercent: 12,
+        totalCompensation: 31808000,
+        status: "Possessed",
+        statusLabel: "Possessed / Vested (Sec 38)",
+        statusColor: "#15803d",
+        dbtStatus: "Credited (PFMS UTR: #SBINWB2408912)",
+        disbursedDate: "18-Oct-2024",
+        rrEntitlement: "₹50,000 Subsistence Grant + Resettlement Commercial Plot",
+        rrStatus: "Subsistence Grant Credited, Commercial Plot Allotted",
+        overlapPercent: 100,
+        possessionDate: "18-Oct-2024",
+        possessionOfficer: "Smt. Sreemoyee Sen, WBCS (Exe)",
+        svgCoordinates: { x: 230, y: 190, points: "160,140 280,115 295,215 180,230" }
+      }
+    },
+    {
+      type: "Feature",
+      id: "WB-HGY-DNK-02",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [88.2960, 22.6820],
+            [88.3000, 22.6800],
+            [88.3010, 22.6840],
+            [88.2970, 22.6850],
+            [88.2960, 22.6820]
+          ]
+        ]
+      },
+      properties: {
+        id: "WB-HGY-DNK-02",
+        gutNumber: "Dag No. 412/2",
+        khasraNo: "RS/LR-412/2",
+        village: "Dankuni (JL 34)",
+        taluka: "Chanditala-II",
+        district: "Hooghly",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2023-0101",
+        projectName: "EDFC Land Acquisition (Dankuni Freight Terminal & Rail Linkage)",
+        ownerName: "Anirban Mukherjee & Bros",
+        ownerAadhaar: "•••• •••• 4519",
+        ownerMobile: "+91 94332 89120",
+        areaHa: 0.85,
+        areaSqM: 8500,
+        landType: "Commercial / Bastu (Dokan)",
         baseMarketRatePerSqM: 2500,
         solatiumPercent: 100,
         interestPercent: 12,
-        totalCompensation: 4700000,
-        status: "Possessed",
-        statusLabel: "Possessed / Sec 3G Passed",
-        statusColor: "#15803d",
-        dbtStatus: "Credited (PFMS UTR: #SBIN00482910)",
-        disbursedDate: "14-Oct-2024",
-        rrEntitlement: "₹5,00,000 Resettlement Grant + Housing Site Allotment",
-        rrStatus: "Grant Paid, Housing Under Construction",
-        overlapPercent: 92,
-        possessionDate: "20-Oct-2024",
-        possessionOfficer: "R. K. Meena, IAS",
-        svgCoordinates: { x: 180, y: 110, points: "110,80 230,50 250,150 140,165" }
+        totalCompensation: 47600000,
+        status: "Scrutiny",
+        statusLabel: "Under Joint Survey Scrutiny",
+        statusColor: "#d97706",
+        dbtStatus: "Pending CALA Scrutiny Approval",
+        disbursedDate: null,
+        rrEntitlement: "One-time Rehabilitation Grant ₹5,00,000",
+        rrStatus: "Document Scrutiny in Progress",
+        overlapPercent: 85,
+        possessionDate: null,
+        possessionOfficer: null,
+        svgCoordinates: { x: 350, y: 155, points: "290,110 400,90 415,185 305,205" }
       }
     },
     {
       type: "Feature",
-      id: "GUT-142-2",
+      id: "WB-HGY-JNI-03",
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            [73.7420, 18.5900],
-            [73.7460, 18.5890],
-            [73.7470, 18.5930],
-            [73.7430, 18.5940],
-            [73.7420, 18.5900]
+            [88.2480, 22.7050],
+            [88.2520, 22.7030],
+            [88.2540, 22.7070],
+            [88.2490, 22.7080],
+            [88.2480, 22.7050]
           ]
         ]
       },
       properties: {
-        id: "GUT-142-2",
-        gutNumber: "Gut No. 142/2",
-        khasraNo: "K-142/2",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Sunita D. Deshmukh",
-        ownerAadhaar: "4512-8823-1490",
-        ownerMobile: "+91 98231 44512",
-        areaHa: 1.12,
-        areaSqM: 11200,
-        landType: "Bagayat (Irrigated Cash Crop)",
-        baseMarketRatePerSqM: 3000,
+        id: "WB-HGY-JNI-03",
+        gutNumber: "Dag No. 218/4",
+        khasraNo: "RS/LR-218/4",
+        village: "Janai (JL 49)",
+        taluka: "Chanditala-II",
+        district: "Hooghly",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2023-0205",
+        projectName: "GAIL RoU Natural Gas Pipeline Corridor (Jagatballavpur - Dankuni Spur)",
+        ownerName: "Debashis Banerjee",
+        ownerAadhaar: "•••• •••• 8820",
+        ownerMobile: "+91 98310 77412",
+        areaHa: 1.15,
+        areaSqM: 11500,
+        landType: "Agricultural (Aman Sali)",
+        baseMarketRatePerSqM: 900,
         solatiumPercent: 100,
         interestPercent: 12,
-        totalCompensation: 6720000,
+        totalCompensation: 23184000,
         status: "Awarded",
-        statusLabel: "Sec 3G Award Passed",
-        statusColor: "#15803d",
-        dbtStatus: "Disbursal Underway (PFMS Pending Treasury Release)",
-        disbursedDate: "Expected 25-Nov-2024",
-        rrEntitlement: "Annuity Option: ₹30,000/month for 20 years",
-        rrStatus: "Enrolled in National Annuity Portal",
-        overlapPercent: 78,
-        svgCoordinates: { x: 310, y: 85, points: "230,50 350,30 380,120 250,150" }
+        statusLabel: "Award Declared (Sec 3G)",
+        statusColor: "#133e7c",
+        dbtStatus: "PFMS DBT Mandate Generated (#PFMS2024HGY)",
+        disbursedDate: null,
+        rrEntitlement: "Agricultural Skill Training Grant + Soil Restoration",
+        rrStatus: "Approved by CALA",
+        overlapPercent: 100,
+        possessionDate: null,
+        possessionOfficer: null,
+        svgCoordinates: { x: 530, y: 120, points: "450,75 580,55 600,160 470,175" }
       }
     },
     {
       type: "Feature",
-      id: "GUT-143-3A",
+      id: "WB-HGY-BGP-04",
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            [73.7410, 18.5950],
-            [73.7460, 18.5940],
-            [73.7480, 18.5980],
-            [73.7420, 18.5990],
-            [73.7410, 18.5950]
+            [88.2650, 22.7310],
+            [88.2690, 22.7290],
+            [88.2700, 22.7330],
+            [88.2660, 22.7340],
+            [88.2650, 22.7310]
           ]
         ]
       },
       properties: {
-        id: "GUT-143-3A",
-        gutNumber: "Gut No. 143/3A",
-        khasraNo: "K-143/3A",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Anant Govind Joshi & 2 Others",
-        ownerAadhaar: "7741-9231-6450",
-        ownerMobile: "+91 94220 89134",
-        areaHa: 1.42,
-        areaSqM: 14200,
-        landType: "Jirayat (Agricultural Tier-1)",
-        baseMarketRatePerSqM: 2800,
+        id: "WB-HGY-BGP-04",
+        gutNumber: "Dag No. 105/3",
+        khasraNo: "RS/LR-105/3",
+        village: "Begampur (JL 41)",
+        taluka: "Chanditala-II",
+        district: "Hooghly",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2024-0402",
+        projectName: "SH-13 Dankuni-Champadanga 4-Lane Industrial Corridor Widening",
+        ownerName: "Mousumi Das",
+        ownerAadhaar: "•••• •••• 6314",
+        ownerMobile: "+91 97480 33119",
+        areaHa: 0.62,
+        areaSqM: 6200,
+        landType: "Residential (Bastu)",
+        baseMarketRatePerSqM: 1500,
         solatiumPercent: 100,
         interestPercent: 12,
-        totalCompensation: 8420000,
+        totalCompensation: 20832000,
         status: "Scrutiny",
-        statusLabel: "Pending Scrutiny / Joint Measurement Survey (JMS)",
+        statusLabel: "Dossier Review Pending",
         statusColor: "#d97706",
-        dbtStatus: "Awaiting Section 3G Award Declaration",
-        disbursedDate: "Pending CALA Order",
-        rrEntitlement: "Eligible for Alternative Commercial Plot (150 m²)",
-        rrStatus: "Verification in Progress",
-        overlapPercent: 84.2,
-        svgCoordinates: { x: 295, y: 230, points: "210,200 370,165 410,300 240,335" }
+        dbtStatus: "Awaiting JMS Sign-off",
+        disbursedDate: null,
+        rrEntitlement: "Housing Allotment in Model Village",
+        rrStatus: "Under Scrutiny",
+        overlapPercent: 90,
+        possessionDate: null,
+        possessionOfficer: null,
+        svgCoordinates: { x: 290, y: 360, points: "220,320 340,300 360,400 240,415" }
       }
     },
     {
       type: "Feature",
-      id: "GUT-144-B",
+      id: "WB-HGY-SNG-05",
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            [73.7470, 18.5930],
-            [73.7510, 18.5920],
-            [73.7520, 18.5960],
-            [73.7480, 18.5970],
-            [73.7470, 18.5930]
+            [88.2250, 22.8120],
+            [88.2290, 22.8100],
+            [88.2300, 22.8150],
+            [88.2260, 22.8160],
+            [88.2250, 22.8120]
           ]
         ]
       },
       properties: {
-        id: "GUT-144-B",
-        gutNumber: "Gut No. 144/B",
-        khasraNo: "K-144/B",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Baburao Shankarrao Gaikwad",
-        ownerAadhaar: "6120-4491-3012",
-        ownerMobile: "+91 99701 55678",
-        areaHa: 0.85,
-        areaSqM: 8500,
-        landType: "Non-Agricultural (Commercial Permit)",
-        baseMarketRatePerSqM: 4200,
+        id: "WB-HGY-SNG-05",
+        gutNumber: "Dag No. 520/1A",
+        khasraNo: "RS/LR-520/1A",
+        village: "Beraberi (Singur JL 24)",
+        taluka: "Singur",
+        district: "Hooghly",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2024-0720",
+        projectName: "Chanditala-Singur Surface Water Treatment & Pipeline Scheme",
+        ownerName: "Partha Pratim Roy",
+        ownerAadhaar: "•••• •••• 9245",
+        ownerMobile: "+91 98322 11980",
+        areaHa: 1.95,
+        areaSqM: 19500,
+        landType: "Agricultural (Do-Fasli Sali)",
+        baseMarketRatePerSqM: 850,
         solatiumPercent: 100,
         interestPercent: 12,
-        totalCompensation: 7140000,
-        status: "Scrutiny",
-        statusLabel: "Mutation Error in Bhulekh RoR",
-        statusColor: "#d97706",
-        dbtStatus: "On Hold (Bhulekh Mutation Mismatch)",
-        disbursedDate: "Pending Revenue Hearing",
-        rrEntitlement: "Commercial Shop Allotment in Transit Hub",
-        rrStatus: "Claim Filed",
-        overlapPercent: 65,
-        svgCoordinates: { x: 460, y: 160, points: "380,120 510,95 540,210 410,230" }
+        totalCompensation: 37128000,
+        status: "Awarded",
+        statusLabel: "Award Passed (Sec 23/30)",
+        statusColor: "#133e7c",
+        dbtStatus: "Disbursed ₹37.1 Lakhs via PFMS DBT",
+        disbursedDate: "15-Oct-2024",
+        rrEntitlement: "Agricultural Resettlement Assistance",
+        rrStatus: "Approved & Disbursed",
+        overlapPercent: 100,
+        possessionDate: null,
+        possessionOfficer: null,
+        svgCoordinates: { x: 575, y: 315, points: "490,270 630,245 660,370 520,390" }
       }
     },
     {
       type: "Feature",
-      id: "GUT-145",
+      id: "WB-HWH-SLP-06",
       geometry: {
         type: "Polygon",
         coordinates: [
           [
-            [73.7360, 18.5980],
-            [73.7400, 18.5970],
-            [73.7410, 18.6010],
-            [73.7370, 18.6020],
-            [73.7360, 18.5980]
+            [88.2750, 22.6150],
+            [88.2800, 22.6120],
+            [88.2820, 22.6170],
+            [88.2770, 22.6190],
+            [88.2750, 22.6150]
           ]
         ]
       },
       properties: {
-        id: "GUT-145",
-        gutNumber: "Gut No. 145",
-        khasraNo: "K-145",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Vikas Pandurang Shinde",
-        ownerAadhaar: "3184-9021-4756",
-        ownerMobile: "+91 98812 33412",
-        areaHa: 1.30,
-        areaSqM: 13000,
-        landType: "Jirayat (Agricultural)",
-        baseMarketRatePerSqM: 2600,
-        solatiumPercent: 100,
-        interestPercent: 12,
-        totalCompensation: 6760000,
-        status: "Possessed",
-        statusLabel: "Possessed / Cleared",
-        statusColor: "#15803d",
-        dbtStatus: "Credited (PFMS UTR: #HDFC00291845)",
-        disbursedDate: "02-Aug-2024",
-        rrEntitlement: "₹6,50,000 One-time Livelihood Grant",
-        rrStatus: "Disbursed in Full",
-        overlapPercent: 95,
-        svgCoordinates: { x: 140, y: 340, points: "70,300 190,260 210,380 90,410" }
-      }
-    },
-    {
-      type: "Feature",
-      id: "GUT-147",
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [73.7490, 18.5970],
-            [73.7540, 18.5960],
-            [73.7550, 18.6010],
-            [73.7500, 18.6020],
-            [73.7490, 18.5970]
-          ]
-        ]
-      },
-      properties: {
-        id: "GUT-147",
-        gutNumber: "Gut No. 147",
-        khasraNo: "K-147",
-        village: "Hinjewadi",
-        taluka: "Mulshi",
-        district: "Pune",
-        state: "Maharashtra",
-        projectId: "REQ-MH-PUN-2024-0112",
-        projectName: "Pune Metro Line 3 Extension",
-        ownerName: "Mahendra Kulkarni & Legal Heirs",
-        ownerAadhaar: "5512-3891-2094",
-        ownerMobile: "+91 97654 22109",
-        areaHa: 1.75,
-        areaSqM: 17500,
-        landType: "Jirayat with Orchard (Mango & Coconut)",
+        id: "WB-HWH-SLP-06",
+        gutNumber: "Dag No. 88/2",
+        khasraNo: "RS/LR-88/2",
+        village: "Salap (JL 12)",
+        taluka: "Domjur",
+        district: "Howrah",
+        state: "West Bengal",
+        projectId: "REQ-WB-HGY-2023-0101",
+        projectName: "EDFC Land Acquisition (Dankuni Freight Terminal & Rail Linkage)",
+        ownerName: "Tapas Kumar Mondal",
+        ownerAadhaar: "•••• •••• 3190",
+        ownerMobile: "+91 94340 78201",
+        areaHa: 0.78,
+        areaSqM: 7800,
+        landType: "Commercial (Highway Frontage)",
         baseMarketRatePerSqM: 3200,
         solatiumPercent: 100,
         interestPercent: 12,
-        totalCompensation: 11200000,
+        totalCompensation: 55910400,
         status: "Objection",
-        statusLabel: "Civil Stay / Tree Valuation Dispute (Sec 15)",
+        statusLabel: "Civil Court Stay / Sec 64 Reference",
         statusColor: "#dc2626",
-        dbtStatus: "Escrow Deposited (Pending Tribunal Order)",
-        disbursedDate: "In Escrow Account",
-        rrEntitlement: "Dispute under Land Acquisition Tribunal",
-        rrStatus: "Hearing Listed for 18-Nov-2024",
-        overlapPercent: 88,
-        svgCoordinates: { x: 550, y: 310, points: "460,260 590,230 630,360 490,390" }
+        dbtStatus: "Escrow Deposited with Land Acquisition Tribunal",
+        disbursedDate: null,
+        rrEntitlement: "Commercial Rehabilitation Shop Allotment",
+        rrStatus: "Pending Judicial Determination",
+        overlapPercent: 100,
+        possessionDate: null,
+        possessionOfficer: null,
+        svgCoordinates: { x: 440, y: 435, points: "360,390 490,370 515,480 385,495" }
       }
     }
   ];
@@ -643,48 +697,48 @@
       const rolesMap = {
         'central-ministry': {
           role: 'central-ministry',
-          name: 'Dr. A. K. Vardhan, IAS',
+          name: 'Dr. S. K. Verma, Joint Secretary',
           title: 'Nodal Director (Land Systems)',
-          dept: 'Department of Land Resources (DoLR), MoRD',
+          dept: 'Department of Land Resources (DoLR), MoRD, New Delhi',
           jurisdiction: 'Central Ministry (National)',
           badge: 'Central Ministry',
           ownerAadhaar: null
         },
         'state-revenue': {
           role: 'state-revenue',
-          name: 'P. K. Deshmukh, IAS',
-          title: 'Principal Secretary (Revenue & Forest)',
-          dept: 'Revenue & Land Reforms Department, Govt of Maharashtra',
-          jurisdiction: 'Maharashtra State Directorate',
+          name: 'Dr. Amitava Das, IAS',
+          title: 'Principal Secretary (Land & Land Reforms)',
+          dept: 'Land & Land Reforms Dept, Govt of West Bengal (Nabanna)',
+          jurisdiction: 'West Bengal State Directorate',
           badge: 'State Government',
           ownerAadhaar: null
         },
         'dro-cala': {
           role: 'dro-cala',
-          name: 'R. K. Meena, IAS',
-          title: 'Collector & CALA Authority',
-          dept: 'Pune District Administration',
-          jurisdiction: 'Pune District Collectorate',
+          name: 'Smt. Sreemoyee Sen, WBCS (Exe)',
+          title: 'District CALA & DLLRO',
+          dept: 'Hooghly District Collectorate (Chinsurah)',
+          jurisdiction: 'Hooghly District CALA Clearance Desk',
           badge: 'District Authority / CALA',
           ownerAadhaar: null
         },
         'requiring-body': {
           role: 'requiring-body',
-          name: 'Col. Rajesh Verma',
-          title: 'Chief General Manager (Land Acquisition)',
-          dept: 'National Highways Authority of India (NHAI) / MSRDC',
-          jurisdiction: 'Western Corridor Infra Cell',
+          name: 'Er. Sourav Ganguly',
+          title: 'Chief Engineer (Land & Infra)',
+          dept: 'Kolkata Metropolitan Development Authority (KMDA) / DFCCIL',
+          jurisdiction: 'EDFC Dankuni Corridor Cell',
           badge: 'Implementing Agency',
           ownerAadhaar: null
         },
         'citizen': {
           role: 'citizen',
-          name: 'Ramesh Narayan Patil',
+          name: 'Subrata Ghosh',
           title: 'Affected Landowner / Patta Holder',
-          dept: 'Khasra Gut 142/1, Hinjewadi Village',
-          jurisdiction: 'Mulshi Taluka, Pune District',
+          dept: 'Dag No. 412/1, Mouza Dankuni (JL 34)',
+          jurisdiction: 'Chanditala-II, Hooghly District',
           badge: 'Citizen / Landowner',
-          ownerAadhaar: '9842-5174-8921'
+          ownerAadhaar: '9876-5432-1012'
         }
       };
 
@@ -749,36 +803,41 @@
     }
 
     // State Roll-Up Metrics (Maharashtra)
-    getStateStats() {
+    getStateStats(stateName = "West Bengal") {
       let totalBudget = 0;
       let totalDisbursed = 0;
       let totalHa = 0;
       let totalFamilies = 0;
+      let projectCount = 0;
 
       this.projects.forEach(p => {
-        if (p.state === "Maharashtra") {
-          totalBudget += Number(p.budgetCr);
-          totalDisbursed += Number(p.disbursedCr);
-          totalHa += Number(p.requiredLandHa);
-          totalFamilies += Number(p.affectedFamilies);
+        if (p.state.toLowerCase() === stateName.toLowerCase()) {
+          totalBudget += Number(p.budgetCr || 0);
+          totalDisbursed += Number(p.disbursedCr || 0);
+          totalHa += Number(p.requiredLandHa || 0);
+          totalFamilies += Number(p.affectedFamilies || 0);
+          projectCount++;
         }
       });
 
-      const totalAllocatedCr = 14850.0;
-      const disbursedCr = 11420.5 + (totalDisbursed - 8986.0) * 0.1;
-      const pendingCr = totalAllocatedCr - disbursedCr;
-      const percentUtilized = ((disbursedCr / totalAllocatedCr) * 100).toFixed(1);
+      // Default baseline values based on target state
+      const isWB = stateName.toLowerCase().includes('bengal');
+      const totalAllocatedCr = isWB ? 3850.0 : 14850.0;
+      const disbursedCr = isWB ? (2845.0 + totalDisbursed * 0.1) : (11420.5 + totalDisbursed * 0.1);
+      const pendingCr = Math.max(0, totalAllocatedCr - disbursedCr);
+      const percentUtilized = ((disbursedCr / (totalAllocatedCr || 1)) * 100).toFixed(1);
 
       return {
+        stateName,
         allocatedCr: totalAllocatedCr.toLocaleString('en-IN', { minimumFractionDigits: 2 }),
         disbursedCr: disbursedCr.toLocaleString('en-IN', { minimumFractionDigits: 2 }),
         pendingCr: pendingCr.toLocaleString('en-IN', { minimumFractionDigits: 2 }),
         percentUtilized,
-        totalProjects: 214 + (this.projects.length - INITIAL_PROJECTS.length),
-        totalPossessedHa: (38410.6 + totalHa * 0.1).toFixed(1),
-        targetHa: "44,200",
-        familiesCount: 48320 + totalFamilies,
-        avgTurnaroundMonths: "9.4"
+        totalProjects: isWB ? (projectCount || 7) : (projectCount || 12),
+        totalPossessedHa: (isWB ? (1842.8 + totalHa * 0.1) : (38410.6 + totalHa * 0.1)).toFixed(1),
+        targetHa: isWB ? "2,450" : "44,200",
+        familiesCount: isWB ? (3840 + totalFamilies) : (48320 + totalFamilies),
+        avgTurnaroundMonths: isWB ? "8.2" : "9.4"
       };
     }
 

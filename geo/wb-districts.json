@@ -1,0 +1,496 @@
+{
+  "type": "FeatureCollection",
+  "name": "WestBengal_Districts",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "WB_HGY",
+      "properties": {
+        "district_name": "Hooghly",
+        "state": "West Bengal",
+        "census_code": "338",
+        "hq": "Chinsurah",
+        "area_sqkm": 3149,
+        "active_projects": 7,
+        "acquired_ha": 342.8,
+        "budget_cr": 685.0,
+        "disbursed_cr": 412.5,
+        "completion_pct": 74.2,
+        "status": "Priority Corridor"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.08,
+              22.62
+            ],
+            [
+              88.16,
+              22.58
+            ],
+            [
+              88.32,
+              22.65
+            ],
+            [
+              88.42,
+              22.78
+            ],
+            [
+              88.46,
+              22.95
+            ],
+            [
+              88.38,
+              23.08
+            ],
+            [
+              88.24,
+              23.14
+            ],
+            [
+              87.98,
+              23.02
+            ],
+            [
+              87.86,
+              22.88
+            ],
+            [
+              87.92,
+              22.74
+            ],
+            [
+              88.08,
+              22.62
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_HWH",
+      "properties": {
+        "district_name": "Howrah",
+        "state": "West Bengal",
+        "census_code": "341",
+        "hq": "Howrah",
+        "area_sqkm": 1467,
+        "active_projects": 4,
+        "acquired_ha": 188.4,
+        "budget_cr": 420.0,
+        "disbursed_cr": 310.0,
+        "completion_pct": 73.8,
+        "status": "Active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.06,
+              22.42
+            ],
+            [
+              88.2,
+              22.38
+            ],
+            [
+              88.34,
+              22.52
+            ],
+            [
+              88.36,
+              22.65
+            ],
+            [
+              88.28,
+              22.7
+            ],
+            [
+              88.14,
+              22.66
+            ],
+            [
+              87.98,
+              22.56
+            ],
+            [
+              88.06,
+              22.42
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_KOL",
+      "properties": {
+        "district_name": "Kolkata",
+        "state": "West Bengal",
+        "census_code": "342",
+        "hq": "Kolkata",
+        "area_sqkm": 205,
+        "active_projects": 3,
+        "acquired_ha": 45.2,
+        "budget_cr": 510.0,
+        "disbursed_cr": 445.0,
+        "completion_pct": 87.2,
+        "status": "Metropolitan"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.31,
+              22.48
+            ],
+            [
+              88.38,
+              22.46
+            ],
+            [
+              88.42,
+              22.54
+            ],
+            [
+              88.4,
+              22.62
+            ],
+            [
+              88.34,
+              22.63
+            ],
+            [
+              88.31,
+              22.56
+            ],
+            [
+              88.31,
+              22.48
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_N24",
+      "properties": {
+        "district_name": "North 24 Parganas",
+        "state": "West Bengal",
+        "census_code": "337",
+        "hq": "Barasat",
+        "area_sqkm": 4094,
+        "active_projects": 5,
+        "acquired_ha": 240.5,
+        "budget_cr": 580.0,
+        "disbursed_cr": 390.0,
+        "completion_pct": 67.2,
+        "status": "Active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.38,
+              22.62
+            ],
+            [
+              88.52,
+              22.58
+            ],
+            [
+              88.88,
+              22.38
+            ],
+            [
+              89.04,
+              22.6
+            ],
+            [
+              88.88,
+              22.95
+            ],
+            [
+              88.62,
+              23.05
+            ],
+            [
+              88.42,
+              22.9
+            ],
+            [
+              88.38,
+              22.62
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_S24",
+      "properties": {
+        "district_name": "South 24 Parganas",
+        "state": "West Bengal",
+        "census_code": "343",
+        "hq": "Alipore",
+        "area_sqkm": 9960,
+        "active_projects": 4,
+        "acquired_ha": 310.0,
+        "budget_cr": 460.0,
+        "disbursed_cr": 280.0,
+        "completion_pct": 60.8,
+        "status": "Active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.1,
+              22.35
+            ],
+            [
+              88.34,
+              22.46
+            ],
+            [
+              88.52,
+              22.4
+            ],
+            [
+              88.85,
+              22.05
+            ],
+            [
+              88.75,
+              21.6
+            ],
+            [
+              88.2,
+              21.65
+            ],
+            [
+              88.05,
+              22.1
+            ],
+            [
+              88.1,
+              22.35
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_PBD",
+      "properties": {
+        "district_name": "Paschim Bardhaman",
+        "state": "West Bengal",
+        "census_code": "718",
+        "hq": "Asansol",
+        "area_sqkm": 1603,
+        "active_projects": 3,
+        "acquired_ha": 295.0,
+        "budget_cr": 520.0,
+        "disbursed_cr": 420.0,
+        "completion_pct": 80.7,
+        "status": "Industrial Belt"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              86.82,
+              23.68
+            ],
+            [
+              87.18,
+              23.5
+            ],
+            [
+              87.42,
+              23.46
+            ],
+            [
+              87.36,
+              23.72
+            ],
+            [
+              87.06,
+              23.86
+            ],
+            [
+              86.82,
+              23.68
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_EBD",
+      "properties": {
+        "district_name": "Purba Bardhaman",
+        "state": "West Bengal",
+        "census_code": "719",
+        "hq": "Bardhaman",
+        "area_sqkm": 5432,
+        "active_projects": 3,
+        "acquired_ha": 210.0,
+        "budget_cr": 390.0,
+        "disbursed_cr": 260.0,
+        "completion_pct": 66.6,
+        "status": "Agricultural"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              87.52,
+              23.12
+            ],
+            [
+              87.88,
+              23.05
+            ],
+            [
+              88.32,
+              23.35
+            ],
+            [
+              88.2,
+              23.7
+            ],
+            [
+              87.78,
+              23.65
+            ],
+            [
+              87.52,
+              23.12
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_NAD",
+      "properties": {
+        "district_name": "Nadia",
+        "state": "West Bengal",
+        "census_code": "336",
+        "hq": "Krishnanagar",
+        "area_sqkm": 3927,
+        "active_projects": 2,
+        "acquired_ha": 145.0,
+        "budget_cr": 280.0,
+        "disbursed_cr": 175.0,
+        "completion_pct": 62.5,
+        "status": "Active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              88.32,
+              22.95
+            ],
+            [
+              88.58,
+              23.05
+            ],
+            [
+              88.75,
+              23.5
+            ],
+            [
+              88.6,
+              24.1
+            ],
+            [
+              88.35,
+              23.85
+            ],
+            [
+              88.28,
+              23.3
+            ],
+            [
+              88.32,
+              22.95
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "WB_MED",
+      "properties": {
+        "district_name": "Paschim Medinipur",
+        "state": "West Bengal",
+        "census_code": "344",
+        "hq": "Midnapore",
+        "area_sqkm": 6308,
+        "active_projects": 3,
+        "acquired_ha": 225.0,
+        "budget_cr": 340.0,
+        "disbursed_cr": 210.0,
+        "completion_pct": 61.7,
+        "status": "Active"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              86.95,
+              22.35
+            ],
+            [
+              87.45,
+              22.15
+            ],
+            [
+              87.65,
+              22.5
+            ],
+            [
+              87.35,
+              22.85
+            ],
+            [
+              86.85,
+              22.75
+            ],
+            [
+              86.95,
+              22.35
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
