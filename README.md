@@ -1,4 +1,4 @@
-# Real-Time National Land Acquisition & Management System (NLAMS)
+Real-Time National Land Acquisition & Management System (NLAMS)
 ### Department of Land Resources (DoLR), Ministry of Rural Development, Government of India
 
 [![Status](https://img.shields.io/badge/System_Status-STQC_Level--3_Certified-003112?style=flat-square&logo=shield)](https://github.com/Sreemoyee46/ByteCoder)
