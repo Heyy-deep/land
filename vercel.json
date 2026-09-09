@@ -1,9 +1,10 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/((?!js/|css/|assets/|images/).*)",
+      "source": "/((?!js/|css/|assets/|images/|geo/).*)",
       "destination": "/index.html"
     }
   ]
