@@ -123,17 +123,38 @@ The entire land acquisition journey is digitally enforced through a linear 8-sta
 - Modern Web Browser (Google Chrome, Firefox, Edge, Safari).
 
 ### Running Locally
+
+#### 1. Frontend Portal
 ```bash
-# 1. Clone repository
+# Clone repository
 git clone https://github.com/Sreemoyee46/ByteCoder.git
 cd ByteCoder
 
-# 2. Start local HTTP development server
+# Start frontend local HTTP server
 python3 -m http.server 3001
 
-# 3. Open in browser
+# Open in browser
 open http://localhost:3001
 ```
+
+#### 2. Backend REST API (FastAPI + Uvicorn)
+```bash
+# Create and activate Python virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scriptsctivate
+
+# Install backend dependencies
+pip install -r backend/requirements.txt
+
+# (Optional) Start PostgreSQL + PostGIS database container
+docker compose up -d
+
+# Launch FastAPI backend with live reload
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+- **Interactive Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc API Specifications**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Automatic Fallback**: If PostgreSQL/Docker is not running, the backend automatically boots using an embedded local SQLite database (`nlams_local.db`) with zero manual configuration required.
 
 ---
 
