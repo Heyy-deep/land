@@ -7,7 +7,7 @@ Real-Time National Land Acquisition & Management System (NLAMS)
 [![QA](https://img.shields.io/badge/Automated_QA-45%2F45_Passed-006d3a?style=flat-square&logo=checkmarx)](https://github.com/Sreemoyee46/ByteCoder)
 [![Standard](https://img.shields.io/badge/Accessibility-GIGW_3.0_Compliant-133e7c?style=flat-square)](https://github.com/Sreemoyee46/ByteCoder)
 
-A unified, real-time national digital platform that standardizes, transparently executes, and monitors the end-to-end land acquisition lifecycle across India under the **Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013 (RFCTLARR Act, 2013)**.
+A unified, real-time national digital platform that standardizes, transparently executes, and monitors the end-to-end land acquisition lifecycle across India under the **Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013 (RFCTLARR Act, 2013)**..
 
 ---
 
