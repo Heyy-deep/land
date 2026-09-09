@@ -7,7 +7,7 @@
   'use strict';
 
   // Selected Active State
-  let currentViewId = 'view-national'; // Start on National Overview
+  let currentViewId = 'view-national';
   let selectedParcelId = 'GUT-143-3A';
 
   // DOM Elements Cache
@@ -15,9 +15,105 @@
   let navButtons = [];
   let store = window.NLAMS_STORE;
 
+  // ========================================================
+  // ROLE-BASED ACCESS CONTROL (RBAC) CONFIGURATION & ROUTING
+  // ========================================================
+  const ROLE_DASHBOARD_MAP = {
+    'central-ministry': {
+      viewId: 'view-national',
+      route: '/national-dashboard',
+      hash: '#/national-dashboard',
+      roleLabel: 'Central Ministry / Policy Makers',
+      dashboardName: 'National Dashboard'
+    },
+    'state-revenue': {
+      viewId: 'view-state',
+      route: '/state-dashboard',
+      hash: '#/state-dashboard',
+      roleLabel: 'State Government',
+      dashboardName: 'State Dashboard'
+    },
+    'dro-cala': {
+      viewId: 'view-district',
+      route: '/district-dashboard',
+      hash: '#/district-dashboard',
+      roleLabel: 'District Collector / Field Officers',
+      dashboardName: 'District / CALA Dashboard'
+    },
+    'requiring-body': {
+      viewId: 'view-agency',
+      route: '/agency-dashboard',
+      hash: '#/agency-dashboard',
+      roleLabel: 'Project Implementing Agency',
+      dashboardName: 'Implementing Agency Dashboard'
+    },
+    'citizen': {
+      viewId: 'view-citizen',
+      route: '/citizen-dashboard',
+      hash: '#/citizen-dashboard',
+      roleLabel: 'Affected Landowners/Families',
+      dashboardName: 'Citizen Portal'
+    }
+  };
+
+  const HASH_TO_VIEW_MAP = {
+    '#/login': 'view-login',
+    '#/national-dashboard': 'view-national',
+    '#/state-dashboard': 'view-state',
+    '#/district-dashboard': 'view-district',
+    '#/agency-dashboard': 'view-agency',
+    '#/citizen-dashboard': 'view-citizen'
+  };
+
+  const VIEW_TO_HASH_MAP = {
+    'view-login': '#/login',
+    'view-national': '#/national-dashboard',
+    'view-state': '#/state-dashboard',
+    'view-district': '#/district-dashboard',
+    'view-agency': '#/agency-dashboard',
+    'view-citizen': '#/citizen-dashboard'
+  };
+
+  // Nav Tab Template Definitions (Preserves exact DOM classes, markup, and styling)
+  const NAV_TAB_TEMPLATES = {
+    'view-login': '<button data-view="view-login" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">lock</span> SSO Portal</button>',
+    'view-national': '<button data-view="view-national" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">analytics</span> 1. National Dashboard</button>',
+    'view-state': '<button data-view="view-state" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">map</span> 2. State Dashboard</button>',
+    'view-district': '<button data-view="view-district" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">share_location</span> 3. District / CALA</button>',
+    'view-agency': '<button data-view="view-agency" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">add_box</span> 4. Implementing Agency</button>',
+    'view-citizen': '<button data-view="view-citizen" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">badge</span> 5. Citizen Portal</button>'
+  };
+
+  const LOGOUT_TAB_TEMPLATE = '<button id="btn-navbar-logout" class="dash-nav-btn px-spacing-md h-full flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / लॉग आउट</button>';
+
+  function isUserAuthenticated() {
+    return sessionStorage.getItem('nlams_is_authenticated') === 'true';
+  }
+
+  function getUserRole() {
+    return sessionStorage.getItem('nlams_session_role') || store.currentUser?.role || 'central-ministry';
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem('nlams_is_authenticated');
+    sessionStorage.removeItem('nlams_session_role');
+    showToast('Session Terminated', 'Logged out successfully from NLAMS. Returning to SSO Portal.', 'info');
+    renderNavbar();
+    switchView('view-login', true);
+  }
+
   // Initialize Application
   function init() {
     cacheDOM();
+
+    // 1. Session Restoration & RBAC Initialization
+    if (isUserAuthenticated()) {
+      const savedRole = getUserRole();
+      store.setUserRole(savedRole);
+      updateActiveUserBadge(store.currentUser);
+    }
+    renderNavbar();
+
     setupNavigation();
     setupAuthInteractions();
     setupStateDashboard();
@@ -38,8 +134,20 @@
     renderDistrictCALAQueue();
     renderCitizenParcel(selectedParcelId);
 
-    // Initial View
-    switchView('view-national');
+    // Initial View resolution: check session & URL hash
+    const initialHash = window.location.hash;
+    if (isUserAuthenticated()) {
+      const currentRole = getUserRole();
+      const roleConfig = ROLE_DASHBOARD_MAP[currentRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+      switchView(roleConfig.viewId, true);
+    } else if (initialHash && HASH_TO_VIEW_MAP[initialHash]) {
+      switchView(HASH_TO_VIEW_MAP[initialHash], true);
+    } else {
+      switchView('view-login', true);
+    }
+
+    // Register route protection on hash change (Requirement 5)
+    window.addEventListener('hashchange', handleHashRouting);
 
     showToast('National Land Acquisition System Live', 'Connected to NIC MeghRaj Cloud Node DEL-04 with real-time PostgreSQL+PostGIS synchronization.', 'info');
   }
@@ -56,24 +164,157 @@
     navButtons = document.querySelectorAll('.dash-nav-btn');
   }
 
-  // Navigation & View Switching
-  function setupNavigation() {
+  // Dynamic Navbar Rendering (Requirements 2, 3, 4)
+  function renderNavbar() {
+    const navContainer = document.getElementById('main-dash-nav');
+    if (!navContainer) return;
+
+    if (!isUserAuthenticated()) {
+      // Before login (landing/logged-out state): navbar continues showing all tabs as-is (Requirement 4)
+      navContainer.innerHTML = [
+        NAV_TAB_TEMPLATES['view-login'],
+        NAV_TAB_TEMPLATES['view-national'],
+        NAV_TAB_TEMPLATES['view-state'],
+        NAV_TAB_TEMPLATES['view-district'],
+        NAV_TAB_TEMPLATES['view-agency'],
+        NAV_TAB_TEMPLATES['view-citizen']
+      ].join('');
+    } else {
+      // After login (post-login state): render ONLY the ONE tab corresponding to their role's dashboard (Requirements 1, 2, 3)
+      // Hide the other 4 tabs entirely (removed from DOM)
+      const currentRole = getUserRole();
+      const roleConfig = ROLE_DASHBOARD_MAP[currentRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+      const authorizedTabHtml = NAV_TAB_TEMPLATES[roleConfig.viewId];
+
+      navContainer.innerHTML = [
+        authorizedTabHtml,
+        LOGOUT_TAB_TEMPLATE
+      ].join('');
+    }
+
+    navButtons = navContainer.querySelectorAll('.dash-nav-btn');
+
     navButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const viewId = btn.getAttribute('data-view');
-        switchView(viewId);
+        if (viewId) {
+          switchView(viewId);
+        }
       });
     });
 
-    // Header brand link returns to National view
+    const logoutBtn = document.getElementById('btn-navbar-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    highlightActiveNavTab(currentViewId);
+  }
+
+  function highlightActiveNavTab(viewId) {
+    if (!navButtons) return;
+    navButtons.forEach(btn => {
+      if (btn.getAttribute('data-view') === viewId) {
+        btn.classList.add('active-nav-tab');
+      } else {
+        btn.classList.remove('active-nav-tab');
+      }
+    });
+  }
+
+  // Route Protection & Hash Change Handler (Requirement 5)
+  function handleHashRouting() {
+    const rawHash = window.location.hash || '';
+    if (!rawHash) return;
+
+    const targetView = HASH_TO_VIEW_MAP[rawHash];
+    if (!targetView) return;
+
+    if (isUserAuthenticated()) {
+      const userRole = getUserRole();
+      const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+      const allowedViewId = roleConfig.viewId;
+
+      if (targetView === 'view-login') {
+        handleLogout();
+        return;
+      }
+
+      if (targetView !== allowedViewId) {
+        showToast(
+          'Access Denied (403)',
+          `Direct URL navigation blocked: Role '${store.currentUser.badge || userRole}' is restricted to ${roleConfig.dashboardName}.`,
+          'warning'
+        );
+        const correctHash = roleConfig.hash;
+        if (window.location.hash !== correctHash) {
+          window.history.replaceState(null, '', correctHash);
+        }
+        switchView(allowedViewId, true);
+        return;
+      }
+    }
+
+    switchView(targetView);
+  }
+
+  // Navigation & View Switching with RBAC Route Guard
+  function setupNavigation() {
+    // Header brand link returns to authorized dashboard (or SSO if logged out)
     const homeLink = document.getElementById('brand-home-link');
     if (homeLink) {
-      homeLink.addEventListener('click', () => switchView('view-national'));
+      homeLink.addEventListener('click', () => {
+        if (isUserAuthenticated()) {
+          const roleConfig = ROLE_DASHBOARD_MAP[getUserRole()] || ROLE_DASHBOARD_MAP['central-ministry'];
+          switchView(roleConfig.viewId, true);
+        } else {
+          switchView('view-login', true);
+        }
+      });
+    }
+
+    // Header active user badge click allows quick sign out
+    const userBadge = document.querySelector('#active-user-name')?.closest('.flex');
+    if (userBadge) {
+      userBadge.style.cursor = 'pointer';
+      userBadge.title = isUserAuthenticated() ? 'Click to Sign Out' : 'SSO Portal';
+      userBadge.addEventListener('click', () => {
+        if (isUserAuthenticated()) {
+          if (confirm(`Currently signed in as ${store.currentUser.name} (${store.currentUser.badge}). Sign out?`)) {
+            handleLogout();
+          }
+        } else {
+          switchView('view-login', true);
+        }
+      });
     }
   }
 
-  function switchView(viewId) {
+  function switchView(viewId, bypassGuard = false) {
     if (!views[viewId]) return;
+
+    // RBAC Route Protection Middleware (Requirement 5)
+    if (isUserAuthenticated() && !bypassGuard) {
+      const userRole = getUserRole();
+      const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+      const allowedViewId = roleConfig.viewId;
+
+      if (viewId === 'view-login') {
+        handleLogout();
+        return;
+      }
+
+      if (viewId !== allowedViewId) {
+        console.warn(`[RBAC Guard] Access Denied: Role '${userRole}' attempted access to '${viewId}'. Enforcing '${allowedViewId}'.`);
+        showToast(
+          'Access Restricted (403)',
+          `Role-Based Access Control: Your account (${store.currentUser.badge || userRole}) is restricted to ${roleConfig.dashboardName}.`,
+          'warning'
+        );
+        viewId = allowedViewId;
+      }
+    }
+
     currentViewId = viewId;
 
     // Hide all views
@@ -85,31 +326,21 @@
     views[viewId].classList.remove('hidden');
 
     // Update active nav button
-    navButtons.forEach(btn => {
-      if (btn.getAttribute('data-view') === viewId) {
-        btn.classList.add('active-nav-tab');
-      } else {
-        btn.classList.remove('active-nav-tab');
-      }
-    });
+    highlightActiveNavTab(viewId);
 
-    // Auto-align role with view
-    const roleMapping = {
-      'view-national': 'central-ministry',
-      'view-state': 'state-revenue',
-      'view-district': 'dro-cala',
-      'view-agency': 'requiring-body',
-      'view-citizen': 'citizen'
-    };
-
-    if (roleMapping[viewId]) {
-      store.setUserRole(roleMapping[viewId]);
-      updateActiveUserBadge(store.currentUser);
+    // Sync URL hash
+    const targetHash = VIEW_TO_HASH_MAP[viewId];
+    if (targetHash && window.location.hash !== targetHash) {
+      window.history.replaceState(null, '', targetHash);
     }
 
     // Mount GIS components when corresponding view is opened
     if (viewId === 'view-national') {
       window.GISEngine.renderNationalMap('national-gis-map-container', (selectedState) => {
+        if (isUserAuthenticated() && getUserRole() !== 'central-ministry') {
+          showToast('Access Restricted', 'State drilldown view is restricted to Central Ministry / State Revenue.', 'info');
+          return;
+        }
         showToast(`Drilling down to ${selectedState}`, 'Redirecting to State Directorate Dashboard...', 'info');
         switchView('view-state');
       });
@@ -143,59 +374,51 @@
     const iconColor = type === 'success' ? 'text-tertiary' : type === 'warning' ? 'text-secondary' : 'text-primary';
 
     toast.innerHTML = `
-      <span class="material-symbols-outlined ${iconColor} text-2xl shrink-0">${icon}</span>
-      <div class="flex flex-col min-w-0">
-        <span class="font-label-md text-label-md font-bold text-primary">${title}</span>
-        <span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">${message}</span>
+      <span class="material-symbols-outlined text-xl ${iconColor} shrink-0">${icon}</span>
+      <div class="flex flex-col gap-spacing-2xs flex-1">
+        <span class="font-label-md text-label-md font-bold text-on-surface leading-tight">${title}</span>
+        <span class="font-body-sm text-body-sm text-on-surface-variant leading-snug">${message}</span>
       </div>
-      <button class="ml-auto text-on-surface-variant hover:text-on-surface text-sm">&times;</button>
+      <button class="text-on-surface-variant hover:text-on-surface shrink-0" onclick="this.parentElement.remove()">
+        <span class="material-symbols-outlined text-base">close</span>
+      </button>
     `;
 
-    toast.querySelector('button').addEventListener('click', () => {
-      toast.remove();
-    });
-
     tray.appendChild(toast);
-
-    // Animate in
     setTimeout(() => {
       toast.classList.remove('translate-x-4', 'opacity-0');
-    }, 20);
+    }, 10);
 
-    // Auto remove after 5 seconds
     setTimeout(() => {
       toast.classList.add('opacity-0', 'translate-x-4');
       setTimeout(() => toast.remove(), 300);
-    }, 5000);
+    }, 4500);
   }
 
-  // Reactive Store Update Listener
+  // Reactive Store Dispatch Listener
   function handleStoreUpdate(event, payload) {
     renderNationalDashboard();
     renderStateProjectsTable();
     renderDistrictCALAQueue();
-    renderCitizenParcel(selectedParcelId);
-
-    if (currentViewId === 'view-district') {
-      mountDistrictGIS();
+    if (selectedParcelId) {
+      renderCitizenParcel(selectedParcelId);
     }
 
-    // Trigger specific feedback toasts based on statutory events
-    switch(event) {
+    switch (event) {
       case 'PROPOSAL_SUBMITTED':
-        showToast('New Acquisition Proposal Generated', `[${payload.id}] ${payload.name} routed to District CALA queue for digital scrutiny.`, 'success');
+        showToast('New Acquisition Proposal Queued', `Project ${payload.id} submitted for initial scrutiny.`, 'info');
         break;
       case 'SCRUTINY_APPROVED':
-        showToast('Digital Scrutiny Approved', `${payload.name} verified against MahaBhumi cadastral records. Ready for State Section 11/19 Gazette.`, 'success');
+        showToast('Digital Scrutiny Cleared', `${payload.gutNumber} passed land record validation against Bhulekh API.`, 'success');
         break;
       case 'NOTIFICATION_ISSUED':
-        showToast('Statutory Gazette Published', `Section 3D Notification signed for ${payload.name}. RoW corridor geo-tagged on GIS.`, 'success');
+        showToast('Section 11/19 Gazette Published', `Statutory declaration issued under e-Sign DSC Token.`, 'info');
         break;
       case 'AWARD_DECLARED':
-        showToast('Section 3G Award Declared', `Statutory compensation computed with 100% solatium for ${payload.name}. Ready for PFMS DBT.`, 'success');
+        showToast('Section 3G Award Declared', `Award determination completed with 100% solatium & statutory interest.`, 'success');
         break;
       case 'COMPENSATION_DISBURSED':
-        showToast('Direct Benefit Transfer (DBT) Credited', `Compensation credited to ${payload.ownerName} for ${payload.gutNumber}. PFMS Ledger synced.`, 'success');
+        showToast('PFMS DBT Fund Disbursed', `Direct Benefit Transfer remitted to Aadhaar-linked bank account.`, 'success');
         break;
       case 'POSSESSION_CONFIRMED':
         showToast('Physical Possession Handed Over', `${payload.gutNumber} confirmed by Field Officer. Cadastral map updated to Possessed (Green).`, 'success');
@@ -206,7 +429,7 @@
     }
   }
 
-  // 1. SSO Portal & Login Controller
+  // 1. SSO Portal & Login Controller (Requirements 1, 6)
   function setupAuthInteractions() {
     const roleSelect = document.getElementById('user-role-select');
     const roleDesc = document.getElementById('role-desc');
@@ -263,33 +486,40 @@
       });
     });
 
-    // Login Form Submission -> Redirect to matching dashboard
+    // Login Form Submission -> Assign role, update navbar with RBAC & navigate (Requirements 1, 2, 6)
     const loginForm = document.getElementById('nlams-auth-form');
     if (loginForm) {
       loginForm.addEventListener('submit', () => {
         const selectedRole = roleSelect ? roleSelect.value : 'central-ministry';
+
+        // Set session state
+        sessionStorage.setItem('nlams_is_authenticated', 'true');
+        sessionStorage.setItem('nlams_session_role', selectedRole);
         store.setUserRole(selectedRole);
+        updateActiveUserBadge(store.currentUser);
 
-        const targetViews = {
-          'central-ministry': 'view-national',
-          'state-revenue': 'view-state',
-          'dro-cala': 'view-district',
-          'requiring-body': 'view-agency',
-          'citizen': 'view-citizen'
-        };
+        // Render RBAC navbar (removes all other 4 dashboard tabs)
+        renderNavbar();
 
-        showToast('e-KYC Authentication Successful', `Authenticated via UIDAI OTP. Redirecting to ${store.currentUser.badge} Dashboard...`, 'success');
-        switchView(targetViews[selectedRole] || 'view-national');
+        // Redirect to authorized dashboard
+        const roleConfig = ROLE_DASHBOARD_MAP[selectedRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+        showToast('e-KYC Authentication Successful', `Authenticated via UIDAI OTP as ${store.currentUser.badge}. Redirecting to ${roleConfig.dashboardName}...`, 'success');
+        switchView(roleConfig.viewId, true);
       });
     }
 
-    // DigiLocker Login Button
+    // DigiLocker Login Button -> Authenticates as Citizen
     const digiBtn = document.getElementById('btn-digilocker-login');
     if (digiBtn) {
       digiBtn.addEventListener('click', () => {
-        showToast('MeriPehchaan SSO Connected', 'Fetched Aadhaar and Land Ownership token from DigiLocker repository.', 'info');
+        sessionStorage.setItem('nlams_is_authenticated', 'true');
+        sessionStorage.setItem('nlams_session_role', 'citizen');
         store.setUserRole('citizen');
-        switchView('view-citizen');
+        updateActiveUserBadge(store.currentUser);
+        renderNavbar();
+
+        showToast('MeriPehchaan SSO Connected', 'Fetched Aadhaar and Land Ownership token from DigiLocker repository.', 'info');
+        switchView('view-citizen', true);
       });
     }
   }
