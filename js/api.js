@@ -139,6 +139,12 @@
       return this._respond(200, confirmed, `Field possession completed. Title vested in State under Section 16 of RFCTLARR Act 2013.`);
     }
 
+    // POST /api/v1/rnr/complete - Marks R&R resettlement complete for displaced families
+    async completeResettlement(projectId, familiesCount, actor) {
+      const updated = this.store.completeResettlement(projectId, familiesCount, actor);
+      return this._respond(200, updated, `R&R Resettlement marked complete for ${familiesCount || 120} families.`);
+    }
+
     // GET /api/v1/parcels/citizen - Strictly returns parcels belonging to authenticated citizen
     async getCitizenParcels(citizenAadhaarHash) {
       const user = this.store.currentUser;

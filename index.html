@@ -346,6 +346,7 @@
                   <option value="dro-cala">Competent Authority / District Revenue Officer (DRO / CALA)</option>
                   <option value="requiring-body">Land Requiring Body (NHAI, Railways, Defence, State Agencies)</option>
                   <option value="citizen">Citizen / Land Owner / Affected Family (नागरिक / भू-स्वामी)</option>
+                  <option value="rehab-authority">Rehabilitation & Resettlement Authority (पुनर्वास प्राधिकरण)</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
               </div>
@@ -1640,15 +1641,22 @@
                     Reject Proposal
                   </button>
                 </div>
-                <!-- Row 3: Disburse & Possess -->
+                <!-- Row 3: Disburse & R&R Resettlement -->
                 <div class="grid grid-cols-2 gap-spacing-sm pt-spacing-2xs">
                   <button id="btn-cala-disburse" class="py-spacing-sm px-spacing-md bg-surface-container-high text-on-surface hover:bg-surface-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm border border-outline-variant/30">
                     <span class="material-symbols-outlined text-[18px]">payments</span>
                     Disburse PFMS DBT
                   </button>
-                  <button id="btn-cala-possession" class="py-spacing-sm px-spacing-md bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary hover:text-on-tertiary rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                  <button id="btn-cala-rnr" class="py-spacing-sm px-spacing-md bg-secondary text-on-secondary hover:bg-secondary-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">family_restroom</span>
+                    R&R Resettlement
+                  </button>
+                </div>
+                <!-- Row 4: Final Possession (Sec 16) -->
+                <div class="pt-spacing-2xs">
+                  <button id="btn-cala-possession" class="w-full py-spacing-sm px-spacing-md bg-tertiary-fixed text-on-tertiary-fixed hover:bg-tertiary hover:text-on-tertiary rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
                     <span class="material-symbols-outlined text-[18px]">verified</span>
-                    Mark Possessed (Sec 16)
+                    Field Possession Checklist (Sec 16 Title Vesting)
                   </button>
                 </div>
               </div>
@@ -1898,6 +1906,91 @@
                 <button type="submit" id="btn-confirm-possession-final" disabled class="px-spacing-lg py-spacing-xs rounded bg-tertiary text-on-tertiary font-label-md text-label-md font-bold transition-all shadow-md flex items-center gap-1 opacity-50 cursor-not-allowed">
                   <span class="material-symbols-outlined text-[18px]">verified</span>
                   Confirm Physical Possession
+                </button>
+              </div>
+            </form>
+          </div>
+        <!-- ======================================================== -->
+        <!-- MODAL 3: STATUTORY R&R RESETTLEMENT MANAGEMENT MODAL -->
+        <!-- ======================================================== -->
+        <div id="modal-rnr-resettlement" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+          <div class="bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/40 max-w-2xl w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <!-- Header -->
+            <div class="bg-secondary text-on-secondary px-spacing-lg py-spacing-md flex items-center justify-between shrink-0">
+              <div class="flex items-center gap-spacing-xs">
+                <span class="material-symbols-outlined text-[24px]">family_restroom</span>
+                <div>
+                  <h3 class="font-headline-sm text-headline-sm font-bold text-on-secondary">Section 31 Statutory R&R Resettlement Management</h3>
+                  <span class="text-legal-code font-legal-code text-on-secondary/80 uppercase">RFCTLARR Act 2013 • Housing & Livelihood Rehabilitation</span>
+                </div>
+              </div>
+              <button type="button" id="btn-close-rnr-modal" class="text-on-secondary/80 hover:text-on-secondary p-1 rounded">
+                <span class="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            <form id="form-rnr-resettlement" class="p-spacing-lg space-y-spacing-md">
+              <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30 flex justify-between items-center">
+                <div>
+                  <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Target Project Scheme</span>
+                  <strong id="rnr-project-title" class="text-primary font-bold">Pune Metro Line 3 Extension (Pkg 2)</strong>
+                </div>
+                <span class="px-spacing-xs py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-legal-code text-legal-code font-bold">
+                  Resettlement Wing
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-spacing-md">
+                <div class="space-y-1">
+                  <label class="font-label-sm text-label-sm text-on-surface-variant font-bold" for="rnr-families-count">
+                    Displaced Families to Resettle *
+                  </label>
+                  <input type="number" id="rnr-families-count" value="120" min="1" required class="w-full bg-surface-container-lowest text-on-surface px-spacing-sm py-1.5 rounded border border-outline-variant font-label-md text-label-md outline-none focus:bg-surface-container-low"/>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-label-sm text-label-sm text-on-surface-variant font-bold" for="rnr-officer-name">
+                    Rehabilitation Officer *
+                  </label>
+                  <input type="text" id="rnr-officer-name" value="S. V. Deshmukh, Dy. Collector (R&R)" required class="w-full bg-surface-container-lowest text-on-surface px-spacing-sm py-1.5 rounded border border-outline-variant font-label-md text-label-md outline-none focus:bg-surface-container-low"/>
+                </div>
+              </div>
+
+              <!-- Statutory Entitlement Checkboxes -->
+              <div class="space-y-spacing-sm">
+                <label class="font-label-sm text-label-sm text-primary font-bold block">
+                  Mandatory Statutory R&R Entitlements Verified:
+                </label>
+
+                <label class="flex items-start gap-spacing-sm p-spacing-sm bg-surface-container-low hover:bg-surface-container rounded border border-outline-variant/30 cursor-pointer">
+                  <input type="checkbox" id="chk-rnr-housing" checked required class="w-4 h-4 mt-0.5 accent-secondary"/>
+                  <span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    <strong>1. Alternative Housing / Plot Allotment:</strong> Pucca constructed dwelling (Min 50 m²) or ₹1.5 Lakh housing grant in model colony.
+                  </span>
+                </label>
+
+                <label class="flex items-start gap-spacing-sm p-spacing-sm bg-surface-container-low hover:bg-surface-container rounded border border-outline-variant/30 cursor-pointer">
+                  <input type="checkbox" id="chk-rnr-allowance" checked required class="w-4 h-4 mt-0.5 accent-secondary"/>
+                  <span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    <strong>2. One-Time Resettlement Allowance:</strong> ₹50,000 per displaced rural family disbursed via Direct Benefit Transfer.
+                  </span>
+                </label>
+
+                <label class="flex items-start gap-spacing-sm p-spacing-sm bg-surface-container-low hover:bg-surface-container rounded border border-outline-variant/30 cursor-pointer">
+                  <input type="checkbox" id="chk-rnr-subsistence" checked required class="w-4 h-4 mt-0.5 accent-secondary"/>
+                  <span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                    <strong>3. Subsistence & Livelihood Annuity:</strong> ₹3,000 per month for 12 months or job skill training quota enrolled.
+                  </span>
+                </label>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-end gap-spacing-sm pt-spacing-xs border-t border-surface-container">
+                <button type="button" id="btn-cancel-rnr" class="px-spacing-md py-spacing-xs rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold">
+                  Cancel
+                </button>
+                <button type="submit" id="btn-confirm-rnr-final" class="px-spacing-lg py-spacing-xs rounded bg-secondary text-on-secondary hover:bg-secondary-container font-label-md text-label-md font-bold transition-all shadow-md flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[18px]">verified</span>
+                  Confirm & Mark R&R Complete
                 </button>
               </div>
             </form>

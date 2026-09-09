@@ -53,6 +53,13 @@
       hash: '#/citizen-dashboard',
       roleLabel: 'Affected Landowners/Families',
       dashboardName: 'Citizen Portal'
+    },
+    'rehab-authority': {
+      viewId: 'view-district',
+      route: '/district-dashboard',
+      hash: '#/district-dashboard',
+      roleLabel: 'Rehabilitation Authority (R&R Resettlement)',
+      dashboardName: 'R&R Resettlement Desk'
     }
   };
 
@@ -461,6 +468,9 @@
       case 'OBJECTION_FILED':
         showToast('Section 15 Objection Registered', `Hearing listed before CALA Pune for ${payload.khasraNo}.`, 'warning');
         break;
+      case 'RR_COMPLETED':
+        showToast('R&R Resettlement Completed', `Rehabilitated ${payload.familiesCount} displaced families with alternative housing & grants under Section 31.`, 'success');
+        break;
     }
   }
 
@@ -475,7 +485,8 @@
       'dro-cala': 'CALA / DRO Authority: Enter Award Enquiry proceedings, upload Section 19 declaration maps, and issue formal land vesting orders.',
       'requiring-body': 'Requiring Body (NHAI/Railways): Submit Form 1 acquisition proposals, upload CAD/GIS shapefiles, and remit compensation deposits.',
       'state-revenue': 'State Revenue Dept: Validate RoR/Jamabandi mutations, verify cadastral boundaries, and monitor tehsil-level pendency.',
-      'central-ministry': 'DoLR Apex Dashboard: Review national multi-state mega-corridor status, oversee MIS disbursal audits, and policy reports.'
+      'central-ministry': 'DoLR Apex Dashboard: Review national multi-state mega-corridor status, oversee MIS disbursal audits, and policy reports.',
+      'rehab-authority': 'Rehabilitation Authority: Oversee Section 31 resettlement schemes, assign model colony housing, and disburse subsistence grants.'
     };
 
     if (roleSelect && roleDesc) {
@@ -1276,6 +1287,48 @@
           mountDistrictGIS();
         } else {
           showToast('Verification Incomplete', res.message, 'warning');
+        }
+      });
+    }
+
+    // --- 7D. Statutory R&R Resettlement Modal ---
+    window.openRNRModal = function(projectId) {
+      const proj = store.projects.find(p => p.id === projectId) || store.projects[0];
+      const titleEl = document.getElementById('rnr-project-title');
+      if (titleEl && proj) titleEl.textContent = `${proj.name} (${proj.district})`;
+      const famInput = document.getElementById('rnr-families-count');
+      if (famInput && proj) famInput.value = proj.affectedFamilies || 120;
+      const modal = document.getElementById('modal-rnr-resettlement');
+      if (modal) modal.classList.remove('hidden');
+    };
+
+    const btnCalaRnr = document.getElementById('btn-cala-rnr');
+    if (btnCalaRnr) {
+      btnCalaRnr.addEventListener('click', () => {
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-MH-PUN-2023-0892';
+        window.openRNRModal(projId);
+      });
+    }
+
+    const closeRnrBtn = document.getElementById('btn-close-rnr-modal');
+    const cancelRnrBtn = document.getElementById('btn-cancel-rnr');
+    if (closeRnrBtn) closeRnrBtn.addEventListener('click', () => document.getElementById('modal-rnr-resettlement')?.classList.add('hidden'));
+    if (cancelRnrBtn) cancelRnrBtn.addEventListener('click', () => document.getElementById('modal-rnr-resettlement')?.classList.add('hidden'));
+
+    const rnrForm = document.getElementById('form-rnr-resettlement');
+    if (rnrForm) {
+      rnrForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const count = document.getElementById('rnr-families-count')?.value || 120;
+        const officer = document.getElementById('rnr-officer-name')?.value || store.currentUser.name;
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-MH-PUN-2023-0892';
+
+        const res = await window.NLAMS_API.completeResettlement(projId, count, officer);
+        if (res.ok) {
+          document.getElementById('modal-rnr-resettlement')?.classList.add('hidden');
+          showToast('R&R Complete', `Successfully marked R&R complete for ${count} displaced families under Section 31.`, 'success');
         }
       });
     }

@@ -772,8 +772,44 @@
         coordinates: { lat: 18.5204, lng: 73.8567 }
       };
 
+      const gutNum = `Gut No. ${Math.floor(150 + Math.random()*250)}/${String.fromCharCode(65 + Math.floor(Math.random()*6))}`;
+      const newParcel = {
+        type: "Feature",
+        id: `GUT-${Math.floor(200 + Math.random()*800)}`,
+        geometry: {
+          type: "Polygon",
+          coordinates: [[[73.85, 18.52], [73.86, 18.52], [73.86, 18.53], [73.85, 18.53], [73.85, 18.52]]]
+        },
+        properties: {
+          id: `GUT-${Math.floor(200 + Math.random()*800)}`,
+          gutNumber: gutNum,
+          village: 'Hinjewadi Sector 4',
+          taluka: 'Haveli',
+          district: data.district || 'Pune',
+          ownerName: 'M/s Greenfield Agritech & Sh. D. V. Kulkarni',
+          ownerAadhaar: '•••• •••• 9102',
+          areaHa: parseFloat(data.requiredLandHa) || 12.4,
+          areaSqM: Math.round((parseFloat(data.requiredLandHa) || 12.4) * 10000),
+          landType: 'Dry Agricultural (Jirayat)',
+          marketRatePerSqM: 650,
+          baseMarketValue: 8060000,
+          solatiumAmount: 8060000,
+          additionalInterest: 967200,
+          totalCompensation: 17087200,
+          dbtStatus: 'Pending Section 3G Award',
+          status: 'Scrutiny',
+          statusLabel: 'Pending Scrutiny',
+          statusColor: '#d97706',
+          overlapPercent: 100,
+          projectId: newId,
+          projectName: data.projectName,
+          svgCoordinates: { x: 380, y: 160 }
+        }
+      };
+
       this.projects.unshift(newProject);
-      this.logAudit(this.currentUser.name, 'Implementing Agency', `Submitted Acquisition Proposal [${newId}]: ${newProject.name}`);
+      this.parcels.unshift(newParcel);
+      this.logAudit(this.currentUser.name, 'Implementing Agency', `Submitted Acquisition Proposal [${newId}]: ${newProject.name} (${gutNum})`);
       this.dispatch('PROPOSAL_SUBMITTED', newProject);
       return newProject;
     }
@@ -891,6 +927,23 @@
       this.logAudit(officerName || this.currentUser.name, 'Field Survey Officer', `Confirmed physical possession for ${props.gutNumber} [Vesting under Sec 16]`);
       this.dispatch('POSSESSION_CONFIRMED', props);
       return props;
+    }
+
+    // Action: Complete Rehabilitation & Resettlement (R&R)
+    completeResettlement(projectId, familiesCount, officerName) {
+      const proj = this.projects.find(p => p.id === projectId) || this.projects[0];
+      const count = parseInt(familiesCount) || (proj ? proj.affectedFamilies : 120);
+      if (proj) {
+        proj.rehabilitatedFamilies = count;
+        proj.currentMilestone = `R&R Complete: ${count} Displaced Families Resettled with Housing & Grants`;
+      }
+      this.logAudit(
+        officerName || this.currentUser.name,
+        'Rehabilitation Authority',
+        `Completed R&R Resettlement for [${proj ? proj.id : 'PUN-METRO'}]: ${count} Families Relocated to Model Colony with Housing & Grants`
+      );
+      this.dispatch('RR_COMPLETED', { project: proj, familiesCount: count });
+      return proj;
     }
 
     // Action: File Objection
