@@ -11,7 +11,7 @@ A unified, real-time national digital platform that standardizes, transparently 
 
 ---
 
-## 🏛️ System Architecture
+## 🏛️ System Architecture 
 
 NLAMS operates on a **Single Source of Truth** architecture powered by a centralized reactive state store with RFC 7946 GeoJSON spatial geometries, automated statutory rollups, and strict Role-Based Access Control (RBAC):
 
