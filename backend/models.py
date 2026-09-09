@@ -185,6 +185,17 @@ class Objection(Base):
     action_taken = Column(Text, default="CALA Notice Issued to Requiring Body")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+
+class OTPCode(Base):
+    __tablename__ = "otp_codes"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    identifier = Column(String(100), index=True, nullable=False)  # Aadhaar UID, mobile, or email
+    otp = Column(String(10), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 def model_to_dict(obj):
     if not obj:
         return None

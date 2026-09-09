@@ -224,6 +224,24 @@
     }
   }
 
+  // Configurable backend URL for deployed Render backend (*.onrender.com) or local development
+  let API_BASE_URL = window.NLAMS_API_URL || 
+    (typeof localStorage !== 'undefined' && localStorage.getItem('nlams_backend_url')) || 
+    '';
+
+  window.setNLAMSBackendUrl = function(url) {
+    API_BASE_URL = (url || '').replace(/\/+$/, '');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('nlams_backend_url', API_BASE_URL);
+    }
+    console.log('[NLAMS API] Backend URL updated to:', API_BASE_URL || 'Local In-Memory Mode');
+    return API_BASE_URL;
+  };
+
+  window.getNLAMSBackendUrl = function() {
+    return API_BASE_URL;
+  };
+
   window.NLAMS_API = new NLAMSAPI(window.NLAMS_STORE);
 
 })(window);

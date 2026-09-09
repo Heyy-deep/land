@@ -14,3 +14,6 @@ nlams_local.db
 *.sqlite3
 .env
 uploads/
+
+venv/
+.venv/
