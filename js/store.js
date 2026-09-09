@@ -1,6 +1,6 @@
 /**
  * NLAMS - Central Reactive In-Memory Database & Event Bus
- * Simulating PostgreSQL + PostGIS with RFC 7946 GeoJSON spatial geometries
+ * Shared Statutory Store with RFC 7946 GeoJSON spatial geometries
  * Department of Land Resources (DoLR), Ministry of Rural Development, GoI
  */
 
@@ -523,7 +523,7 @@
   const INITIAL_AUDIT = [
     {
       timestamp: "Today, 14:32:05 IST",
-      actor: "NIC MeghRaj Node DEL-04",
+      actor: "NIC Central Cloud Registry",
       role: "System Service",
       action: "PFMS DBT Reconciliation Live Sync Completed (48,320 Transactions)",
       hash: "SHA256: 7f9a20b9c3e41c88d92a017e81"
@@ -550,6 +550,13 @@
       this.parcels = JSON.parse(localStorage.getItem('nlams_parcels_v2')) || INITIAL_GEOJSON_PARCELS;
       this.objections = JSON.parse(localStorage.getItem('nlams_objections_v2')) || INITIAL_OBJECTIONS;
       this.audit = JSON.parse(localStorage.getItem('nlams_audit_v2')) || INITIAL_AUDIT;
+      this.rnrFamilies = JSON.parse(localStorage.getItem('nlams_rnr_families_v2')) || [
+        { id: 'FAM-001', headName: 'Sh. Ramesh Narayan Patil', members: 5, category: 'Small Farmer / Landless', plotNo: 'Plot #B-14 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
+        { id: 'FAM-002', headName: 'Smt. Shantabai Tukaram Shinde', members: 4, category: 'Agricultural Laborer', plotNo: 'Plot #B-15 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
+        { id: 'FAM-003', headName: 'Sh. Dattatraya V. Kulkarni', members: 6, category: 'Titleholder Farmer', plotNo: 'Plot #C-08 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
+        { id: 'FAM-004', headName: 'Sh. Suresh Baban Jadhav', members: 3, category: 'Artisan / Tenant', plotNo: 'Plot #A-22 (Hinjewadi Model Colony)', housingGrant: 'In Scrutiny', annuity: 'Pending Allotment', status: 'In-Progress' },
+        { id: 'FAM-005', headName: 'Smt. Parvatibai Gaikwad', members: 4, category: 'Widowed Titleholder', plotNo: 'Plot #A-23 (Hinjewadi Model Colony)', housingGrant: 'In Scrutiny', annuity: 'Pending Allotment', status: 'In-Progress' }
+      ];
       this.listeners = [];
 
       this.currentUser = {
@@ -569,6 +576,7 @@
         localStorage.setItem('nlams_parcels_v2', JSON.stringify(this.parcels));
         localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
         localStorage.setItem('nlams_audit_v2', JSON.stringify(this.audit));
+        localStorage.setItem('nlams_rnr_families_v2', JSON.stringify(this.rnrFamilies));
       } catch (e) {
         console.warn('Storage quota or local access limitation', e);
       }
@@ -600,6 +608,37 @@
     }
 
     // Role Impersonation
+    registerUser(userData) {
+      const newUser = {
+        role: userData.role || 'requiring-body',
+        name: userData.name || 'Official User',
+        email: userData.email || '',
+        mobile: userData.mobile || '',
+        dept: userData.dept || 'Department of Land Resources',
+        jurisdiction: userData.jurisdiction || 'State Directorate',
+        designation: userData.designation || 'Project Officer',
+        badge: userData.badge || userData.role,
+        isRegistered: true,
+        registeredAt: new Date().toISOString()
+      };
+      this.currentUser = Object.assign({}, this.currentUser, newUser);
+      this.logAudit(this.currentUser.name, this.currentUser.badge, `New User Registered: ${this.currentUser.name} (${this.currentUser.role})`);
+      this.dispatch('USER_REGISTERED', this.currentUser);
+      return this.currentUser;
+    }
+
+    updateUserProfile(profileData) {
+      if (this.currentUser) {
+        this.currentUser.dept = profileData.dept || this.currentUser.dept;
+        this.currentUser.jurisdiction = profileData.jurisdiction || this.currentUser.jurisdiction;
+        this.currentUser.designation = profileData.designation || this.currentUser.designation;
+        this.currentUser.profileComplete = true;
+        this.logAudit(this.currentUser.name, this.currentUser.badge, `Profile updated: ${this.currentUser.designation}, ${this.currentUser.jurisdiction}`);
+        this.dispatch('PROFILE_UPDATED', this.currentUser);
+      }
+      return this.currentUser;
+    }
+
     setUserRole(roleKey) {
       const rolesMap = {
         'central-ministry': {
@@ -749,6 +788,9 @@
       const distCode = (data.district || 'PUN').toUpperCase().slice(0,3);
       const newId = `REQ-${stateCode}-${distCode}-2025-${Math.floor(1000 + Math.random()*9000)}`;
 
+      const lat = parseFloat(data.lat) || 18.5913;
+      const lng = parseFloat(data.lng) || 73.7389;
+
       const newProject = {
         id: newId,
         name: data.projectName,
@@ -769,16 +811,23 @@
         affectedFamilies: parseInt(data.affectedFamilies) || 120,
         rehabilitatedFamilies: 0,
         currentMilestone: 'Form 1 Proposal Submitted for CALA Scrutiny',
-        coordinates: { lat: 18.5204, lng: 73.8567 }
+        coordinates: { lat: lat, lng: lng },
+        documents: data.documents || [
+          { name: 'Form 1 Requisition Dossier (v1.0)', type: 'PDF', status: 'Verified', size: '2.4 MB' },
+          { name: 'Cadastral KML Alignment Vector (v1.0)', type: 'KML', status: 'Georeferenced', size: '840 KB' },
+          { name: 'SIA Scoping Terms of Reference (v1.0)', type: 'PDF', status: 'Approved', size: '1.8 MB' }
+        ]
       };
 
       const gutNum = `Gut No. ${Math.floor(150 + Math.random()*250)}/${String.fromCharCode(65 + Math.floor(Math.random()*6))}`;
+      const pId = `GUT-${Math.floor(200 + Math.random()*800)}`;
+      const delta = 0.005;
       const newParcel = {
         type: "Feature",
-        id: `GUT-${Math.floor(200 + Math.random()*800)}`,
+        id: pId,
         geometry: {
           type: "Polygon",
-          coordinates: [[[73.85, 18.52], [73.86, 18.52], [73.86, 18.53], [73.85, 18.53], [73.85, 18.52]]]
+          coordinates: [[[lng - delta, lat - delta], [lng + delta, lat - delta], [lng + delta, lat + delta], [lng - delta, lat + delta], [lng - delta, lat - delta]]]
         },
         properties: {
           id: `GUT-${Math.floor(200 + Math.random()*800)}`,
@@ -824,6 +873,14 @@
         proj.statusBadge = 'Scrutinized';
         proj.slaStatus = 'Sec 3A / Sec 11 Ready';
         proj.currentMilestone = 'Digital Scrutiny Approved. Sent to State Gazette.';
+        this.parcels.forEach(p => {
+          const props = p.properties || p;
+          if (props.projectId === projectId || props.id === projectId) {
+            props.status = 'Scrutinized';
+            props.statusLabel = 'Scrutiny Passed (MahaBhumi Verified)';
+            props.statusColor = '#904d00';
+          }
+        });
         this.logAudit(this.currentUser.name, 'CALA Authority', `Approved Proposal Scrutiny for ${proj.id}: ${remarks || 'Passed Bhulekh Validation'}`);
         this.dispatch('SCRUTINY_APPROVED', proj);
       } else if (decision === 'REJECT') {
@@ -854,6 +911,16 @@
       proj.gazetteDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       proj.slaStatus = 'Gazette Published';
       proj.currentMilestone = `Digitally Signed Notification: ${gazetteRef || 'GSR 742(E)'}`;
+
+      this.parcels.forEach(p => {
+        const props = p.properties || p;
+        if (props.projectId === projectId) {
+          props.status = 'Notified';
+          props.statusLabel = 'Sec 3D Notified (Geo-Tagged)';
+          props.statusColor = '#0052cc';
+          props.gazetteRef = gazetteRef || 'GSR 742(E)';
+        }
+      });
 
       this.logAudit(this.currentUser.name, 'State Revenue Directorate', `Published Section 3D/Section 19 Gazette for ${proj.id} [${gazetteRef || 'GSR 742(E)'}]`);
       this.dispatch('NOTIFICATION_ISSUED', proj);
@@ -965,6 +1032,37 @@
       this.logAudit(this.currentUser.name, 'Citizen', `Filed Section 15 Statutory Objection [${newObj.id}] for ${newObj.khasraNo}`);
       this.dispatch('OBJECTION_FILED', newObj);
       return newObj;
+    }
+
+    // Action: Stage 8 - Project Statutory Closure & Document Archival
+    closeAndArchiveProject(projectId, officerName) {
+      const proj = this.projects.find(p => p.id === projectId) || this.projects[0];
+      if (!proj) return null;
+
+      proj.stage = 'Closed';
+      proj.statusBadge = 'Closed (Archived)';
+      proj.slaStatus = 'Statutory Lifecycle Completed';
+      proj.currentMilestone = 'Project Completed & Archived under RFCTLARR Act 2013';
+      proj.closureDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      proj.sha256AuditHash = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, '0')).join('') + '8f9e01ba';
+      
+      this.parcels.forEach(p => {
+        const props = p.properties || p;
+        if (props.projectId === proj.id) {
+          props.status = 'Closed';
+          props.statusLabel = 'Vested & Archived';
+          props.statusColor = '#1e293b';
+        }
+      });
+
+      this.logAudit(
+        officerName || this.currentUser.name,
+        'Central Competent Authority',
+        `Closed and Archived Project [${proj.id}]: Cryptographic Seal #${proj.sha256AuditHash}`
+      );
+      this.dispatch('PROJECT_CLOSED', proj);
+      return proj;
     }
 
     // Demo Lifecycle Step

@@ -78,7 +78,7 @@
       return this._respond(201, created, `Form 1 Proposal ${created.id} submitted and routed to District CALA`);
     }
 
-    // POST /api/v1/scrutiny/:parcelId/decision - Handles Approve, Reject, Send-Back
+    // POST /api/v1/scrutiny/:parcelId/decision - Handles Approve, Reject, Send-Back with parent project sync
     async submitScrutinyDecision(parcelId, decision, remarks, actor) {
       const parcel = this.store.parcels.find(p => p.id === parcelId || p.properties?.id === parcelId);
       if (!parcel) {
@@ -87,27 +87,40 @@
 
       const parcelObj = parcel.properties ? parcel.properties : parcel;
       const gutNo = parcelObj.gutNumber;
+      const projId = parcelObj.projectId;
 
       if (decision === 'APPROVE') {
-        parcelObj.status = 'Awarded';
-        parcelObj.statusLabel = 'Sec 3G Award Ready';
-        parcelObj.statusColor = '#15803d';
-        this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Approved Digital Scrutiny for ${gutNo}: ${remarks || 'Bhulekh RoR Verified'}`);
-        this.store.dispatch('SCRUTINY_APPROVED', parcel);
-        return this._respond(200, parcel, `Scrutiny approved for ${gutNo}. Forwarded to State Gazette.`);
+        parcelObj.status = 'Scrutinized';
+        parcelObj.statusLabel = 'Scrutiny Passed (Sec 3A)';
+        parcelObj.statusColor = '#904d00';
+        if (projId) {
+          this.store.scrutinizeProposal(projId, 'APPROVE', remarks || 'Passed MahaBhumi 7/12 Scrutiny');
+        } else {
+          this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Approved Digital Scrutiny for ${gutNo}`);
+          this.store.dispatch('SCRUTINY_APPROVED', parcel);
+        }
+        return this._respond(200, parcel, `Scrutiny approved for ${gutNo}. Forwarded to State Gazette for Sec 3D Notification.`);
       } else if (decision === 'REJECT') {
         parcelObj.status = 'Rejected';
         parcelObj.statusLabel = 'Rejected (Discrepancy)';
         parcelObj.statusColor = '#dc2626';
-        this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Rejected Scrutiny for ${gutNo}: ${remarks}`);
-        this.store.dispatch('SCRUTINY_REJECTED', { parcel, remarks });
+        if (projId) {
+          this.store.scrutinizeProposal(projId, 'REJECT', remarks);
+        } else {
+          this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Rejected Scrutiny for ${gutNo}: ${remarks}`);
+          this.store.dispatch('SCRUTINY_REJECTED', { parcel, remarks });
+        }
         return this._respond(200, parcel, `Proposal rejected for ${gutNo}: ${remarks}`);
       } else if (decision === 'SEND_BACK') {
         parcelObj.status = 'Rework';
         parcelObj.statusLabel = 'Returned to Agency (Rework)';
         parcelObj.statusColor = '#d97706';
-        this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Returned ${gutNo} to Requiring Body for correction: ${remarks}`);
-        this.store.dispatch('SCRUTINY_SEND_BACK', { parcel, remarks });
+        if (projId) {
+          this.store.scrutinizeProposal(projId, 'SEND_BACK', remarks);
+        } else {
+          this.store.logAudit(actor || this.store.currentUser.name, 'CALA Authority', `Returned ${gutNo} for correction: ${remarks}`);
+          this.store.dispatch('SCRUTINY_SEND_BACK', { parcel, remarks });
+        }
         return this._respond(200, parcel, `Dossier returned to Agency for revision: ${remarks}`);
       }
 
@@ -143,6 +156,52 @@
     async completeResettlement(projectId, familiesCount, actor) {
       const updated = this.store.completeResettlement(projectId, familiesCount, actor);
       return this._respond(200, updated, `R&R Resettlement marked complete for ${familiesCount || 120} families.`);
+    }
+
+    // POST /api/v1/projects/:projectId/close - Stage 8 Statutory Closure & Archival
+    async closeProject(projectId, actor) {
+      const closed = this.store.closeAndArchiveProject(projectId, actor);
+      if (!closed) {
+        return this._error(404, `Project ${projectId} not found`);
+      }
+      return this._respond(200, closed, `Project ${projectId} closed and cryptographically sealed under SHA-256 #${closed.sha256AuditHash}`);
+    }
+
+    // POST /api/v1/auth/register - User Registration
+    async registerUser(userData) {
+      if (!userData.name || !userData.role) {
+        return this._error(400, 'Name and Role are mandatory for registration.');
+      }
+      const user = this.store.registerUser(userData);
+      return this._respond(201, user, `User ${user.name} successfully registered with role ${user.role}.`);
+    }
+
+    // PUT /api/v1/auth/profile - Profile Setup
+    async updateProfile(profileData) {
+      const updated = this.store.updateUserProfile(profileData);
+      return this._respond(200, updated, 'User profile jurisdiction and department configured.');
+    }
+
+    // GET /api/v1/parcels/search - Real-time Citizen Parcel Search
+    async searchParcels(query) {
+      const q = (query || '').toLowerCase().trim();
+      const results = this.store.parcels.filter(p => {
+        const props = p.properties || p;
+        return (
+          props.gutNumber.toLowerCase().includes(q) ||
+          props.id.toLowerCase().includes(q) ||
+          props.ownerName.toLowerCase().includes(q) ||
+          (props.projectId && props.projectId.toLowerCase().includes(q)) ||
+          props.village.toLowerCase().includes(q)
+        );
+      });
+      return this._respond(200, results, `Found ${results.length} matching parcels for query '${query}'`);
+    }
+
+    // GET /api/v1/rnr/families - Family-by-family R&R docket
+    async getRNRFamilies(projectId) {
+      const fams = this.store.rnrFamilies || [];
+      return this._respond(200, fams, `Retrieved ${fams.length} resettlement families`);
     }
 
     // GET /api/v1/parcels/citizen - Strictly returns parcels belonging to authenticated citizen

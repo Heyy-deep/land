@@ -167,7 +167,7 @@
     // Register route protection on hash change (Requirement 5)
     window.addEventListener('hashchange', handleHashRouting);
 
-    showToast('National Land Acquisition System Live', 'Connected to NIC MeghRaj Cloud Node DEL-04 with real-time PostgreSQL+PostGIS synchronization.', 'info');
+    showToast('National Land Acquisition Portal', 'Secure session established. Ministry of Rural Development & DoLR.', 'info');
   }
 
   function cacheDOM() {
@@ -377,7 +377,7 @@
           return;
         }
         showToast(`Drilling down to ${selectedState}`, 'Redirecting to State Directorate Dashboard...', 'info');
-        switchView('view-state');
+        switchView('view-state', true);
       });
     } else if (viewId === 'view-district') {
       mountDistrictGIS();
@@ -439,6 +439,10 @@
     if (selectedParcelId) {
       renderCitizenParcel(selectedParcelId);
     }
+    // Dynamically refresh GIS parcel layers so colors and statuses update on map
+    if (typeof mountDistrictGIS === 'function') {
+      mountDistrictGIS();
+    }
 
     switch (event) {
       case 'PROPOSAL_SUBMITTED':
@@ -475,6 +479,9 @@
   }
 
   // 1. SSO Portal & Login Controller (Requirements 1, 6)
+    let currentGeneratedOTP = null;
+  let otpCountdownTimer = null;
+
   function setupAuthInteractions() {
     const roleSelect = document.getElementById('user-role-select');
     const roleDesc = document.getElementById('role-desc');
@@ -489,13 +496,70 @@
       'rehab-authority': 'Rehabilitation Authority: Oversee Section 31 resettlement schemes, assign model colony housing, and disburse subsistence grants.'
     };
 
+    // Auth method radio buttons and sections
+    const authRadioAadhaar = document.querySelector('input[name="auth-method"][value="aadhaar"]');
+    const authRadioDsc = document.querySelector('input[name="auth-method"][value="dsc"]');
+    const authRadioParichay = document.querySelector('input[name="auth-method"][value="parichay"]');
+
+    const labelAuthAadhaar = document.getElementById('label-auth-aadhaar');
+    const labelAuthDsc = document.getElementById('label-auth-dsc');
+    const labelAuthParichay = document.getElementById('label-auth-parichay');
+
+    const sectionAadhaar = document.getElementById('auth-section-aadhaar');
+    const sectionDsc = document.getElementById('auth-section-dsc');
+    const sectionParichay = document.getElementById('auth-section-parichay');
+
+    function selectAuthMethod(method) {
+      if (sectionAadhaar) sectionAadhaar.classList.toggle('hidden', method !== 'aadhaar');
+      if (sectionDsc) sectionDsc.classList.toggle('hidden', method !== 'dsc');
+      if (sectionParichay) sectionParichay.classList.toggle('hidden', method !== 'parichay');
+
+      const updateLabel = (lbl, isSelected) => {
+        if (!lbl) return;
+        if (isSelected) {
+          lbl.classList.add('bg-surface-container-high', 'text-primary', 'border-primary');
+          lbl.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'border-outline-variant/40');
+        } else {
+          lbl.classList.remove('bg-surface-container-high', 'text-primary', 'border-primary');
+          lbl.classList.add('bg-surface-container-lowest', 'text-on-surface', 'border-outline-variant/40');
+        }
+      };
+      updateLabel(labelAuthAadhaar, method === 'aadhaar');
+      updateLabel(labelAuthDsc, method === 'dsc');
+      updateLabel(labelAuthParichay, method === 'parichay');
+    }
+
+    document.querySelectorAll('input[name="auth-method"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        selectAuthMethod(e.target.value);
+      });
+    });
+
     if (roleSelect && roleDesc) {
       roleSelect.addEventListener('change', (e) => {
         const val = e.target.value;
         if (roleCapabilities[val]) {
           roleDesc.textContent = roleCapabilities[val];
-          rolePill.classList.remove('bg-surface-container-low');
-          rolePill.classList.add('bg-surface-container');
+          if (rolePill) {
+            rolePill.classList.remove('bg-surface-container-low');
+            rolePill.classList.add('bg-surface-container');
+          }
+        }
+        if (val === 'citizen') {
+          if (authRadioAadhaar) {
+            authRadioAadhaar.checked = true;
+            selectAuthMethod('aadhaar');
+          }
+        } else if (val === 'dro-cala' || val === 'state-revenue') {
+          if (authRadioDsc) {
+            authRadioDsc.checked = true;
+            selectAuthMethod('dsc');
+          }
+        } else if (val === 'central-ministry') {
+          if (authRadioParichay) {
+            authRadioParichay.checked = true;
+            selectAuthMethod('parichay');
+          }
         }
       });
     }
@@ -505,6 +569,11 @@
     const maskText = document.getElementById('mask-status-text');
     const uid1 = document.getElementById('login-uid-1');
     const uid2 = document.getElementById('login-uid-2');
+    const uid3 = document.getElementById('login-uid-3');
+    const btnGetOtp = document.getElementById('btn-get-otp');
+    const otpCountdownEl = document.getElementById('otp-countdown');
+    const otpErrorMsg = document.getElementById('otp-error-msg');
+    const otpErrorText = document.getElementById('otp-error-text');
 
     if (toggleMaskBtn && uid1 && uid2) {
       let isMasked = true;
@@ -512,45 +581,251 @@
         isMasked = !isMasked;
         uid1.type = isMasked ? 'password' : 'text';
         uid2.type = isMasked ? 'password' : 'text';
-        maskText.textContent = isMasked ? 'Show Unmasked' : 'Mask Digits';
+        if (maskText) maskText.textContent = isMasked ? 'Show Unmasked' : 'Mask Digits';
       });
     }
 
-    // Auto-focus shift across OTP inputs
-    const otpInputs = document.querySelectorAll('.otp-box');
-    otpInputs.forEach((input, index) => {
-      input.addEventListener('keyup', (e) => {
-        if (e.key >= '0' && e.key <= '9') {
-          if (index < otpInputs.length - 1) {
-            otpInputs[index + 1].focus();
-          }
-        } else if (e.key === 'Backspace') {
-          if (index > 0 && !input.value) {
-            otpInputs[index - 1].focus();
-          }
+    // Aadhaar 12-digit validation and auto-advance
+    function validateAadhaarDigits() {
+      const v1 = uid1 ? uid1.value.replace(/\D/g, '') : '';
+      const v2 = uid2 ? uid2.value.replace(/\D/g, '') : '';
+      const v3 = uid3 ? uid3.value.replace(/\D/g, '') : '';
+      if (uid1) uid1.value = v1;
+      if (uid2) uid2.value = v2;
+      if (uid3) uid3.value = v3;
+
+      const totalDigits = v1.length + v2.length + v3.length;
+      const isValid = totalDigits === 12 && v1.length === 4 && v2.length === 4 && v3.length === 4;
+
+      if (btnGetOtp && !otpCountdownTimer) {
+        btnGetOtp.disabled = !isValid;
+        if (isValid) {
+          btnGetOtp.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-surface-container-high', 'text-on-surface-variant');
+          btnGetOtp.classList.add('bg-primary', 'text-on-primary', 'hover:bg-primary-container', 'shadow-sm', 'cursor-pointer');
+        } else {
+          btnGetOtp.classList.add('opacity-50', 'cursor-not-allowed', 'bg-surface-container-high', 'text-on-surface-variant');
+          btnGetOtp.classList.remove('bg-primary', 'text-on-primary', 'hover:bg-primary-container', 'shadow-sm', 'cursor-pointer');
+        }
+      }
+      return isValid;
+    }
+
+    [uid1, uid2, uid3].forEach((uidInput, idx) => {
+      if (!uidInput) return;
+      uidInput.addEventListener('input', () => {
+        if (uidInput.value.length >= 4) {
+          uidInput.value = uidInput.value.slice(0, 4);
+          if (idx === 0 && uid2) uid2.focus();
+          if (idx === 1 && uid3) uid3.focus();
+        }
+        validateAadhaarDigits();
+      });
+      uidInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !uidInput.value) {
+          if (idx === 1 && uid1) uid1.focus();
+          if (idx === 2 && uid2) uid2.focus();
         }
       });
     });
 
-    // Login Form Submission -> Assign role, update navbar with RBAC & navigate (Requirements 1, 2, 6)
+    validateAadhaarDigits();
+
+    // "Get OTP" Button Handler
+    if (btnGetOtp) {
+      btnGetOtp.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!validateAadhaarDigits()) {
+          showToast('Invalid Aadhaar Number', 'Please enter all 12 digits of your Aadhaar card.', 'warning');
+          return;
+        }
+
+        currentGeneratedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        window.__NLAMS_CURRENT_OTP = currentGeneratedOTP;
+
+        console.log('%c[UIDAI OTP GATEWAY] Mock OTP delivered to registered mobile:', 'color: #007bff; font-weight: bold; font-size: 14px;', currentGeneratedOTP);
+        showToast('UIDAI OTP Dispatched', `Mock OTP sent to linked mobile: ${currentGeneratedOTP}. Valid for 10 minutes.`, 'success');
+
+        if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+
+        const firstOtp = document.querySelector('.otp-box');
+        if (firstOtp) {
+          firstOtp.focus();
+          if (firstOtp.select) firstOtp.select();
+        }
+
+        if (otpCountdownTimer) clearInterval(otpCountdownTimer);
+        let secondsLeft = 30;
+        btnGetOtp.disabled = true;
+        btnGetOtp.classList.add('opacity-50', 'cursor-not-allowed');
+
+        const updateTimerText = () => {
+          if (otpCountdownEl) {
+            const formatted = secondsLeft < 10 ? `0${secondsLeft}` : secondsLeft;
+            otpCountdownEl.textContent = `Resend in 00:${formatted}`;
+          }
+        };
+        updateTimerText();
+
+        otpCountdownTimer = setInterval(() => {
+          secondsLeft -= 1;
+          if (secondsLeft <= 0) {
+            clearInterval(otpCountdownTimer);
+            otpCountdownTimer = null;
+            if (otpCountdownEl) otpCountdownEl.textContent = 'Resend OTP';
+            btnGetOtp.disabled = false;
+            btnGetOtp.classList.remove('opacity-50', 'cursor-not-allowed');
+          } else {
+            updateTimerText();
+          }
+        }, 1000);
+      });
+    }
+
+    // Auto-focus shift across OTP inputs & paste support
+    const otpInputs = document.querySelectorAll('.otp-box');
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        const val = input.value.replace(/\D/g, '');
+        input.value = val ? val[val.length - 1] : '';
+        if (input.value && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        for (let i = 0; i < text.length; i++) {
+          if (otpInputs[i]) otpInputs[i].value = text[i];
+        }
+        if (otpInputs[Math.min(text.length, otpInputs.length - 1)]) {
+          otpInputs[Math.min(text.length, otpInputs.length - 1)].focus();
+        }
+      });
+    });
+
+    // Refresh Captcha
+    const refreshCaptchaBtn = document.getElementById('btn-refresh-captcha');
+    const captchaDisplay = document.getElementById('captcha-display');
+    const captchaInput = document.getElementById('captcha-code-input');
+    if (refreshCaptchaBtn && captchaDisplay && captchaInput) {
+      refreshCaptchaBtn.addEventListener('click', () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let newCode = '';
+        for (let i = 0; i < 5; i++) {
+          newCode += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        captchaDisplay.innerHTML = newCode.split('').map((c, idx) => {
+          const colors = ['text-primary', 'text-secondary', 'text-tertiary'];
+          return `<span class="inline-block ${colors[idx % colors.length]}">${c}</span>`;
+        }).join('');
+        captchaInput.value = newCode;
+      });
+    }
+
+    // Login Form Submission -> Assign role, update navbar with RBAC & navigate
     const loginForm = document.getElementById('nlams-auth-form');
     if (loginForm) {
-      loginForm.addEventListener('submit', () => {
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
         const selectedRole = roleSelect ? roleSelect.value : 'central-ministry';
 
-        // Set session state
+        const activeMethodRadio = document.querySelector('input[name="auth-method"]:checked');
+        const activeMethod = activeMethodRadio ? activeMethodRadio.value : 'aadhaar';
+
+        if (activeMethod === 'aadhaar') {
+          let enteredOtp = '';
+          otpInputs.forEach(inp => enteredOtp += (inp.value || ''));
+
+          const expectedOtp = currentGeneratedOTP || '482910';
+          if (!enteredOtp || (enteredOtp !== expectedOtp && enteredOtp !== '482910')) {
+            if (otpErrorMsg) {
+              otpErrorMsg.classList.remove('hidden');
+              if (otpErrorText) otpErrorText.textContent = enteredOtp.length < 6 
+                ? 'Please enter all 6 digits of the OTP.' 
+                : 'Invalid OTP code entered. Please check the code or click "Get OTP".';
+            }
+            otpInputs.forEach(i => i.classList.add('border-error'));
+            showToast('Authentication Failed', 'Invalid OTP code entered. Please check your OTP.', 'error');
+            return;
+          }
+          if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+          otpInputs.forEach(i => i.classList.remove('border-error'));
+        } else if (activeMethod === 'dsc') {
+          const pin = document.getElementById('dsc-login-pin');
+          if (!pin || pin.value.trim().length < 4) {
+            showToast('DSC Authentication Error', 'Please enter your 4-digit Cryptographic Hardware Token PIN.', 'warning');
+            return;
+          }
+          showToast('Hardware DSC Verified', 'e-Mudhra Class 3 Government Digital Certificate attestation approved.', 'success');
+        } else if (activeMethod === 'parichay') {
+          const email = document.getElementById('parichay-email-input');
+          if (!email || !email.value.includes('@')) {
+            showToast('Parichay SSO Error', 'Please enter a valid government email address (@gov.in / @nic.in).', 'warning');
+            return;
+          }
+          showToast('Parichay SSO Authorized', `Single Sign-On verified for ${email.value}.`, 'success');
+        }
+
         sessionStorage.setItem('nlams_is_authenticated', 'true');
         sessionStorage.setItem('nlams_session_role', selectedRole);
         store.setUserRole(selectedRole);
         updateActiveUserBadge(store.currentUser);
 
-        // Render RBAC navbar (removes all other 4 dashboard tabs)
         renderNavbar();
 
-        // Redirect to authorized dashboard
+        store.currentUser.profileComplete = true;
         const roleConfig = ROLE_DASHBOARD_MAP[selectedRole] || ROLE_DASHBOARD_MAP['central-ministry'];
-        showToast('e-KYC Authentication Successful', `Authenticated via UIDAI OTP as ${store.currentUser.badge}. Redirecting to ${roleConfig.dashboardName}...`, 'success');
+        showToast('Authentication Successful', `Logged in as ${store.currentUser.name} (${store.currentUser.badge}). Redirecting to ${roleConfig.dashboardName}...`, 'success');
         switchView(roleConfig.viewId, true);
+      });
+    }
+
+    // Tab Switchers: Sign In vs New Registration
+    const tabSignIn = document.getElementById('login-tab-signin');
+    const tabRegister = document.getElementById('login-tab-register');
+    const authForm = document.getElementById('nlams-auth-form');
+    const regForm = document.getElementById('nlams-register-form');
+
+    if (tabSignIn && tabRegister && authForm && regForm) {
+      tabSignIn.addEventListener('click', () => {
+        authForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        tabSignIn.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        tabSignIn.classList.remove('text-on-surface-variant');
+        tabRegister.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        tabRegister.classList.add('text-on-surface-variant');
+      });
+
+      tabRegister.addEventListener('click', () => {
+        authForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        tabRegister.classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        tabRegister.classList.remove('text-on-surface-variant');
+        tabSignIn.classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm');
+        tabSignIn.classList.add('text-on-surface-variant');
+      });
+
+      regForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const userData = {
+          name: document.getElementById('reg-name').value,
+          role: document.getElementById('reg-role').value,
+          dept: document.getElementById('reg-dept').value,
+          jurisdiction: document.getElementById('reg-jurisdiction').value,
+          email: document.getElementById('reg-email').value,
+          mobile: document.getElementById('reg-mobile').value
+        };
+
+        const res = await window.NLAMS_API.registerUser(userData);
+        if (res.ok) {
+          showToast('Registration Completed', `Welcome ${userData.name}! Initializing official profile setup...`, 'success');
+          openProfileSetupModal(userData.role);
+        }
       });
     }
 
@@ -985,8 +1260,114 @@
     updateDocketView(selectedParcelId);
   }
 
+  // Profile Setup Modal helper
+  function openProfileSetupModal(roleKey) {
+    const modal = document.getElementById('modal-profile-setup');
+    const nameEl = document.getElementById('profile-modal-name');
+    const roleEl = document.getElementById('profile-modal-role');
+    if (nameEl) nameEl.textContent = store.currentUser.name;
+    if (roleEl) roleEl.textContent = store.currentUser.badge || roleKey;
+    if (modal) modal.classList.remove('hidden');
+
+    const form = document.getElementById('form-profile-setup');
+    if (form) {
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const profileData = {
+          designation: document.getElementById('profile-designation')?.value,
+          dept: document.getElementById('profile-dept')?.value,
+          jurisdiction: document.getElementById('profile-jurisdiction')?.value
+        };
+        await window.NLAMS_API.updateProfile(profileData);
+        modal.classList.add('hidden');
+
+        // Set session state
+        sessionStorage.setItem('nlams_is_authenticated', 'true');
+        sessionStorage.setItem('nlams_session_role', store.currentUser.role);
+        updateActiveUserBadge(store.currentUser);
+        renderNavbar();
+
+        const roleConfig = ROLE_DASHBOARD_MAP[store.currentUser.role] || ROLE_DASHBOARD_MAP['central-ministry'];
+        showToast('Profile Configured', `Official profile setup complete. Launching ${roleConfig.dashboardName}...`, 'success');
+        switchView(roleConfig.viewId, true);
+      };
+    }
+  }
+
+  // Selected Map-Picker coordinates state
+  let currentPickedCoords = { lat: 18.5913, lng: 73.7389 };
+  let mapPickerInstance = null;
+
+  function initMapPicker() {
+    const btnOpenPicker = document.getElementById('btn-open-map-picker');
+    const modalPicker = document.getElementById('modal-map-picker');
+    const btnClosePicker = document.getElementById('btn-close-map-picker');
+    const btnCancelPicker = document.getElementById('btn-cancel-map-picker');
+    const btnConfirmPicker = document.getElementById('btn-confirm-map-picker');
+    const coordsText = document.getElementById('map-picker-coords-text');
+    const badgeCoords = document.getElementById('badge-selected-coords');
+
+    if (btnOpenPicker && modalPicker) {
+      btnOpenPicker.addEventListener('click', () => {
+        modalPicker.classList.remove('hidden');
+        setTimeout(() => {
+          if (!mapPickerInstance && window.L) {
+            mapPickerInstance = L.map('picker-leaflet-map').setView([currentPickedCoords.lat, currentPickedCoords.lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 18,
+              attribution: '© OpenStreetMap | DoLR Cadastral GIS'
+            }).addTo(mapPickerInstance);
+
+            let marker = L.marker([currentPickedCoords.lat, currentPickedCoords.lng], { draggable: true }).addTo(mapPickerInstance);
+
+            const updateCoords = (lat, lng) => {
+              currentPickedCoords = { lat: +lat.toFixed(4), lng: +lng.toFixed(4) };
+              if (coordsText) coordsText.textContent = `Lat: ${currentPickedCoords.lat}, Lng: ${currentPickedCoords.lng} (Custom RoW Corridor)`;
+              if (badgeCoords) badgeCoords.textContent = `LAT: ${currentPickedCoords.lat} • LNG: ${currentPickedCoords.lng}`;
+            };
+
+            mapPickerInstance.on('click', (e) => {
+              marker.setLatLng(e.latlng);
+              updateCoords(e.latlng.lat, e.latlng.lng);
+            });
+
+            marker.on('dragend', (e) => {
+              const pos = marker.getLatLng();
+              updateCoords(pos.lat, pos.lng);
+            });
+          } else if (mapPickerInstance) {
+            mapPickerInstance.invalidateSize();
+          }
+        }, 200);
+      });
+
+      const closePicker = () => modalPicker.classList.add('hidden');
+      if (btnClosePicker) btnClosePicker.addEventListener('click', closePicker);
+      if (btnCancelPicker) btnCancelPicker.addEventListener('click', closePicker);
+      if (btnConfirmPicker) {
+        btnConfirmPicker.addEventListener('click', () => {
+          closePicker();
+          showToast('Alignment Selected', `Selected coordinates set to Lat: ${currentPickedCoords.lat}, Lng: ${currentPickedCoords.lng}`, 'info');
+        });
+      }
+    }
+  }
+
   // 5. Implementing Agency Dashboard Controller
   function setupAgencyDashboard() {
+    initMapPicker();
+
+    // Dynamic file uploads
+    const fileInput = document.getElementById('prop-file-upload-input');
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          const fileName = e.target.files[0].name;
+          showToast('Document Uploaded (v1.1)', `Securely archived ${fileName} in NLAMS Document Vault.`, 'success');
+        }
+      });
+    }
+
     const form = document.getElementById('form-new-proposal');
     if (form) {
       form.addEventListener('submit', async (e) => {
@@ -998,13 +1379,15 @@
           district: document.getElementById('prop-district').value,
           requiredLandHa: document.getElementById('prop-land-ha').value,
           budgetCr: document.getElementById('prop-budget-cr').value,
+          lat: currentPickedCoords.lat,
+          lng: currentPickedCoords.lng,
           khasraCount: Math.floor(Math.random() * 200) + 40,
           affectedFamilies: Math.floor(Math.random() * 500) + 80
         };
 
         const res = await window.NLAMS_API.submitProposal(data, store.currentUser.name);
         if (res.ok) {
-          showToast('Form 1 Submission Success', `Project ${res.data.id} registered and forwarded to District CALA Scrutiny Queue!`, 'success');
+          showToast('Form 1 Submission Success', `Project ${res.data.id} registered with GIS location and forwarded to District CALA Scrutiny Queue!`, 'success');
           if (getUserRole() === 'dro-cala' || getUserRole() === 'central-ministry') {
             switchView('view-district');
           } else {
@@ -1026,8 +1409,44 @@
     }
   }
 
-  // 6. Citizen Dashboard Controller (Strictly Scoped to Ramesh Narayan Patil & Gut No. 142/1)
+  // 6. Dynamic Citizen Dashboard Controller & Search
   function setupCitizenDashboard() {
+    const searchInput = document.getElementById('cit-search-input');
+    const searchBtn = document.getElementById('btn-cit-search');
+
+    const executeSearch = () => {
+      const q = (searchInput?.value || '').trim();
+      if (!q) return;
+      const found = store.parcels.find(p => {
+        const props = p.properties || p;
+        return (
+          props.gutNumber.toLowerCase().includes(q.toLowerCase()) ||
+          props.id.toLowerCase().includes(q.toLowerCase()) ||
+          (props.projectId && props.projectId.toLowerCase().includes(q.toLowerCase()))
+        );
+      });
+
+      if (found) {
+        const props = found.properties || found;
+        selectedParcelId = props.id;
+        renderCitizenParcel(props.id);
+        showToast('Parcel Record Found', `Loaded record for ${props.gutNumber} (${props.village})`, 'success');
+      } else {
+        showToast('No Record Found', `No cadastral parcel matched '${q}'. Try 'Gut No. 142/1' or 'Gut No. 143/3A'`, 'warning');
+      }
+    };
+
+    if (searchBtn) searchBtn.addEventListener('click', executeSearch);
+    if (searchInput) {
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          executeSearch();
+        }
+      });
+    }
+
+    // Objection Form
     const objForm = document.getElementById('form-file-objection');
     if (objForm) {
       objForm.addEventListener('submit', (e) => {
@@ -1040,7 +1459,7 @@
           return;
         }
 
-        const parcel = store.parcels.find(p => (p.properties || p).id === 'GUT-142-1') || store.parcels[0];
+        const parcel = store.parcels.find(p => (p.properties || p).id === selectedParcelId) || store.parcels[0];
         const props = parcel.properties || parcel;
 
         store.fileObjection({
@@ -1055,10 +1474,65 @@
     }
   }
 
+  // Dynamic 8-Stage Citizen Milestone Journey
+  function renderCitizenMilestones(props) {
+    const listEl = document.getElementById('cit-milestones-list');
+    const badgeEl = document.getElementById('cit-milestone-stage-badge');
+    if (!listEl) return;
+
+    const status = props.status; // 'Submitted', 'Scrutiny', 'Scrutinized', 'Notified', 'Awarded', 'Possessed', 'Closed'
+    
+    const stages = [
+      { num: 1, name: 'Proposal Submission (Form 1)', desc: `${props.projectName} RoW Requisition Registered`, key: 'Submitted' },
+      { num: 2, name: 'Digital Scrutiny & RoR Validation', desc: 'Verified against MahaBhumi 7/12 land records', key: 'Scrutinized' },
+      { num: 3, name: 'Section 11 & 19 Gazette Declaration', desc: `Statutory Gazette Published: ${props.gazetteRef || 'GSR 742(E)'}`, key: 'Notified' },
+      { num: 4, name: 'Section 3G Award Declaration', desc: `₹${(props.totalCompensation/100000).toFixed(2)} Lakhs determined with 100% solatium`, key: 'Awarded' },
+      { num: 5, name: 'Compensation DBT Disbursed', desc: props.dbtStatus || 'Aadhaar PFMS Direct Transfer', key: 'Disbursed' },
+      { num: 6, name: 'R&R Model Colony Resettlement', desc: 'Section 31 housing plot & annuity grants', key: 'Resettled' },
+      { num: 7, name: 'Physical Possession Handover', desc: 'Title vested under Section 16 of RFCTLARR Act', key: 'Possessed' },
+      { num: 8, name: 'Statutory Project Closure & Archival', desc: 'Archived under SHA-256 cryptographic audit seal', key: 'Closed' }
+    ];
+
+    // Determine current progress level (1 to 8)
+    let activeLevel = 1;
+    if (status === 'Scrutiny' || status === 'Submitted') activeLevel = 1;
+    else if (status === 'Scrutinized') activeLevel = 2;
+    else if (status === 'Notified') activeLevel = 3;
+    else if (status === 'Awarded') {
+      activeLevel = props.dbtStatus && props.dbtStatus.includes('Credited') ? 5 : 4;
+    }
+    else if (status === 'Possessed') activeLevel = 7;
+    else if (status === 'Closed') activeLevel = 8;
+
+    if (badgeEl) {
+      badgeEl.textContent = `Stage ${activeLevel} of 8: ${props.statusLabel}`;
+    }
+
+    listEl.innerHTML = stages.map(s => {
+      let isCompleted = s.num < activeLevel || (s.num === activeLevel && (status === 'Possessed' || status === 'Closed'));
+      let isCurrent = s.num === activeLevel && !(status === 'Possessed' || status === 'Closed');
+
+      let iconStyle = isCompleted ? 'bg-tertiary text-on-tertiary font-bold' : (isCurrent ? 'bg-secondary text-on-secondary font-bold ring-2 ring-secondary/50 animate-pulse' : 'bg-surface-container-high text-on-surface-variant font-medium');
+      let textStyle = isCompleted ? 'text-on-surface font-semibold' : (isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant');
+
+      return `
+        <div class="flex items-start gap-spacing-sm transition-all">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs ${iconStyle}">
+            ${isCompleted ? '✓' : s.num}
+          </span>
+          <div class="flex flex-col">
+            <span class="${textStyle}">${s.name}</span>
+            <span class="text-on-surface-variant text-xs">${s.desc}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   function renderCitizenParcel(parcelId) {
-    // Strictly Scoped to Authenticated Landowner (Ramesh Narayan Patil -> GUT-142-1)
-    const citizenParcel = store.parcels.find(p => (p.properties || p).id === 'GUT-142-1') || store.parcels[0];
-    const props = citizenParcel.properties || citizenParcel;
+    // Dynamic parcel lookup
+    const parcel = store.parcels.find(p => (p.properties || p).id === parcelId) || store.parcels[0];
+    const props = parcel.properties || parcel;
     selectedParcelId = props.id;
 
     const titleEl = document.getElementById('cit-gut-title');
@@ -1069,18 +1543,43 @@
     const valEl = document.getElementById('cit-total-val');
     const calcFinalEl = document.getElementById('cit-calc-final');
     const dbtDescEl = document.getElementById('cit-dbt-desc');
+    const pillsContainer = document.getElementById('cit-parcel-pills');
 
     if (titleEl) titleEl.textContent = props.gutNumber;
-    if (statusPill) statusPill.textContent = props.statusLabel.toUpperCase();
+    if (statusPill) {
+      statusPill.textContent = props.statusLabel.toUpperCase();
+      statusPill.style.backgroundColor = props.statusColor || '#15803d';
+      statusPill.style.color = '#ffffff';
+    }
     if (projEl) projEl.textContent = `${props.projectName} (${props.village} Sector)`;
     if (areaEl) areaEl.textContent = `${props.areaHa} Ha`;
     if (typeEl) typeEl.textContent = props.landType;
     if (valEl) valEl.textContent = `₹${(props.totalCompensation / 100000).toFixed(2)} L`;
     if (calcFinalEl) calcFinalEl.textContent = `₹${props.totalCompensation.toLocaleString('en-IN')}`;
     if (dbtDescEl) {
-      dbtDescEl.textContent = `Status: ${props.dbtStatus} on ${props.disbursedDate}. Entitlement: ${props.rrEntitlement}`;
+      dbtDescEl.textContent = `Status: ${props.dbtStatus || 'Pending Section 3G Award'} | Entitlement: ${props.rrEntitlement || 'Eligible for Model Colony Plot'}`;
     }
+
+    // Render Quick Selection Pills
+    if (pillsContainer) {
+      pillsContainer.innerHTML = store.parcels.slice(0, 4).map(p => {
+        const pProps = p.properties || p;
+        const isSelected = pProps.id === selectedParcelId;
+        return `
+          <button onclick="window.selectCitizenParcel('${pProps.id}')" class="px-2 py-0.5 rounded text-xs font-bold transition-all border ${isSelected ? 'bg-primary text-on-primary border-primary' : 'bg-surface-container-low text-on-surface hover:bg-surface-container border-outline-variant/40'}">
+            ${pProps.gutNumber}
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Render dynamic milestones
+    renderCitizenMilestones(props);
   }
+
+  window.selectCitizenParcel = function(parcelId) {
+    renderCitizenParcel(parcelId);
+  };
 
   // ========================================================
   // 7. STATUTORY MODALS SYSTEM: DSC SIGNING, DOSSIER & POSSESSION
@@ -1298,6 +1797,21 @@
       if (titleEl && proj) titleEl.textContent = `${proj.name} (${proj.district})`;
       const famInput = document.getElementById('rnr-families-count');
       if (famInput && proj) famInput.value = proj.affectedFamilies || 120;
+
+      // Populate family-by-family R&R docket table
+      const tbody = document.getElementById('rnr-families-tbody');
+      if (tbody && store.rnrFamilies) {
+        tbody.innerHTML = store.rnrFamilies.map(f => `
+          <tr class="hover:bg-surface-container transition-colors">
+            <td class="p-1 font-semibold">${f.headName}</td>
+            <td class="p-1 text-primary font-bold">${f.plotNo}</td>
+            <td class="p-1 text-tertiary font-bold">${f.housingGrant}</td>
+            <td class="p-1">${f.annuity}</td>
+            <td class="p-1"><span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${f.status === 'Settled' ? 'bg-tertiary text-on-tertiary' : 'bg-secondary text-on-secondary'}">${f.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
       const modal = document.getElementById('modal-rnr-resettlement');
       if (modal) modal.classList.remove('hidden');
     };
@@ -1337,7 +1851,7 @@
   // Drilldown helper
   window.drillToState = function(stateName) {
     if (stateName === 'Maharashtra') {
-      switchView('view-state');
+      switchView('view-state', true);
       showToast('State Directorate Loaded', 'Viewing Maharashtra Revenue & Cadastral Matrix.', 'info');
     } else {
       showToast(`State Directorate: ${stateName}`, `Displaying ${stateName} state corridor pipeline metrics.`, 'info');
@@ -1345,27 +1859,151 @@
   };
 
   // 7. Global Demo Triggers & Accessibility
-  function setupGlobalDemoTriggers() {
+    function setupGlobalDemoTriggers() {
+    // 1. Trigger Live Lifecycle Action (wired to both button IDs)
+    const handleLifecycleAction = () => {
+      const res = store.triggerDemoLifecycleStep();
+      showToast('Real-Time Statutory Sync', res.message, 'success');
+    };
     const demoBtn = document.getElementById('btn-trigger-demo');
-    if (demoBtn) {
-      demoBtn.addEventListener('click', () => {
-        const res = store.triggerDemoLifecycleStep();
-        showToast('Real-Time Statutory Sync', res.message, 'success');
-      });
-    }
+    const lifecycleBtn = document.getElementById('btn-trigger-lifecycle');
+    if (demoBtn) demoBtn.addEventListener('click', handleLifecycleAction);
+    if (lifecycleBtn) lifecycleBtn.addEventListener('click', handleLifecycleAction);
 
-    // Export Handlers
+    // 2. Export Gazette MIS -> Real CSV download
     const expGazette = document.getElementById('btn-export-gazette');
     if (expGazette) {
       expGazette.addEventListener('click', () => {
-        showToast('Gazette Export Ready', 'Downloaded Official Extraordinary Gazette Notification schedule PDF with digital signature.', 'info');
+        const rows = [
+          ['Notification_ID', 'Project_ID', 'Project_Name', 'State', 'District', 'Section', 'Gazette_Ref', 'Date', 'Status'],
+          ['GAZ-2026-MH-4421', 'PRJ-MH-2026-001', 'Mumbai-Ahmedabad High-Speed Rail Corridor', 'Maharashtra', 'Palghar', 'Section 19(1)', 'Part II-Sec 3(ii) No 1824', '2026-09-08', 'Published'],
+          ['GAZ-2026-UP-8812', 'PRJ-UP-2026-003', 'Ganga Expressway Phase II', 'Uttar Pradesh', 'Prayagraj', 'Section 11(1)', 'Part II-Sec 3(i) No 904', '2026-08-20', 'Published'],
+          ['GAZ-2026-GJ-3310', 'PRJ-GJ-2026-002', 'Delhi-Mumbai Industrial Corridor Node', 'Gujarat', 'Bharuch', 'Section 20E', 'Part II-Sec 3(ii) No 641', '2026-09-01', 'Published']
+        ];
+        const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'NLAMS_Gazette_MIS_Schedule_2026.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Gazette MIS Exported', 'Downloaded Official Extraordinary Gazette Notification Schedule CSV.', 'success');
       });
     }
 
+    // 3. PFMS Ledger Sync -> Real DBT ledger CSV download
     const expLedger = document.getElementById('btn-export-ledger');
     if (expLedger) {
       expLedger.addEventListener('click', () => {
-        showToast('PFMS Ledger Exported', 'Exported direct beneficiary transfer transaction reconciliation spreadsheet.', 'info');
+        const rows = [
+          ['Transaction_Ref', 'Khasra_No', 'Landowner_Name', 'Aadhaar_Token', 'Bank_IFSC', 'Amount_INR', 'Status', 'Timestamp'],
+          ['PFMS-DBT-2026-8831', '412/1', 'Ramesh Tukaram Patil', 'XXXX-XXXX-8921', 'SBIN0001234', '1850000', 'Success', '2026-09-08 14:32:00'],
+          ['PFMS-DBT-2026-8832', '412/2', 'Sunita Anand Rao', 'XXXX-XXXX-4412', 'MAHB0000456', '2400000', 'Success', '2026-09-08 15:10:12'],
+          ['PFMS-DBT-2026-8833', '415/3', 'Gopal Kisan Shinde', 'XXXX-XXXX-6631', 'BKID0007890', '1250000', 'Success', '2026-09-09 11:20:45']
+        ];
+        const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'PFMS_DBT_Disbursal_Ledger_2026.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('PFMS Ledger Exported', 'Direct Beneficiary Transfer (DBT) reconciliation ledger synced and downloaded.', 'success');
+      });
+    }
+
+    // 4. Live GIS Sync
+    const liveGisBtn = document.getElementById('btn-live-gis-sync');
+    if (liveGisBtn) {
+      liveGisBtn.addEventListener('click', () => {
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} IST`;
+        const timeEl = document.getElementById('gis-sync-time');
+        if (timeEl) timeEl.textContent = `Synced at ${timeStr}`;
+        showToast('Live GIS Synchronized', `Survey of India & Bhunaksha spatial cadastral boundaries refreshed (${timeStr}).`, 'success');
+      });
+    }
+
+    // 5. Reset All Filters (National View)
+    const resetFiltersBtn = document.getElementById('btn-nat-reset-filters');
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', () => {
+        const stateSelect = document.getElementById('nat-state-filter');
+        const searchInput = document.getElementById('nat-search-projects-input');
+        if (stateSelect) stateSelect.value = 'ALL';
+        if (searchInput) searchInput.value = '';
+        renderNationalProjectsTable('ALL', '');
+        showToast('Filters Reset', 'Restored nationwide project portfolio view.', 'info');
+      });
+    }
+
+    // 6. Issue Sec 20E Notice
+    const sec20eBtn = document.getElementById('btn-sec-20e-notice');
+    if (sec20eBtn) {
+      sec20eBtn.addEventListener('click', () => {
+        showToast('Section 20E Notice Issued', 'Declaration of Acquisition published for Corridor NH-48. CALA notified for summary enquiry proceedings.', 'success');
+      });
+    }
+
+    // 7. Tribunal Review
+    const tribunalBtn = document.getElementById('btn-tribunal-review');
+    if (tribunalBtn) {
+      tribunalBtn.addEventListener('click', () => {
+        showToast('LARRA Tribunal Registry Active', '0 pending judicial stays for Corridor NH-48. All landowner claims expedited per Section 64.', 'info');
+      });
+    }
+
+    // 8. User Profile Badge & Dropdown Popup Menu
+    const userBadge = document.getElementById('header-user-badge');
+    const userMenu = document.getElementById('user-profile-menu');
+    const popupLogout = document.getElementById('btn-popup-logout');
+    const popupSettings = document.getElementById('btn-popup-settings');
+
+    if (userBadge && userMenu) {
+      userBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userMenu.classList.toggle('hidden');
+        const nameEl = document.getElementById('popup-profile-name');
+        const deptEl = document.getElementById('popup-profile-dept');
+        const jurEl = document.getElementById('popup-profile-jurisdiction');
+        if (nameEl) nameEl.textContent = store.currentUser.name;
+        if (deptEl) deptEl.textContent = store.currentUser.badge;
+        if (jurEl) jurEl.textContent = `Jurisdiction: ${store.currentUser.jurisdiction}`;
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!userMenu.contains(e.target) && !userBadge.contains(e.target)) {
+          userMenu.classList.add('hidden');
+        }
+      });
+    }
+
+    if (popupLogout) {
+      popupLogout.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (userMenu) userMenu.classList.add('hidden');
+        handleLogout();
+      });
+    }
+
+    if (popupSettings) {
+      popupSettings.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (userMenu) userMenu.classList.add('hidden');
+        openProfileSetupModal(getUserRole());
+      });
+    }
+
+    // 9. Language Selector
+    const langSelect = document.getElementById('lang-select');
+    if (langSelect) {
+      langSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        document.documentElement.lang = val;
+        const langName = val === 'hi' ? 'हिन्दी (Hindi)' : 'English';
+        showToast('Language Preference', `Switched display language to ${langName}.`, 'info');
       });
     }
   }
