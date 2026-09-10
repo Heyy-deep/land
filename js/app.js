@@ -1,4 +1,89 @@
   // ========================================================
+  // IN-APP SIGN OUT & STATUTORY PROMPT CONTROLLERS
+  // ========================================================
+  function promptSignOutModal() {
+    const modal = document.getElementById('modal-signout-confirm');
+    const u = (window.NLAMS_STORE && window.NLAMS_STORE.currentUser) || {};
+    const name = u.name || 'Official User';
+    const role = u.badge || u.title || 'Authenticated User';
+
+    if (!modal) {
+      handleLogout();
+      return;
+    }
+
+    const nameEl = document.getElementById('signout-modal-user-name');
+    const roleEl = document.getElementById('signout-modal-user-role');
+    const confirmNameEl = document.getElementById('signout-modal-confirm-name');
+    const initsEl = document.getElementById('signout-avatar-initials');
+
+    if (nameEl) nameEl.textContent = name;
+    if (roleEl) roleEl.textContent = role;
+    if (confirmNameEl) confirmNameEl.textContent = `${name} (${role})`;
+    if (initsEl) {
+      const clean = name.replace(/Dr\.|Er\.|Smt\.|Sh\.|Shri|IAS|WBCS|\(Exe\)|,/g, '').trim().split(/\s+/).filter(Boolean);
+      initsEl.textContent = clean.length > 1 ? (clean[0][0] + clean[clean.length - 1][0]).toUpperCase() : (clean[0] ? clean[0].slice(0, 2).toUpperCase() : 'NL');
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeSignOutModal() {
+    const modal = document.getElementById('modal-signout-confirm');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function showInAppPrompt(title, subtitle, message, defaultValue = '') {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('modal-inapp-prompt');
+      if (!modal) {
+        resolve(defaultValue);
+        return;
+      }
+      const titleEl = document.getElementById('inapp-prompt-title');
+      const subEl = document.getElementById('inapp-prompt-subtitle');
+      const msgEl = document.getElementById('inapp-prompt-message');
+      const inputEl = document.getElementById('inapp-prompt-input');
+      const btnConfirm = document.getElementById('btn-confirm-inapp-prompt');
+      const btnCancel = document.getElementById('btn-cancel-inapp-prompt');
+      const btnClose = document.getElementById('btn-close-inapp-prompt');
+
+      if (titleEl) titleEl.textContent = title;
+      if (subEl) subEl.textContent = subtitle || 'Statutory Workflow';
+      if (msgEl) msgEl.textContent = message;
+      if (inputEl) inputEl.value = defaultValue;
+
+      modal.classList.remove('hidden');
+      if (inputEl) inputEl.focus();
+
+      function onConfirm() {
+        cleanup();
+        resolve(inputEl ? inputEl.value.trim() : defaultValue);
+      }
+
+      function onCancel() {
+        cleanup();
+        resolve(null);
+      }
+
+      function cleanup() {
+        if (btnConfirm) btnConfirm.removeEventListener('click', onConfirm);
+        if (btnCancel) btnCancel.removeEventListener('click', onCancel);
+        if (btnClose) btnClose.removeEventListener('click', onCancel);
+        modal.classList.add('hidden');
+      }
+
+      if (btnConfirm) btnConfirm.addEventListener('click', onConfirm, { once: true });
+      if (btnCancel) btnCancel.addEventListener('click', onCancel, { once: true });
+      if (btnClose) btnClose.addEventListener('click', onCancel, { once: true });
+    });
+  }
+
+  window.promptSignOutModal = promptSignOutModal;
+  window.closeSignOutModal = closeSignOutModal;
+  window.showInAppPrompt = showInAppPrompt;
+
+  // ========================================================
   // MY PROFILE & STATUTORY IDENTITY DOSSIER CONTROLLER
   // ========================================================
   function openMyProfileModal() {
@@ -503,7 +588,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        handleLogout();
+        promptSignOutModal();
       });
     }
 
@@ -586,16 +671,15 @@
       });
     }
 
-    // Header active user badge click allows quick sign out
-    const userBadge = document.querySelector('#active-user-name')?.closest('.flex');
+    // Header active user badge click opens My Profile Dossier
+    const userBadge = document.getElementById('header-user-badge') || document.querySelector('#active-user-name')?.closest('.flex');
     if (userBadge) {
       userBadge.style.cursor = 'pointer';
-      userBadge.title = isUserAuthenticated() ? 'Click to Sign Out' : 'SSO Portal';
-      userBadge.addEventListener('click', () => {
+      userBadge.title = isUserAuthenticated() ? 'Click to view My Profile & Statutory Identity Dossier' : 'Sign in to NLAMS SSO Portal';
+      userBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (isUserAuthenticated()) {
-          if (confirm(`Currently signed in as ${store.currentUser.name} (${store.currentUser.badge}). Sign out?`)) {
-            handleLogout();
-          }
+          openMyProfileModal();
         } else {
           switchView('view-login', true);
         }
@@ -1609,7 +1693,12 @@
 
     if (btnRework) {
       btnRework.addEventListener('click', async () => {
-        const reason = prompt('Enter statutory discrepancy details for sending back proposal for rework:', 'Update KML right-of-way corridor boundary and clarify non-agricultural mutation.');
+        const reason = await showInAppPrompt(
+          'Send Back Proposal for Statutory Rework',
+          'Section 12 Requisition Scrutiny Desk',
+          'Enter statutory discrepancy details for sending back proposal for rework:',
+          'Update KML right-of-way corridor boundary and clarify non-agricultural mutation.'
+        );
         if (reason) {
           const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'SEND_BACK', reason, store.currentUser.name);
           if (res.ok) {
@@ -1623,7 +1712,12 @@
 
     if (btnReject) {
       btnReject.addEventListener('click', async () => {
-        const reason = prompt('Enter grounds for statutory proposal rejection under Section 7:', 'Proposal violates eco-sensitive buffer zone constraints and overlaps with protected forest land.');
+        const reason = await showInAppPrompt(
+          'Statutory Proposal Rejection',
+          'Section 7 Environmental & Feasibility Appraisal',
+          'Enter grounds for statutory proposal rejection under Section 7:',
+          'Proposal violates eco-sensitive buffer zone constraints and overlaps with protected forest land.'
+        );
         if (reason) {
           const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'REJECT', reason, store.currentUser.name);
           if (res.ok) {
@@ -1942,7 +2036,7 @@
         const grounds = document.getElementById('obj-grounds').value;
 
         if (!grounds.trim()) {
-          alert('Please enter statement of grounds for objection.');
+          showToast('Validation Required', 'Please enter statement of grounds for objection under Section 15(1).', 'warning');
           return;
         }
 
@@ -2549,7 +2643,7 @@
       popupLogout.addEventListener('click', (e) => {
         e.preventDefault();
         if (userMenu) userMenu.classList.add('hidden');
-        handleLogout();
+        promptSignOutModal();
       });
     }
 
@@ -2575,8 +2669,42 @@
       btnSignoutProfile.addEventListener('click', (e) => {
         e.preventDefault();
         closeMyProfileModal();
+        promptSignOutModal();
+      });
+    }
+
+    // Sign Out Confirmation Modal Actions
+    const btnCancelSignout = document.getElementById('btn-cancel-signout');
+    const btnCloseSignout = document.getElementById('btn-close-signout-modal');
+    const btnConfirmSignout = document.getElementById('btn-confirm-signout');
+
+    if (btnCancelSignout) {
+      btnCancelSignout.addEventListener('click', closeSignOutModal);
+    }
+    if (btnCloseSignout) {
+      btnCloseSignout.addEventListener('click', closeSignOutModal);
+    }
+    if (btnConfirmSignout) {
+      btnConfirmSignout.addEventListener('click', () => {
+        closeSignOutModal();
         handleLogout();
       });
+    }
+
+    // Citizen Portal Specific Profile Triggers
+    const citCardTrigger = document.getElementById('cit-card-profile-trigger');
+    if (citCardTrigger) {
+      citCardTrigger.addEventListener('click', openMyProfileModal);
+    }
+    const citCardUser = document.getElementById('cit-card-user-name');
+    if (citCardUser) {
+      citCardUser.style.cursor = 'pointer';
+      citCardUser.addEventListener('click', openMyProfileModal);
+    }
+    const citBannerUser = document.getElementById('cit-banner-user-name');
+    if (citBannerUser) {
+      citBannerUser.style.cursor = 'pointer';
+      citBannerUser.addEventListener('click', openMyProfileModal);
     }
 
     // Editable Mobile Handler with OTP verification simulation

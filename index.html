@@ -1971,6 +1971,108 @@
           </div>
         </div>
 
+        
+        <!-- ======================================================== -->
+        <!-- MODAL: SIGN OUT CONFIRMATION (IN-APP GOV-DESIGN) -->
+        <!-- ======================================================== -->
+        <div id="modal-signout-confirm" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+          <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-md w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Modal Header -->
+            <div class="bg-surface-container-high px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-outline-variant/30">
+              <div class="flex items-center gap-spacing-sm">
+                <div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold">
+                  <span class="material-symbols-outlined text-[22px]">logout</span>
+                </div>
+                <div>
+                  <h3 class="font-headline-sm text-sm font-bold text-on-surface">Sign Out Session</h3>
+                  <span class="font-legal-code text-[11px] text-error font-bold uppercase">STQC Level-3 Session Revocation</span>
+                </div>
+              </div>
+              <button type="button" id="btn-close-signout-modal" class="text-on-surface-variant hover:text-on-surface p-1 rounded transition-colors" aria-label="Close">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-spacing-xl space-y-spacing-md">
+              <div class="flex items-center gap-spacing-md bg-surface-container-low p-spacing-md rounded-xl border border-outline-variant/30">
+                <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-lg shrink-0 shadow-sm">
+                  <span id="signout-avatar-initials">NL</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="text-xs text-on-surface-variant font-medium">Currently Authenticated:</span>
+                  <span id="signout-modal-user-name" class="font-headline-sm text-headline-sm text-primary font-bold">Official User</span>
+                  <span id="signout-modal-user-role" class="font-legal-code text-xs text-secondary font-bold">System Role</span>
+                </div>
+              </div>
+
+              <div class="p-spacing-md bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-2">
+                <p class="font-body-md text-body-md text-on-surface leading-snug">
+                  Sign out of <strong class="text-primary">National Land Acquisition & Management System (NLAMS)</strong> as <strong id="signout-modal-confirm-name" class="text-primary font-bold">Official User (System Role)</strong>?
+                </p>
+                <div class="flex items-start gap-1.5 text-xs text-on-surface-variant">
+                  <span class="material-symbols-outlined text-[16px] text-tertiary shrink-0 mt-0.5">verified_user</span>
+                  <span>Active 256-bit TLS authenticated session will be cleanly terminated and local tokens cleared.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-spacing-md bg-surface-container-lowest border-t border-surface-container flex items-center justify-end gap-spacing-sm">
+              <button type="button" id="btn-cancel-signout" class="px-spacing-lg py-spacing-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs rounded transition-colors">
+                Cancel / বাতিল
+              </button>
+              <button type="button" id="btn-confirm-signout" class="px-spacing-lg py-spacing-xs bg-error text-on-error hover:bg-error-container hover:text-on-error-container font-bold text-xs rounded shadow transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / लॉग आउट
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- MODAL: IN-APP STATUTORY PROMPT / INPUT DIALOG -->
+        <!-- ======================================================== -->
+        <div id="modal-inapp-prompt" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+          <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Header -->
+            <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+              <div class="flex items-center gap-spacing-sm">
+                <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                  <span class="material-symbols-outlined text-[20px]">edit_note</span>
+                </div>
+                <div>
+                  <h3 id="inapp-prompt-title" class="font-headline-sm text-sm font-bold">Statutory Decision Remarks</h3>
+                  <span id="inapp-prompt-subtitle" class="font-legal-code text-[11px] text-primary-fixed-dim uppercase">RFCTLARR Statutory Workflow</span>
+                </div>
+              </div>
+              <button type="button" id="btn-close-inapp-prompt" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-spacing-xl space-y-spacing-sm">
+              <label id="inapp-prompt-message" for="inapp-prompt-input" class="font-body-md text-body-md text-on-surface font-semibold block">
+                Enter details:
+              </label>
+              <textarea id="inapp-prompt-input" rows="3" class="w-full bg-surface-container-low text-on-surface font-body-sm p-spacing-sm rounded-lg border border-outline-variant/40 outline-none focus:border-primary custom-scroll"></textarea>
+              <span class="text-[11px] text-on-surface-variant block">These remarks will be permanently committed to the immutable statutory audit log.</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-spacing-md bg-surface-container-lowest border-t border-surface-container flex items-center justify-end gap-spacing-sm">
+              <button type="button" id="btn-cancel-inapp-prompt" class="px-spacing-lg py-spacing-xs bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs rounded transition-colors">
+                Cancel
+              </button>
+              <button type="button" id="btn-confirm-inapp-prompt" class="px-spacing-lg py-spacing-xs bg-primary text-on-primary hover:bg-primary-container font-bold text-xs rounded shadow transition-colors">
+                Submit Remarks
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- MODAL 5: FIRST-TIME PROFILE SETUP WIZARD -->
         <!-- ======================================================== -->
         <div id="modal-profile-setup" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
@@ -2684,7 +2786,7 @@
                 Search your survey number to track gazette notices, compensation disbursals, R&R entitlements, or file a hearing petition.
               </p>
             </div>
-            <div class="flex items-center gap-spacing-sm bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30">
+            <div id="cit-card-profile-trigger" class="flex items-center gap-spacing-sm bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30 cursor-pointer hover:bg-surface-container transition-colors" title="Click to view full Landowner Profile Dossier">
               <span class="material-symbols-outlined text-primary text-[28px]">fingerprint</span>
               <div class="flex flex-col">
                 <span id="cit-card-user-name" class="font-label-sm text-label-sm font-bold text-on-surface">Subrata Ghosh</span>
