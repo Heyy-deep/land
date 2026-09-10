@@ -242,6 +242,7 @@
                 <div class="flex items-center justify-between"><span>Session Security:</span> <strong>256-bit TLS 1.3</strong></div>
               </div>
               <div class="pt-spacing-xs border-t border-surface-container flex flex-col gap-1">
+                <button id="btn-popup-view-profile" class="w-full text-left px-2 py-1.5 rounded hover:bg-surface-container text-xs font-bold text-primary flex items-center gap-1.5"><span class="material-symbols-outlined text-sm text-primary">account_circle</span> View My Profile Dossier</button>
                 <button id="btn-popup-settings" class="w-full text-left px-2 py-1.5 rounded hover:bg-surface-container text-xs font-semibold text-on-surface flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-sm">tune</span> Profile & Security Settings
                 </button>
@@ -291,7 +292,7 @@
     <!-- VIEW 0: SSO PORTAL & AUTHENTICATION (Stitch Slide 1) -->
     <!-- ======================================================== -->
     <section id="view-login" class="app-view hidden w-full px-gutter-desktop py-spacing-xl">
-      <div class="relative max-w-container-max mx-auto flex flex-col items-center">
+      <div class="relative max-w-container-max mx-auto flex flex-col items-center overflow-hidden">
         <!-- Cadastral Grid Watermark Background -->
         <div class="absolute inset-0 pointer-events-none opacity-20 mix-blend-multiply overflow-hidden -z-10">
           <svg class="w-full h-full text-surface-tint" xmlns="http://www.w3.org/2000/svg">
@@ -368,6 +369,18 @@
                   <option value="citizen">Affected Citizen / Landowner (नागरिक / भू-स्वामी)</option>
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
+              </div>
+              <!-- Citizen Persona Picker (Visible when Citizen role is chosen) -->
+              <div id="citizen-persona-picker" class="space-y-spacing-2xs hidden bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30">
+                <label class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1" for="login-citizen-persona-select">
+                  <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                  Select Citizen Landowner Profile / नागरिक पहचान चयन
+                </label>
+                <select id="login-citizen-persona-select" class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded px-spacing-sm py-1.5 border border-outline-variant/40 outline-none cursor-pointer">
+                  <option value="WB-CIT-01" selected>Subrata Ghosh — West Bengal (Dag No. 412/1, Hooghly)</option>
+                  <option value="MH-CIT-01">Ramesh Narayan Patil — Maharashtra (Gut No. 142/1, Pune)</option>
+                  <option value="UP-CIT-01">Ram Swarup Yadav — Uttar Pradesh (Khasra No. 348/2, Jewar)</option>
+                </select>
               </div>
               <!-- Dynamic Role Privilege Notice Pill -->
               <div id="role-privilege-pill" class="bg-surface-container-low text-primary px-spacing-md py-spacing-xs rounded flex items-center gap-spacing-xs font-body-sm text-body-sm border border-outline-variant/30">
@@ -860,7 +873,7 @@
               </div>
 
               <!-- Map Container Target -->
-              <div id="national-gis-map-container" class="relative w-full bg-surface-container-low rounded-lg p-spacing-md overflow-hidden flex items-center justify-center min-h-[460px] my-spacing-sm"></div>
+              <div id="national-gis-map-container" class="relative w-full bg-surface-container-low rounded-lg p-spacing-md overflow-hidden flex items-center justify-center min-h-[460px] max-h-[500px] my-spacing-sm" style="min-height: 460px; max-height: 500px; overflow: hidden;"></div>
 
               <!-- Map Legend Bottom -->
               <div class="flex flex-wrap items-center justify-between gap-spacing-sm pt-spacing-sm text-on-surface-variant font-body-sm text-body-sm border-t border-surface-container">
@@ -1127,6 +1140,7 @@
               </div>
               <select id="nat-state-filter" class="bg-surface-container-low text-primary font-semibold text-label-sm px-spacing-sm py-spacing-xs rounded border border-outline-variant/30 outline-none cursor-pointer">
                 <option value="ALL">All States (National)</option>
+                <option value="West Bengal">West Bengal</option>
                 <option value="Maharashtra">Maharashtra</option>
                 <option value="Gujarat">Gujarat</option>
                 <option value="Uttar Pradesh">Uttar Pradesh</option>
@@ -1200,7 +1214,7 @@
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
               <span class="hover:text-primary cursor-pointer">State Directorate</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span class="text-primary font-bold">Maharashtra State Land Acquisition & Requisition Portal (MS-LARP)</span>
+              <span id="state-portal-breadcrumb" class="text-primary font-bold">West Bengal State Land Acquisition & Requisition Portal (WB-LARP)</span>
             </nav>
             <div class="flex items-center gap-spacing-sm">
               <span class="inline-flex items-center gap-spacing-2xs px-spacing-sm py-spacing-2xs bg-surface-container-low rounded font-legal-code text-legal-code text-on-surface-variant border border-outline-variant/30">
@@ -1215,10 +1229,10 @@
           </div>
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-spacing-lg mt-spacing-2xs">
             <div class="space-y-spacing-2xs">
-              <h1 class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
+              <h1 id="state-dashboard-title" class="font-headline-xl text-headline-xl text-primary font-bold tracking-tight">
                 State Land Acquisition Operations Dashboard - West Bengal
               </h1>
-              <p class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">
+              <p id="state-dashboard-subtitle" class="font-headline-sm text-headline-sm text-on-surface-variant font-normal">
                 রাজ্য ভূমি অধিগ্রহণ ও ব্যবস্থাপনা ড্যাশবোর্ড (পশ্চিমবঙ্গ সরকার) • ভূমি ও ভূমি সংস্কার দপ্তর
               </p>
             </div>
@@ -1356,8 +1370,8 @@
         </section>
 
         <!-- Interactive West Bengal State District Choropleth Map -->
-        <section class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
-          <div id="state-choropleth-mount" class="w-full"></div>
+        <section class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md relative overflow-hidden">
+          <div id="state-choropleth-mount" class="relative w-full overflow-hidden" style="min-height: 440px; height: 440px; max-height: 440px;"></div>
         </section>
 
         <!-- Comprehensive State Requisition Matrix Table -->
@@ -1624,9 +1638,9 @@
             <nav class="flex items-center gap-spacing-xs text-label-sm font-label-sm text-on-surface-variant">
               <span class="hover:text-primary cursor-pointer">National Portal</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span class="hover:text-primary cursor-pointer">Maharashtra</span>
+              <span id="district-breadcrumb-state" class="hover:text-primary cursor-pointer">West Bengal</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span class="text-primary font-bold bg-surface-container-high px-spacing-sm py-spacing-2xs rounded">Hooghly District CALA Clearance Desk (DLLRO Chinsurah)</span>
+              <span id="district-breadcrumb-desk" class="text-primary font-bold bg-surface-container-high px-spacing-sm py-spacing-2xs rounded">Hooghly District CALA Clearance Desk (DLLRO Chinsurah)</span>
             </nav>
             <div class="flex items-center gap-spacing-sm">
               <button id="btn-export-field-notes" class="flex items-center gap-spacing-xs px-spacing-md py-spacing-xs rounded bg-surface-container-low text-primary text-label-sm font-label-sm hover:bg-surface-container border border-outline-variant/30 transition-colors">
@@ -1690,7 +1704,7 @@
             </div>
 
             <!-- Vector Map Mount -->
-            <div id="district-cadastral-gis-mount" class="relative w-full p-spacing-sm bg-surface-dim"></div>
+            <div id="district-cadastral-gis-mount" class="relative w-full p-spacing-sm bg-surface-dim rounded-lg overflow-hidden min-h-[580px]" style="min-height: 580px; max-height: 580px; overflow: hidden;"></div>
           </div>
 
           <!-- Right Panel: Scrutiny Queue & Parcel Action Controls (5 cols) -->
@@ -1798,7 +1812,7 @@
 
               <!-- Parcel List Queue -->
               <div class="mt-spacing-sm pt-spacing-sm border-t border-surface-container">
-                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-bold block mb-spacing-xs">All Parcels in Hinjewadi RoW</span>
+                <span id="cala-queue-section-title" class="font-label-sm text-label-sm text-on-surface-variant uppercase font-bold block mb-spacing-xs">All Parcels in Dankuni RoW (EDFC Corridor)</span>
                 <div id="cala-parcels-list" class="space-y-spacing-xs max-h-56 overflow-y-auto custom-scroll pr-1">
                   <!-- Dynamically populated from store.parcels -->
                 </div>
@@ -1808,6 +1822,155 @@
         </div>
 
         <!-- ======================================================== -->
+                <!-- ======================================================== -->
+        <!-- MODAL: MY PROFILE & STATUTORY IDENTITY DOSSIER -->
+        <!-- ======================================================== -->
+        <div id="modal-my-profile" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+          <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Modal Header -->
+            <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+              <div class="flex items-center gap-spacing-sm">
+                <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                  <span class="material-symbols-outlined text-[24px]">account_circle</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-spacing-xs">
+                    <h3 class="font-headline-sm text-headline-sm font-bold">My Profile & Statutory Identity Dossier</h3>
+                    <span class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase">STQC Level-3</span>
+                  </div>
+                  <p class="text-legal-code font-legal-code text-primary-fixed-dim text-xs">
+                    National Land Acquisition & Management System (NLAMS) • Single Source of Truth
+                  </p>
+                </div>
+              </div>
+              <button type="button" id="btn-close-profile-modal" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors" aria-label="Close Profile">
+                <span class="material-symbols-outlined text-[24px]">close</span>
+              </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-spacing-xl space-y-spacing-lg overflow-y-auto custom-scroll flex-1">
+              
+              <!-- Top Identity Summary Card -->
+              <div class="bg-surface-container-low p-spacing-md rounded-xl border border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-spacing-md shadow-xs">
+                <div class="flex items-center gap-spacing-md">
+                  <div class="w-14 h-14 rounded-full bg-primary text-on-primary flex items-center justify-center text-xl font-bold shadow-sm shrink-0">
+                    <span id="profile-avatar-initials">NL</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <div class="flex items-center gap-spacing-xs flex-wrap">
+                      <span id="profile-full-name" class="font-headline-sm text-headline-sm text-primary font-bold">Dr. S. K. Verma, Joint Secretary</span>
+                      <span class="inline-flex items-center gap-0.5 text-xs text-on-surface-variant font-medium bg-surface-container-high px-1.5 py-0.5 rounded" title="Identity locked under STQC Level-3 security. Modifications require statutory re-attestation.">
+                        <span class="material-symbols-outlined text-[12px] text-tertiary">lock</span> Identity Locked
+                      </span>
+                    </div>
+                    <span id="profile-role-badge" class="font-body-sm text-body-sm text-on-surface-variant font-medium">Central Ministry</span>
+                    <span id="profile-jurisdiction-badge" class="font-legal-code text-xs text-secondary font-bold">Central Ministry (National Apex)</span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-start sm:items-end gap-1">
+                  <span id="profile-auth-status-pill" class="px-spacing-sm py-1 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">verified</span> DSC Attested
+                  </span>
+                  <span class="text-[11px] text-on-surface-variant">Security Protocol: <strong>256-bit TLS 1.3</strong></span>
+                </div>
+              </div>
+
+              <!-- General User Attributes (Locked vs Editable) -->
+              <div class="space-y-spacing-xs">
+                <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[18px]">badge</span>
+                  Core Identity & Digital Credentials
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+                  
+                  <!-- Full Name (Locked) -->
+                  <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                      <span class="font-semibold">Legal Full Name:</span>
+                      <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked from UIDAI / NIC e-Office">lock</span>
+                    </div>
+                    <div id="profile-field-name" class="font-body-md text-body-md font-bold text-on-surface">Dr. S. K. Verma, Joint Secretary</div>
+                    <span class="text-[10px] text-outline-variant block">Verified against Statutory Cadastral Roll</span>
+                  </div>
+
+                  <!-- Role / Designation (Locked) -->
+                  <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                      <span class="font-semibold">System Designation:</span>
+                      <span class="material-symbols-outlined text-[14px] text-tertiary" title="Role-assigned by Government Nodal Agency">lock</span>
+                    </div>
+                    <div id="profile-field-designation" class="font-body-md text-body-md font-bold text-on-surface">Nodal Director (Land Systems)</div>
+                    <span class="text-[10px] text-outline-variant block">Authorized Statutory Role</span>
+                  </div>
+
+                  <!-- Registered Mobile (Editable) -->
+                  <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                      <span class="font-semibold">Registered Mobile:</span>
+                      <button type="button" id="btn-edit-mobile" class="text-primary hover:underline font-bold text-xs flex items-center gap-0.5">
+                        <span class="material-symbols-outlined text-[12px]">edit</span> Edit
+                      </button>
+                    </div>
+                    <div id="profile-mobile-display" class="font-body-md text-body-md font-bold text-on-surface">+91 98101 ••456</div>
+                    <div id="profile-mobile-edit-box" class="hidden flex items-center gap-1 mt-1">
+                      <input type="text" id="profile-mobile-input" value="+91 98101 23456" class="w-full bg-surface-container-low text-on-surface px-2 py-1 rounded text-xs border border-outline-variant/40 outline-none" />
+                      <button type="button" id="btn-save-mobile" class="px-2 py-1 bg-primary text-on-primary font-bold rounded text-xs shrink-0">Save</button>
+                      <button type="button" id="btn-cancel-mobile" class="px-2 py-1 bg-surface-container text-on-surface rounded text-xs shrink-0">Cancel</button>
+                    </div>
+                    <span class="text-[10px] text-on-surface-variant block">Statutory SMS & Disbursal OTP Alert Channel</span>
+                  </div>
+
+                  <!-- Registered Email (Editable) -->
+                  <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+                    <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                      <span class="font-semibold">Official Email Address:</span>
+                      <button type="button" id="btn-edit-email" class="text-primary hover:underline font-bold text-xs flex items-center gap-0.5">
+                        <span class="material-symbols-outlined text-[12px]">edit</span> Edit
+                      </button>
+                    </div>
+                    <div id="profile-email-display" class="font-body-md text-body-md font-bold text-on-surface truncate">sk.verma@nic.in</div>
+                    <div id="profile-email-edit-box" class="hidden flex items-center gap-1 mt-1">
+                      <input type="email" id="profile-email-input" value="sk.verma@nic.in" class="w-full bg-surface-container-low text-on-surface px-2 py-1 rounded text-xs border border-outline-variant/40 outline-none" />
+                      <button type="button" id="btn-save-email" class="px-2 py-1 bg-primary text-on-primary font-bold rounded text-xs shrink-0">Save</button>
+                      <button type="button" id="btn-cancel-email" class="px-2 py-1 bg-surface-container text-on-surface rounded text-xs shrink-0">Cancel</button>
+                    </div>
+                    <span class="text-[10px] text-on-surface-variant block">Digital Gazette Notices & PFMS Vouchers</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Role-Specific Statutory Profile Block -->
+              <div id="profile-role-specific-container" class="space-y-spacing-xs">
+                <!-- Dynamically populated per role -->
+              </div>
+
+              <!-- Audit & Security Metadata Strip -->
+              <div class="p-spacing-md bg-surface-container-low rounded-xl border border-outline-variant/30 grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm text-xs">
+                <div>
+                  <span class="text-on-surface-variant block">Account Provisioned Date:</span>
+                  <strong id="profile-account-created" class="text-on-surface">15-Apr-2023</strong>
+                </div>
+                <div>
+                  <span class="text-on-surface-variant block">Last Authenticated Session:</span>
+                  <strong id="profile-last-login" class="text-on-surface">Today, 10:48 AM IST (TLS 1.3)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-spacing-md bg-surface-container-lowest border-t border-surface-container flex items-center justify-between shrink-0">
+              <button type="button" id="btn-profile-signout" class="px-spacing-md py-spacing-xs bg-error-container text-on-error-container hover:bg-error hover:text-on-error font-bold text-xs rounded transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / लॉग आउट
+              </button>
+              <button type="button" id="btn-profile-done" class="px-spacing-lg py-spacing-xs bg-primary text-on-primary hover:bg-primary-container font-bold text-xs rounded shadow transition-colors">
+                Done / সম্পন্ন
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- MODAL 5: FIRST-TIME PROFILE SETUP WIZARD -->
         <!-- ======================================================== -->
         <div id="modal-profile-setup" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
@@ -1868,7 +2031,7 @@
               </div>
               <span class="text-on-surface-variant">Click map surface to reposition pin</span>
             </div>
-            <div id="picker-leaflet-map" class="w-full flex-1 bg-surface-container-low min-h-0"></div>
+            <div id="picker-leaflet-map" class="w-full flex-1 bg-surface-container-low min-h-0 overflow-hidden" style="min-height: 400px; overflow: hidden;"></div>
             <div class="p-spacing-md bg-surface-container-lowest border-t border-surface-container flex justify-end gap-spacing-sm shrink-0">
               <button type="button" id="btn-cancel-map-picker" class="px-spacing-md py-spacing-xs bg-surface-container text-on-surface font-bold rounded text-xs">Cancel</button>
               <button type="button" id="btn-confirm-map-picker" class="px-spacing-md py-spacing-xs bg-primary text-on-primary font-bold rounded text-xs shadow hover:bg-primary-container">
@@ -1913,7 +2076,7 @@
                     <span>Form 1 Requisition (v1.0)</span> <span class="text-tertiary font-bold">ARCHIVED</span>
                   </div>
                   <div class="p-2 rounded bg-surface-container flex items-center justify-between">
-                    <span>MahaBhumi 7/12 RoR (v1.0)</span> <span class="text-tertiary font-bold">ARCHIVED</span>
+                    <span id="archive-dossier-ror">Banglarbhumi Land Records & RoR (v2.0)</span> <span class="text-tertiary font-bold">ARCHIVED</span>
                   </div>
                   <div class="p-2 rounded bg-surface-container flex items-center justify-between">
                     <span>Section 11/19 Gazette (v1.0)</span> <span class="text-tertiary font-bold">ARCHIVED</span>
@@ -2059,7 +2222,7 @@
               <div id="dossier-tab-content-ror" class="dossier-tab-pane hidden space-y-spacing-md">
                 <div class="p-spacing-md bg-surface-container-lowest rounded border border-outline-variant/30 space-y-spacing-xs">
                   <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
-                    <span class="font-label-md text-label-md text-primary font-bold">Bhulekh MahaBhumi 7/12 Digitized Extract</span>
+                    <span id="dossier-ror-title" class="font-label-md text-label-md text-primary font-bold">State Cadastral & Land Records RoR Extract</span>
                     <span class="font-legal-code text-legal-code text-tertiary font-bold">MUTATION VERIFIED #4019</span>
                   </div>
                   <div class="grid grid-cols-2 gap-spacing-sm text-body-sm font-body-sm">
@@ -2340,9 +2503,12 @@
                   Implementing Agency / Requiring Body <span class="text-error font-bold">*</span>
                 </label>
                 <select id="prop-agency" class="w-full bg-surface-container-low text-on-surface py-spacing-sm px-spacing-md rounded border border-outline-variant/40 focus:bg-surface-container outline-none font-body-md cursor-pointer">
+                  <option value="KMDA" selected>Kolkata Metropolitan Development Authority (KMDA)</option>
+                  <option value="PWD-WB">PWD (Roads Wing), West Bengal</option>
+                  <option value="DFCCIL/Railways">DFCCIL / Indian Railways</option>
                   <option value="NHAI">National Highways Authority of India (NHAI)</option>
                   <option value="MSRDC">Maharashtra State Road Development Corp (MSRDC)</option>
-                  <option value="Railways/MRIDC" selected>Maharashtra Rail Infrastructure Dev Corp (MRIDC)</option>
+                  <option value="Railways/MRIDC">Maharashtra Rail Infrastructure Dev Corp (MRIDC)</option>
                   <option value="MIDC">Maharashtra Industrial Dev Corp (MIDC)</option>
                   <option value="PMRDA">Pune Metropolitan Region Dev Authority (PMRDA)</option>
                 </select>
@@ -2521,21 +2687,29 @@
             <div class="flex items-center gap-spacing-sm bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30">
               <span class="material-symbols-outlined text-primary text-[28px]">fingerprint</span>
               <div class="flex flex-col">
-                <span class="font-label-sm text-label-sm font-bold text-on-surface">Ramesh Narayan Patil</span>
-                <span class="font-legal-code text-legal-code text-on-surface-variant">Aadhaar: •••• •••• 8921 (Verified)</span>
+                <span id="cit-card-user-name" class="font-label-sm text-label-sm font-bold text-on-surface">Subrata Ghosh</span>
+                <span id="cit-card-aadhaar" class="font-legal-code text-legal-code text-on-surface-variant">Aadhaar: •••• •••• 1012 (Verified)</span>
               </div>
             </div>
           </div>
 
           <!-- Citizen Real-Time Cadastral Search Bar -->
           <div class="bg-surface-container-lowest p-spacing-md rounded-lg border border-outline-variant/30 flex flex-col md:flex-row items-center justify-between gap-spacing-md shadow-xs">
-            <div class="flex items-center gap-spacing-xs w-full md:w-auto">
+            <div class="flex items-center gap-spacing-xs w-full md:w-auto flex-wrap">
               <span class="material-symbols-outlined text-primary text-[22px]">search</span>
               <span class="font-label-md text-label-md font-bold text-primary whitespace-nowrap">Track Land Parcel:</span>
-              <input id="cit-search-input" type="text" value="Gut No. 142/1" placeholder="Enter Gut / Khasra No. or Project ID" class="bg-surface-container-low text-on-surface font-body-sm px-spacing-sm py-1 rounded border border-outline-variant/40 focus:outline-none w-full md:w-64" />
+              <input id="cit-search-input" type="text" value="Dag No. 412/1" placeholder="Enter Dag / Gut / Khasra No. or Project ID" class="bg-surface-container-low text-on-surface font-body-sm px-spacing-sm py-1 rounded border border-outline-variant/40 focus:outline-none w-full md:w-64" />
               <button id="btn-cit-search" type="button" class="px-spacing-md py-1 bg-primary text-on-primary font-label-sm text-xs font-bold rounded shadow-xs hover:bg-primary-container transition-colors">
                 Search
               </button>
+              <div class="flex items-center gap-1 bg-surface-container-low px-spacing-sm py-1 rounded border border-outline-variant/30 text-xs ml-2">
+                <span class="text-on-surface-variant font-semibold whitespace-nowrap">Citizen Persona:</span>
+                <select id="cit-persona-select" class="bg-transparent font-bold text-primary outline-none cursor-pointer">
+                  <option value="WB-CIT-01" selected>Subrata Ghosh (West Bengal)</option>
+                  <option value="MH-CIT-01">Ramesh Narayan Patil (Maharashtra)</option>
+                  <option value="UP-CIT-01">Ram Swarup Yadav (Uttar Pradesh)</option>
+                </select>
+              </div>
             </div>
             <div id="cit-parcel-pills" class="flex items-center gap-1.5 flex-wrap">
               <!-- Quick Select Buttons -->
@@ -2550,13 +2724,13 @@
               </div>
               <div class="flex flex-col">
                 <div class="flex items-center gap-spacing-xs">
-                  <span class="font-headline-sm text-headline-sm text-primary font-bold">Ramesh Narayan Patil</span>
+                  <span id="cit-banner-user-name" class="font-headline-sm text-headline-sm text-primary font-bold">Subrata Ghosh</span>
                   <span class="px-spacing-xs py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-legal-code font-bold uppercase">
                     Aadhaar e-KYC Verified
                   </span>
                 </div>
-                <span class="font-body-sm text-body-sm text-on-surface-variant">
-                  UID: <strong>•••• •••• 8921</strong> • DigiLocker Verified Patta Holder • Registered Mobile: +91 ••••• ••418
+                <span id="cit-banner-uid-info" class="font-body-sm text-body-sm text-on-surface-variant">
+                  UID: <strong>•••• •••• 1012</strong> • Banglarbhumi Verified Patta Holder • Registered Mobile: +91 98301 45210
                 </span>
               </div>
             </div>
@@ -2564,7 +2738,7 @@
               <span class="material-symbols-outlined text-secondary text-[20px]">pin_drop</span>
               <div class="flex flex-col text-right sm:text-left">
                 <span class="font-label-sm text-label-sm font-bold text-on-surface">Assigned Cadastral Holding</span>
-                <span class="font-legal-code text-legal-code text-primary font-bold">Gut No. 142/1 (K-142/1) • Hinjewadi</span>
+                <span id="cit-banner-holding" class="font-legal-code text-legal-code text-primary font-bold">Dag No. 412/1 (Khatian #1842) • Mouza Dankuni (JL 34)</span>
               </div>
             </div>
           </div>
@@ -2579,12 +2753,12 @@
               <div class="flex items-start justify-between border-b border-surface-container pb-spacing-sm">
                 <div>
                   <div class="flex items-center gap-spacing-xs">
-                    <h2 id="cit-gut-title" class="font-headline-md text-headline-md text-primary font-bold">Gut No. 142/1</h2>
+                    <h2 id="cit-gut-title" class="font-headline-md text-headline-md text-primary font-bold">Dag No. 412/1</h2>
                     <span id="cit-status-pill" class="px-spacing-xs py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-legal-code text-legal-code font-bold uppercase">
                       POSSESSED / CLEARED
                     </span>
                   </div>
-                  <span id="cit-project-name" class="font-body-sm text-body-sm text-on-surface-variant">Pune Metro Line 3 Extension (Hinjewadi Sector)</span>
+                  <span id="cit-project-name" class="font-body-sm text-body-sm text-on-surface-variant">EDFC Land Acquisition (Dankuni Freight Terminal & Rail Linkage) (Dankuni (JL 34) Sector)</span>
                 </div>
                 <button class="text-primary hover:underline font-legal-code text-legal-code flex items-center gap-1 font-bold">
                   <span class="material-symbols-outlined text-[14px]">download</span> Download 3G Award
@@ -2595,19 +2769,19 @@
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-spacing-md py-spacing-xs">
                 <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
                   <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Acquired Extent</span>
-                  <strong id="cit-area" class="font-headline-sm text-headline-sm text-on-surface">0.94 Ha</strong>
+                  <strong id="cit-area" class="font-headline-sm text-headline-sm text-on-surface">1.42 Ha</strong>
                   <span class="text-[11px] text-on-surface-variant">9,400 m² (92% Overlap)</span>
                 </div>
 
                 <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
                   <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Land Classification</span>
-                  <strong id="cit-type" class="font-headline-sm text-headline-sm text-on-surface truncate block">Jirayat Tier-1</strong>
+                  <strong id="cit-type" class="font-headline-sm text-headline-sm text-on-surface truncate block">Agricultural (Sali / Bastu)</strong>
                   <span class="text-[11px] text-tertiary font-semibold">Agricultural Patta</span>
                 </div>
 
                 <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/30">
                   <span class="text-legal-code font-legal-code text-on-surface-variant uppercase block">Total Award Value</span>
-                  <strong id="cit-total-val" class="font-headline-sm text-headline-sm text-primary">₹47.00 L</strong>
+                  <strong id="cit-total-val" class="font-headline-sm text-headline-sm text-primary">₹318.08 L</strong>
                   <span class="text-[11px] text-tertiary font-bold">PFMS DBT Credited</span>
                 </div>
               </div>
@@ -2621,19 +2795,19 @@
                 <div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant">
                   <div class="flex justify-between">
                     <span>Base Market Value (Circle Rate × Factor):</span>
-                    <strong class="text-on-surface">₹23,50,000</strong>
+                    <strong id="cit-calc-market-val" class="text-on-surface">₹1,59,04,000</strong>
                   </div>
                   <div class="flex justify-between">
                     <span>100% Solatium Award (Mandatory Sec 30):</span>
-                    <strong class="text-tertiary">+ ₹23,50,000</strong>
+                    <strong id="cit-calc-solatium" class="text-tertiary">+ ₹1,59,04,000</strong>
                   </div>
                   <div class="flex justify-between">
                     <span>Additional Statutory Interest @ 12% p.a.:</span>
-                    <strong class="text-primary">+ ₹1,40,000 (Included)</strong>
+                    <strong id="cit-calc-interest" class="text-primary">+ ₹38,16,960 (Included)</strong>
                   </div>
                   <div class="flex justify-between pt-spacing-xs border-t border-surface-container font-semibold text-on-surface">
                     <span>Final Disbursal Amount:</span>
-                    <span id="cit-calc-final" class="font-bold text-primary font-headline-sm">₹47,00,000</span>
+                    <span id="cit-calc-final" class="font-bold text-primary font-headline-sm">₹3,18,08,000</span>
                   </div>
                 </div>
               </div>
@@ -2644,7 +2818,7 @@
                 <div class="flex flex-col">
                   <span class="font-label-md text-label-md text-tertiary font-bold">PFMS Direct Benefit Transfer Successful</span>
                   <p id="cit-dbt-desc" class="font-body-sm text-body-sm text-on-surface mt-0.5">
-                    Amount of ₹47,00,000 credited to SBI A/c •••• 4120 via PFMS Treasury Node. UTR: #SBIN00482910 on 14-Oct-2024.
+                    Amount of ₹3,18,08,000 credited to Punjab National Bank A/c •••• 5012 via PFMS Treasury Node. UTR: #SBINWB2408912 on 18-Oct-2024.
                   </p>
                 </div>
               </div>

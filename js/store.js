@@ -253,7 +253,113 @@
     }
   ];
 
-  // Cadastral Land Parcels (Grounded in Authentic Hooghly Mouzas)
+  // Multi-State Citizen / Landowner Profiles
+  const CITIZEN_PERSONAS = {
+    'WB-CIT-01': {
+      id: 'WB-CIT-01',
+      role: 'citizen',
+      name: 'Subrata Ghosh',
+      title: 'Affected Landowner / Patta Holder',
+      state: 'West Bengal',
+      district: 'Hooghly',
+      taluka: 'Chanditala-II',
+      village: 'Dankuni (JL 34)',
+      dept: 'Dag No. 412/1, Mouza Dankuni (JL 34)',
+      jurisdiction: 'Chanditala-II, Hooghly District',
+      badge: 'Citizen / Landowner',
+      ownerAadhaar: '9876-5432-1012',
+      maskedAadhaar: '•••• •••• 1012',
+      ownerMobile: '+91 98301 45210',
+      mobile: '+91 98301 45210',
+      maskedMobile: '+91 98301 ••210',
+      email: 'subrata.ghosh.kol@gmail.com',
+      authStatus: 'UIDAI Aadhaar e-KYC (Biometric & OTP Level-2)',
+      authType: 'Aadhaar e-KYC',
+      accountCreated: '12-Jul-2024',
+      lastLogin: 'Today, 10:45 AM IST (TLS 1.3)',
+      stateTerm: 'Dag No.',
+      address: 'Village Dankuni (JL 34), Chanditala-II Block, Hooghly District, West Bengal - 712310',
+      designationOfficial: 'Subrata Ghosh — Registered Patta Landowner',
+      holdingRef: 'Dag No. 412/1 (Khatian #1842) • Mouza Dankuni (JL 34)',
+      parcelId: 'WB-HGY-DNK-01',
+      gutNumber: 'Dag No. 412/1',
+      landRecordSystem: 'Banglarbhumi Land Records (e-Bhuchitra)',
+      landRecordDoc: 'Banglarbhumi Khatian & Dag RoR (v2.0)',
+      landRecordDesc: 'Verified against Banglarbhumi e-Bhuchitra RoR',
+      bankAccount: 'Punjab National Bank A/c •••• 5012',
+      utrNumber: 'UTR: #SBINWB2408912 on 18-Oct-2024'
+    },
+    'MH-CIT-01': {
+      id: 'MH-CIT-01',
+      role: 'citizen',
+      name: 'Ramesh Narayan Patil',
+      title: 'Affected Landowner / Patta Holder',
+      state: 'Maharashtra',
+      district: 'Pune',
+      taluka: 'Mulshi',
+      village: 'Hinjewadi',
+      dept: 'Gut No. 142/1, Hinjewadi Phase-1',
+      jurisdiction: 'Mulshi Taluka, Pune District',
+      badge: 'Citizen / Landowner',
+      ownerAadhaar: '9842-5174-8921',
+      maskedAadhaar: '•••• •••• 8921',
+      ownerMobile: '+91 98220 44418',
+      mobile: '+91 98220 44418',
+      maskedMobile: '+91 98220 ••418',
+      email: 'ramesh.patil.pune@gmail.com',
+      authStatus: 'UIDAI Aadhaar e-KYC (Biometric & OTP Level-2)',
+      authType: 'Aadhaar e-KYC',
+      accountCreated: '05-May-2024',
+      lastLogin: 'Today, 10:40 AM IST (TLS 1.3)',
+      stateTerm: 'Gut No.',
+      address: 'Village Hinjewadi, Mulshi Taluka, Pune District, Maharashtra - 411057',
+      designationOfficial: 'Ramesh Narayan Patil — DigiLocker Verified 7/12 Landowner',
+      holdingRef: 'Gut No. 142/1 (K-142/1) • Hinjewadi',
+      parcelId: 'MH-PUN-HIN-01',
+      gutNumber: 'Gut No. 142/1',
+      landRecordSystem: 'MahaBhumi (MahaBhulekh 7/12 & 8A)',
+      landRecordDoc: 'Bhulekh MahaBhumi 7/12 Digitized Extract',
+      landRecordDesc: 'Verified against MahaBhumi 7/12 land records',
+      bankAccount: 'State Bank of India A/c •••• 4120',
+      utrNumber: 'UTR: #SBIN00482910 on 14-Oct-2024'
+    },
+    'UP-CIT-01': {
+      id: 'UP-CIT-01',
+      role: 'citizen',
+      name: 'Ram Swarup Yadav',
+      title: 'Affected Landowner / Khata Holder',
+      state: 'Uttar Pradesh',
+      district: 'Gautam Buddha Nagar',
+      taluka: 'Jewar',
+      village: 'Ranhera',
+      dept: 'Khasra No. 348/2, Ranhera Bangar',
+      jurisdiction: 'Jewar Tehsil, Gautam Buddha Nagar',
+      badge: 'Citizen / Landowner',
+      ownerAadhaar: '9821-4321-6534',
+      maskedAadhaar: '•••• •••• 6534',
+      ownerMobile: '+91 94120 77291',
+      mobile: '+91 94120 77291',
+      maskedMobile: '+91 94120 ••291',
+      email: 'ram.swarup.jewar@gmail.com',
+      authStatus: 'UIDAI Aadhaar e-KYC (Biometric & OTP Level-2)',
+      authType: 'Aadhaar e-KYC',
+      accountCreated: '18-Aug-2024',
+      lastLogin: 'Today, 10:35 AM IST (TLS 1.3)',
+      stateTerm: 'Khasra No.',
+      address: 'Village Ranhera, Jewar Tehsil, Gautam Buddha Nagar, Uttar Pradesh - 203135',
+      designationOfficial: 'Ram Swarup Yadav — UP Bhulekh Khatauni Landowner',
+      holdingRef: 'Khasra No. 348/2 (Khata #00128) • Ranhera, Jewar',
+      parcelId: 'UP-YEIDA-JEW-01',
+      gutNumber: 'Khasra No. 348/2',
+      landRecordSystem: 'Bhulekh UP (Khasra & Khatauni)',
+      landRecordDoc: 'UP Bhulekh Digital Khatauni Certificate',
+      landRecordDesc: 'Verified against UP Bhulekh Khatauni records',
+      bankAccount: 'Bank of Baroda A/c •••• 8831',
+      utrNumber: 'UTR: #BARBUP2419082 on 12-Nov-2024'
+    }
+  };
+
+  // Cadastral Land Parcels (Grounded in Authentic Multi-State Corridors)
   const INITIAL_GEOJSON_PARCELS = [
     {
       type: "Feature",
@@ -542,6 +648,102 @@
         possessionOfficer: null,
         svgCoordinates: { x: 440, y: 435, points: "360,390 490,370 515,480 385,495" }
       }
+    },
+    {
+      type: "Feature",
+      id: "MH-PUN-HIN-01",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [73.7280, 18.5910],
+            [73.7320, 18.5900],
+            [73.7330, 18.5940],
+            [73.7290, 18.5950],
+            [73.7280, 18.5910]
+          ]
+        ]
+      },
+      properties: {
+        id: "MH-PUN-HIN-01",
+        gutNumber: "Gut No. 142/1",
+        khasraNo: "K-142/1",
+        village: "Hinjewadi",
+        taluka: "Mulshi",
+        district: "Pune",
+        state: "Maharashtra",
+        projectId: "REQ-MH-PUN-2023-0892",
+        projectName: "Pune Metro Line 3 Extension (Hinjewadi IT Park Corridor)",
+        ownerName: "Ramesh Narayan Patil",
+        ownerAadhaar: "•••• •••• 8921",
+        ownerMobile: "+91 98220 44418",
+        areaHa: 0.94,
+        areaSqM: 9400,
+        landType: "Non-Agricultural / Commercial",
+        baseMarketRatePerSqM: 2500,
+        solatiumPercent: 100,
+        interestPercent: 12,
+        totalCompensation: 4700000,
+        status: "Possessed",
+        statusLabel: "Possessed / Cleared (Sec 16)",
+        statusColor: "#15803d",
+        dbtStatus: "Credited (PFMS UTR: #SBIN00482910)",
+        disbursedDate: "14-Oct-2024",
+        rrEntitlement: "Hinjewadi Model Colony Resettlement Plot #B-14",
+        rrStatus: "Settled (Plot #B-14 Allotted, Housing Grant ₹2,50,000 Credited)",
+        overlapPercent: 92,
+        possessionDate: "14-Oct-2024",
+        possessionOfficer: "Dr. Rajesh Deshmukh, IAS",
+        svgCoordinates: { x: 280, y: 160, points: "200,120 320,100 340,190 220,210" }
+      }
+    },
+    {
+      type: "Feature",
+      id: "UP-YEIDA-JEW-01",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [77.5800, 28.1800],
+            [77.5850, 28.1790],
+            [77.5860, 28.1830],
+            [77.5810, 28.1840],
+            [77.5800, 28.1800]
+          ]
+        ]
+      },
+      properties: {
+        id: "UP-YEIDA-JEW-01",
+        gutNumber: "Khasra No. 348/2",
+        khasraNo: "Khata #00128",
+        village: "Ranhera",
+        taluka: "Jewar",
+        district: "Gautam Buddha Nagar",
+        state: "Uttar Pradesh",
+        projectId: "REQ-UP-JWR-2023-0512",
+        projectName: "Noida International Airport (Jewar Phase-II Corridor)",
+        ownerName: "Ram Swarup Yadav",
+        ownerAadhaar: "•••• •••• 6534",
+        ownerMobile: "+91 94120 77291",
+        areaHa: 1.15,
+        areaSqM: 11500,
+        landType: "Agricultural (Chahi / Nahari)",
+        baseMarketRatePerSqM: 1800,
+        solatiumPercent: 100,
+        interestPercent: 12,
+        totalCompensation: 6850000,
+        status: "Awarded",
+        statusLabel: "Award Declared (Sec 23)",
+        statusColor: "#0284c7",
+        dbtStatus: "Credited (PFMS UTR: #BARBUP2419082)",
+        disbursedDate: "12-Nov-2024",
+        rrEntitlement: "Jewar Bangar R&R Township Allotment",
+        rrStatus: "Allotment Letter Issued, Shifting Allowance Disbursed",
+        overlapPercent: 95,
+        possessionDate: null,
+        possessionOfficer: "Sh. Manish Kumar Verma, IAS",
+        svgCoordinates: { x: 300, y: 170, points: "220,130 330,110 350,200 235,220" }
+      }
     }
   ];
 
@@ -602,6 +804,14 @@
     constructor() {
       this.projects = JSON.parse(localStorage.getItem('nlams_projects_v2')) || INITIAL_PROJECTS;
       this.parcels = JSON.parse(localStorage.getItem('nlams_parcels_v2')) || INITIAL_GEOJSON_PARCELS;
+      // Ensure multi-state parcels exist
+      const existingIds = new Set(this.parcels.map(p => (p.properties || p).id));
+      INITIAL_GEOJSON_PARCELS.forEach(p => {
+        const pid = (p.properties || p).id;
+        if (!existingIds.has(pid)) {
+          this.parcels.push(p);
+        }
+      });
       this.objections = JSON.parse(localStorage.getItem('nlams_objections_v2')) || INITIAL_OBJECTIONS;
       this.audit = JSON.parse(localStorage.getItem('nlams_audit_v2')) || INITIAL_AUDIT;
       this.rnrFamilies = JSON.parse(localStorage.getItem('nlams_rnr_families_v2')) || [
@@ -613,15 +823,31 @@
       ];
       this.listeners = [];
 
-      this.currentUser = {
-        role: 'central-ministry',
-        name: 'Dr. A. K. Vardhan, IAS',
-        title: 'Nodal Director (Land Systems), Central Ministry / DoLR',
-        jurisdiction: 'National Apex Directorate, New Delhi',
-        authMethod: 'Aadhaar e-KYC',
-        ownerAadhaar: '9842-5174-8921',
-        badge: 'Central Ministry'
-      };
+      const activeRole = sessionStorage.getItem('nlams_session_role') || 'central-ministry';
+      if (activeRole === 'citizen') {
+        const personaId = sessionStorage.getItem('nlams_citizen_persona') || 'WB-CIT-01';
+        this.currentUser = Object.assign({}, CITIZEN_PERSONAS[personaId] || CITIZEN_PERSONAS['WB-CIT-01']);
+      } else {
+        this.currentUser = {
+          role: 'central-ministry',
+          name: 'Dr. S. K. Verma, Joint Secretary',
+          title: 'Nodal Director (Land Systems)',
+          dept: 'Department of Land Resources (DoLR), MoRD, New Delhi',
+          jurisdiction: 'Central Ministry (National Apex)',
+          badge: 'Central Ministry',
+          mobile: '+91 98101 23456',
+          maskedMobile: '+91 98101 ••456',
+          email: 'sk.verma@nic.in',
+          authStatus: 'DSC Level-3 Token (NIC-CA)',
+          authType: 'DSC',
+          accountCreated: '15-Apr-2023',
+          lastLogin: 'Today, 10:48 AM IST (TLS 1.3)',
+          ministry: 'Ministry of Rural Development (MoRD)',
+          department: 'Department of Land Resources (DoLR)',
+          designationOfficial: 'Dr. S. K. Verma, IAS — Joint Secretary & Nodal Director',
+          ownerAadhaar: null
+        };
+      }
     }
 
     save() {
@@ -693,15 +919,63 @@
       return this.currentUser;
     }
 
-    setUserRole(roleKey) {
+    updateUserContact(mobile, email) {
+      if (this.currentUser) {
+        if (mobile !== undefined && mobile !== null && mobile !== '') {
+          this.currentUser.mobile = mobile;
+          this.currentUser.ownerMobile = mobile;
+          const clean = mobile.replace(/[^0-9]/g, '');
+          const last3 = clean.slice(-3);
+          const masked = mobile.length > 6 ? mobile.slice(0, 6) + ' ••' + last3 : mobile;
+          this.currentUser.maskedMobile = masked;
+        }
+        if (email !== undefined && email !== null && email !== '') {
+          this.currentUser.email = email;
+        }
+        this.logAudit(this.currentUser.name, this.currentUser.badge, `Updated registered contact details (Mobile: ${this.currentUser.maskedMobile || 'N/A'}, Email: ${this.currentUser.email || 'N/A'})`);
+        this.dispatch('PROFILE_UPDATED', this.currentUser);
+      }
+      return this.currentUser;
+    }
+
+    setCitizenProfile(personaId = 'WB-CIT-01') {
+      const persona = CITIZEN_PERSONAS[personaId] || CITIZEN_PERSONAS['WB-CIT-01'];
+      this.currentUser = Object.assign({}, persona);
+      sessionStorage.setItem('nlams_citizen_persona', persona.id);
+      sessionStorage.setItem('nlams_session_role', 'citizen');
+      this.logAudit(this.currentUser.name, this.currentUser.badge, `Switched citizen landowner profile to ${this.currentUser.name} (${this.currentUser.state})`);
+      this.dispatch('ROLE_CHANGED', this.currentUser);
+      this.dispatch('CITIZEN_CHANGED', this.currentUser);
+      return this.currentUser;
+    }
+
+    getCitizenPersonas() {
+      return CITIZEN_PERSONAS;
+    }
+
+    setUserRole(roleKey, personaId = null) {
+      if (roleKey === 'citizen') {
+        const pId = personaId || sessionStorage.getItem('nlams_citizen_persona') || 'WB-CIT-01';
+        return this.setCitizenProfile(pId);
+      }
       const rolesMap = {
         'central-ministry': {
           role: 'central-ministry',
           name: 'Dr. S. K. Verma, Joint Secretary',
           title: 'Nodal Director (Land Systems)',
           dept: 'Department of Land Resources (DoLR), MoRD, New Delhi',
-          jurisdiction: 'Central Ministry (National)',
+          jurisdiction: 'Central Ministry (National Apex)',
           badge: 'Central Ministry',
+          mobile: '+91 98101 23456',
+          maskedMobile: '+91 98101 ••456',
+          email: 'sk.verma@nic.in',
+          authStatus: 'DSC Level-3 Token (NIC-CA)',
+          authType: 'DSC',
+          accountCreated: '15-Apr-2023',
+          lastLogin: 'Today, 10:48 AM IST (TLS 1.3)',
+          ministry: 'Ministry of Rural Development (MoRD)',
+          department: 'Department of Land Resources (DoLR)',
+          designationOfficial: 'Dr. S. K. Verma, IAS — Joint Secretary & Nodal Director',
           ownerAadhaar: null
         },
         'state-revenue': {
@@ -711,6 +985,17 @@
           dept: 'Land & Land Reforms Dept, Govt of West Bengal (Nabanna)',
           jurisdiction: 'West Bengal State Directorate',
           badge: 'State Government',
+          state: 'West Bengal',
+          stateName: 'West Bengal',
+          mobile: '+91 94330 87612',
+          maskedMobile: '+91 94330 ••612',
+          email: 'amitava.das@wb.gov.in',
+          authStatus: 'DSC Level-3 Token (e-Mudhra CA)',
+          authType: 'DSC',
+          accountCreated: '02-Jan-2024',
+          lastLogin: 'Today, 09:15 AM IST (TLS 1.3)',
+          directorate: 'Directorate of Land Records & Surveys (Nabanna, Howrah)',
+          designationOfficial: 'Dr. Amitava Das, IAS — Principal Secretary (Land & Land Reforms)',
           ownerAadhaar: null
         },
         'dro-cala': {
@@ -720,6 +1005,17 @@
           dept: 'Hooghly District Collectorate (Chinsurah)',
           jurisdiction: 'Hooghly District CALA Clearance Desk',
           badge: 'District Authority / CALA',
+          state: 'West Bengal',
+          mobile: '+91 98311 54321',
+          maskedMobile: '+91 98311 ••321',
+          email: 'cala.hooghly@wb.gov.in',
+          authStatus: 'DSC Level-3 Token (CCA India)',
+          authType: 'DSC',
+          accountCreated: '18-Nov-2023',
+          lastLogin: 'Today, 10:30 AM IST (TLS 1.3)',
+          districtName: 'Hooghly District',
+          divisionBlock: 'Burdwan Division / Chinsurah & Chanditala',
+          designationOfficial: 'Smt. Sreemoyee Sen, WBCS (Exe) — District CALA & DLLRO',
           ownerAadhaar: null
         },
         'requiring-body': {
@@ -729,21 +1025,26 @@
           dept: 'Kolkata Metropolitan Development Authority (KMDA) / DFCCIL',
           jurisdiction: 'EDFC Dankuni Corridor Cell',
           badge: 'Implementing Agency',
+          mobile: '+91 98740 65432',
+          maskedMobile: '+91 98740 ••432',
+          email: 'sourav.ganguly@dfccil.co.in',
+          authStatus: 'DSC Level-2 Token (SafeScrypt CA)',
+          authType: 'DSC',
+          accountCreated: '20-May-2024',
+          lastLogin: 'Today, 08:50 AM IST (TLS 1.3)',
+          agencyName: 'DFCCIL / KMDA (Kolkata Metropolitan Development Authority)',
+          assignedProjects: 'Eastern Dedicated Freight Corridor (EDFC Dankuni - Sonnagar) & Dankuni RoU Link',
+          designationOfficial: 'Er. Sourav Ganguly — Chief Engineer (Land & Infra)',
           ownerAadhaar: null
         },
         'citizen': {
-          role: 'citizen',
-          name: 'Subrata Ghosh',
-          title: 'Affected Landowner / Patta Holder',
-          dept: 'Dag No. 412/1, Mouza Dankuni (JL 34)',
-          jurisdiction: 'Chanditala-II, Hooghly District',
-          badge: 'Citizen / Landowner',
-          ownerAadhaar: '9876-5432-1012'
+          ...CITIZEN_PERSONAS['WB-CIT-01']
         }
       };
 
       if (rolesMap[roleKey]) {
-        this.currentUser = Object.assign({}, this.currentUser, rolesMap[roleKey]);
+        this.currentUser = Object.assign({}, rolesMap[roleKey]);
+        sessionStorage.setItem('nlams_session_role', roleKey);
         this.logAudit(this.currentUser.name, this.currentUser.badge, `Switched session context to ${this.currentUser.badge}`);
         this.dispatch('ROLE_CHANGED', this.currentUser);
       }
@@ -855,7 +1156,7 @@
         name: data.projectName,
         agency: data.agency || 'NHAI',
         sector: data.sector || 'Linear Infra / Highway',
-        state: data.state || 'Maharashtra',
+        state: data.state || 'West Bengal',
         district: data.district || 'Pune',
         division: data.division || 'Central Sub-Division',
         requiredLandHa: parseFloat(data.requiredLandHa) || 120.5,
@@ -1076,8 +1377,8 @@
     fileObjection(data) {
       const newObj = {
         id: `OBJ-2025-${Math.floor(1000 + Math.random()*9000)}`,
-        parcelId: data.parcelId || 'GUT-142-1',
-        khasraNo: data.khasraNo || 'Gut No. 142/1',
+        parcelId: data.parcelId || (this.currentUser.parcelId || 'WB-HGY-DNK-01'),
+        khasraNo: data.khasraNo || (this.currentUser.gutNumber || 'Dag No. 412/1'),
         claimant: data.claimant || this.currentUser.name,
         type: data.type || 'Valuation Dispute',
         filingDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -1158,5 +1459,6 @@
   }
 
   window.NLAMS_STORE = new NLAMSStore();
+  window.store = window.NLAMS_STORE;
 
 })(window);

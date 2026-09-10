@@ -1,3 +1,285 @@
+  // ========================================================
+  // MY PROFILE & STATUTORY IDENTITY DOSSIER CONTROLLER
+  // ========================================================
+  function openMyProfileModal() {
+    const modal = document.getElementById('modal-my-profile');
+    if (!modal) return;
+    const currentStore = window.NLAMS_STORE || (typeof store !== "undefined" ? store : {});
+    const u = currentStore.currentUser || {};
+
+    // 1. Initials calculation
+    const initialsEl = document.getElementById('profile-avatar-initials');
+    if (initialsEl) {
+      const cleanName = (u.name || 'User')
+        .replace(/Dr\.|Er\.|Smt\.|Sh\.|Shri|IAS|WBCS|\(Exe\)|,/g, '')
+        .trim();
+      const parts = cleanName.split(/\s+/).filter(Boolean);
+      const inits = parts.length > 1
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : (parts[0] ? parts[0].slice(0, 2).toUpperCase() : 'NL');
+      initialsEl.textContent = inits;
+    }
+
+    // 2. Identity Header
+    const nameEl = document.getElementById('profile-full-name');
+    if (nameEl) nameEl.textContent = u.name || 'Official User';
+
+    const roleEl = document.getElementById('profile-role-badge');
+    if (roleEl) roleEl.textContent = u.badge || u.title || 'Official Role';
+
+    const jurEl = document.getElementById('profile-jurisdiction-badge');
+    if (jurEl) jurEl.textContent = u.jurisdiction || 'Statutory Jurisdiction';
+
+    const authPill = document.getElementById('profile-auth-status-pill');
+    if (authPill) {
+      if (u.authType === 'Aadhaar e-KYC' || u.ownerAadhaar) {
+        authPill.innerHTML = '<span class="material-symbols-outlined text-[14px]">fingerprint</span> Aadhaar e-KYC Verified';
+        authPill.className = 'px-spacing-sm py-1 rounded bg-secondary-container text-on-secondary font-legal-code text-xs font-bold uppercase flex items-center gap-1';
+      } else {
+        authPill.innerHTML = '<span class="material-symbols-outlined text-[14px]">verified</span> ' + (u.authStatus || 'DSC Level-3 Attested');
+        authPill.className = 'px-spacing-sm py-1 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase flex items-center gap-1';
+      }
+    }
+
+    // 3. Core Identity (Locked Fields)
+    const fName = document.getElementById('profile-field-name');
+    if (fName) fName.textContent = u.name || '—';
+
+    const fDesig = document.getElementById('profile-field-designation');
+    if (fDesig) fDesig.textContent = u.designationOfficial || u.title || u.badge || '—';
+
+    // 4. Contact Details (Editable)
+    const mDisplay = document.getElementById('profile-mobile-display');
+    const mInput = document.getElementById('profile-mobile-input');
+    const mBox = document.getElementById('profile-mobile-edit-box');
+    if (mDisplay) mDisplay.textContent = u.maskedMobile || u.mobile || u.ownerMobile || '+91 ••••• •••••';
+    if (mInput) mInput.value = u.mobile || u.ownerMobile || '+91 98301 45210';
+    if (mBox) mBox.classList.add('hidden');
+
+    const eDisplay = document.getElementById('profile-email-display');
+    const eInput = document.getElementById('profile-email-input');
+    const eBox = document.getElementById('profile-email-edit-box');
+    if (eDisplay) eDisplay.textContent = u.email || 'not.registered@gov.in';
+    if (eInput) eInput.value = u.email || 'official@gov.in';
+    if (eBox) eBox.classList.add('hidden');
+
+    // 5. Role-Specific Statutory Portfolio Block
+    const roleContainer = document.getElementById('profile-role-specific-container');
+    if (roleContainer) {
+      let roleHtml = '';
+      const role = u.role || 'central-ministry';
+
+      if (role === 'central-ministry') {
+        roleHtml = `
+          <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">account_balance</span>
+            Central Ministry & Apex Statutory Portfolio
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Nodal Ministry:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked under GoI Allocation of Business Rules">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.ministry || 'Ministry of Rural Development (MoRD)'}</div>
+              <span class="text-[10px] text-outline-variant block">Government of India, New Delhi</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Nodal Department:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked under DoLR allocation">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.department || 'Department of Land Resources (DoLR)'}</div>
+              <span class="text-[10px] text-outline-variant block">Apex Regulatory & Cadastral Directorate</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Statutory Oversight & Gazette Sanctum:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked statutory role">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-semibold text-on-surface">National Land Acquisition Roll-up, Gazette Section 3A/3D/3E Sanctum, PFMS Treasury Gateway</div>
+              <span class="text-[10px] text-outline-variant block">DoLR National Nodal Jurisdiction across 28 States & 8 UTs</span>
+            </div>
+          </div>
+        `;
+      } else if (role === 'state-revenue') {
+        roleHtml = `
+          <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">domain</span>
+            State Government Directorate & Cadastral Portfolio
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">State Administration:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked to State Cadre">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.stateName || u.state || 'West Bengal'}</div>
+              <span class="text-[10px] text-outline-variant block">State Land Revenue Administration</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">State Directorate:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.directorate || 'Directorate of Land Records & Surveys (Nabanna)'}</div>
+              <span class="text-[10px] text-outline-variant block">Apex State Revenue & Requisition Desk</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Statutory Authority & Powers:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked statutory powers">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-semibold text-on-surface">RFCTLARR 2013 State Rules, SIA Appraisal Approval, Section 19 Declaration Sanction, SLAO Cadre Oversight</div>
+              <span class="text-[10px] text-outline-variant block">State Gazette Publication & Directorate RoU Validation</span>
+            </div>
+          </div>
+        `;
+      } else if (role === 'dro-cala') {
+        roleHtml = `
+          <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">location_city</span>
+            District Officer & CALA Competent Authority Portfolio
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">District Revenue Jurisdiction:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked to District Collectorate">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.districtName || u.district || 'Hooghly District'}</div>
+              <span class="text-[10px] text-outline-variant block">Collectorate & District Magistrate Jurisdiction</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Revenue Division / Block:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.divisionBlock || 'Burdwan Division / Chinsurah & Chanditala'}</div>
+              <span class="text-[10px] text-outline-variant block">Sub-Divisional & Block Land Reforms (BL&LRO)</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Statutory Designation & Mandate:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked under statutory appointment">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-semibold text-on-surface">Competent Authority for Land Acquisition (CALA) per Section 3(a) • Award Determination u/s 3G • Physical Possession Vesting u/s 3E</div>
+              <span class="text-[10px] text-outline-variant block">Empowered under RFCTLARR 2013 & National Highway / Railway Acts</span>
+            </div>
+          </div>
+        `;
+      } else if (role === 'requiring-body') {
+        roleHtml = `
+          <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">engineering</span>
+            Implementing Agency & Infrastructure Corridor Portfolio
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Implementing Agency Name:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked Requiring Body Entity">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.agencyName || 'DFCCIL / KMDA'}</div>
+              <span class="text-[10px] text-outline-variant block">Statutory Infrastructure Requiring Body</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Designation / Executive Role:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface">${u.designationOfficial || u.title || 'Chief Engineer (Land & Infra)'}</div>
+              <span class="text-[10px] text-outline-variant block">Corridor Acquisition & Civil Works Nodal</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Assigned Projects & Corridors:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked Project Corridor">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-semibold text-on-surface">${u.assignedProjects || 'Eastern Dedicated Freight Corridor (EDFC Dankuni - Sonnagar) & Dankuni RoU Link'}</div>
+              <span class="text-[10px] text-outline-variant block">Active Project Requisition ID: REQ-WB-HGY-2024-001</span>
+            </div>
+          </div>
+        `;
+      } else if (role === 'citizen') {
+        const stateTerm = u.stateTerm || (u.state === 'Maharashtra' ? 'Gut No.' : (u.state === 'Uttar Pradesh' ? 'Khasra No.' : 'Dag No.'));
+        const holding = u.holdingRef || `${stateTerm} 412/1 • Mouza Dankuni (JL 34)`;
+        const address = u.address || `${u.village || 'Dankuni'}, ${u.taluka || 'Chanditala-II'}, ${u.district || 'Hooghly'}, ${u.state || 'West Bengal'}`;
+        const recordSystem = u.landRecordSystem || (u.state === 'Maharashtra' ? 'MahaBhumi (MahaBhulekh 7/12)' : (u.state === 'Uttar Pradesh' ? 'UP Bhulekh (Khasra/Khatauni)' : 'Banglarbhumi (e-Bhuchitra)'));
+
+        roleHtml = `
+          <h4 class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">real_estate_agent</span>
+            Citizen Landowner & Cadastral Holding Dossier
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-sm">
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Aadhaar-Linked Verified Name:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked: Matches UIDAI e-KYC 100%">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface flex items-center gap-1">
+                ${u.name}
+                <span class="material-symbols-outlined text-tertiary text-sm" title="Matches UIDAI e-KYC exactly">check_circle</span>
+              </div>
+              <span class="text-[10px] text-tertiary font-bold block">100% Match with Aadhaar e-KYC biometric master</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Aadhaar Reference Number:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked from UIDAI">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-on-surface font-legal-code">${u.maskedAadhaar || '•••• •••• ' + (u.ownerAadhaar ? u.ownerAadhaar.slice(-4) : '1012')}</div>
+              <span class="text-[10px] text-outline-variant block">Stored as SHA-256 encrypted statutory hash</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Registered Cadastral Holdings (${stateTerm}):</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked from State Land Records Registry">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-primary">${holding}</div>
+              <span class="text-[10px] text-outline-variant block">Connected to ${recordSystem}</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Official Postal & District/Block Address:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked from e-KYC">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-semibold text-on-surface">${address}</div>
+              <span class="text-[10px] text-outline-variant block">Notice delivery address under Section 3(a) and 3E</span>
+            </div>
+            <div class="p-spacing-sm bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-1 sm:col-span-2">
+              <div class="flex items-center justify-between text-xs text-on-surface-variant">
+                <span class="font-semibold">Linked PFMS Bank Account:</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary" title="Identity-locked for Direct Benefit Transfer">lock</span>
+              </div>
+              <div class="font-body-md text-body-md font-bold text-secondary font-legal-code">${u.bankAccount || 'Direct Benefit Transfer (DBT) Aadhaar-Seeded Account'}</div>
+              <span class="text-[10px] text-tertiary font-semibold block">${u.utrNumber ? u.utrNumber + ' (Direct Benefit Transfer Cleared)' : 'DBT Escrow Disbursal Ready'}</span>
+            </div>
+          </div>
+        `;
+      }
+      roleContainer.innerHTML = roleHtml;
+    }
+
+    // 6. Account Created & Last Login
+    const accEl = document.getElementById('profile-account-created');
+    if (accEl) accEl.textContent = u.accountCreated || '15-Apr-2023';
+
+    const loginEl = document.getElementById('profile-last-login');
+    if (loginEl) loginEl.textContent = u.lastLogin || 'Today, 10:48 AM IST (TLS 1.3)';
+
+    modal.classList.remove('hidden');
+  }
+
+  window.openMyProfileModal = openMyProfileModal;
+  window.closeMyProfileModal = closeMyProfileModal;
+
+  function closeMyProfileModal() {
+    const modal = document.getElementById('modal-my-profile');
+    if (modal) modal.classList.add('hidden');
+  }
+
 /**
  * NLAMS - Main Application Orchestrator & View Controller
  * Department of Land Resources, Ministry of Rural Development, GoI
@@ -148,7 +430,11 @@
     renderNationalProjectsTable();
     renderStateProjectsTable();
     renderDistrictCALAQueue();
-    renderCitizenParcel(selectedParcelId);
+    if (store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
+        renderCitizenParcel(store.currentUser.parcelId);
+      } else {
+        renderCitizenParcel(selectedParcelId);
+      }
 
     // Initial View resolution: check session & URL hash
     const initialHash = window.location.hash;
@@ -381,10 +667,20 @@
         switchView('view-state', true);
       });
     } else if (viewId === 'view-state') {
-      mountStateGIS();
+      const targetState = getCurrentTargetState();
+      updateStateDashboardHeaders(targetState);
+      mountStateGIS(targetState);
       renderStateProjectsTable();
     } else if (viewId === 'view-district') {
       mountDistrictGIS();
+      const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+      if (parcel) {
+        const props = parcel.properties || parcel;
+        const stateBreadcrumbEl = document.getElementById('district-breadcrumb-state');
+        if (stateBreadcrumbEl) stateBreadcrumbEl.textContent = props.state || 'West Bengal';
+        const deskBreadcrumbEl = document.getElementById('district-breadcrumb-desk');
+        if (deskBreadcrumbEl) deskBreadcrumbEl.textContent = `${props.district || 'Hooghly'} District CALA Clearance Desk`;
+      }
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -436,12 +732,19 @@
 
   // Reactive Store Dispatch Listener
   function handleStoreUpdate(event, payload) {
+    if (store.currentUser) {
+      updateActiveUserBadge(store.currentUser);
+    }
     renderNationalDashboard();
     renderNationalProjectsTable();
     renderStateProjectsTable();
     renderDistrictCALAQueue();
     if (selectedParcelId) {
-      renderCitizenParcel(selectedParcelId);
+      if (store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
+        renderCitizenParcel(store.currentUser.parcelId);
+      } else {
+        renderCitizenParcel(selectedParcelId);
+      }
     }
     // Dynamically refresh GIS parcel layers so colors and statuses update on map
     if (typeof mountDistrictGIS === 'function') {
@@ -549,12 +852,33 @@
             rolePill.classList.add('bg-surface-container');
           }
         }
+        const citizenPicker = document.getElementById('citizen-persona-picker');
         if (val === 'citizen') {
+          if (citizenPicker) citizenPicker.classList.remove('hidden');
           if (authRadioAadhaar) {
             authRadioAadhaar.checked = true;
             selectAuthMethod('aadhaar');
           }
-        } else if (val === 'dro-cala' || val === 'state-revenue') {
+          const personaSelect = document.getElementById('login-citizen-persona-select');
+          if (personaSelect) {
+            const syncPersonaAadhaar = () => {
+              const pid = personaSelect.value;
+              if (pid === 'WB-CIT-01' && uid1 && uid2 && uid3) {
+                uid1.value = '9876'; uid2.value = '5432'; uid3.value = '1012';
+              } else if (pid === 'MH-CIT-01' && uid1 && uid2 && uid3) {
+                uid1.value = '9842'; uid2.value = '5174'; uid3.value = '8921';
+              } else if (pid === 'UP-CIT-01' && uid1 && uid2 && uid3) {
+                uid1.value = '9821'; uid2.value = '4321'; uid3.value = '6534';
+              }
+              validateAadhaarDigits();
+            };
+            syncPersonaAadhaar();
+            personaSelect.onchange = syncPersonaAadhaar;
+          }
+        } else {
+          if (citizenPicker) citizenPicker.classList.add('hidden');
+        }
+        if (val === 'dro-cala' || val === 'state-revenue') {
           if (authRadioDsc) {
             authRadioDsc.checked = true;
             selectAuthMethod('dsc');
@@ -777,7 +1101,13 @@
 
         sessionStorage.setItem('nlams_is_authenticated', 'true');
         sessionStorage.setItem('nlams_session_role', selectedRole);
-        store.setUserRole(selectedRole);
+        if (selectedRole === 'citizen') {
+          const pSelect = document.getElementById('login-citizen-persona-select');
+          const personaId = pSelect ? pSelect.value : (sessionStorage.getItem('nlams_citizen_persona') || 'WB-CIT-01');
+          store.setUserRole('citizen', personaId);
+        } else {
+          store.setUserRole(selectedRole);
+        }
         updateActiveUserBadge(store.currentUser);
 
         renderNavbar();
@@ -971,9 +1301,119 @@
     }).join('');
   }
 
-  // 3. State Dashboard Controller (Scoped to Maharashtra)
-  function mountStateGIS() {
-    const targetState = window.NLAMS_SELECTED_STATE || (store.currentUser?.role === 'state-revenue' && store.currentUser?.jurisdiction?.includes('Maharashtra') ? 'Maharashtra' : 'West Bengal');
+  // 3. Dynamic State Dashboard Controller (Fully Parameterized by State)
+  function getStateAbbreviation(stateName) {
+    if (!stateName) return 'WB';
+    const map = {
+      'West Bengal': 'WB',
+      'Maharashtra': 'MS',
+      'Gujarat': 'GJ',
+      'Uttar Pradesh': 'UP',
+      'Tamil Nadu': 'TN',
+      'Rajasthan': 'RJ',
+      'Karnataka': 'KA',
+      'Andhra Pradesh': 'AP',
+      'Telangana': 'TS',
+      'Odisha': 'OD',
+      'Madhya Pradesh': 'MP',
+      'Punjab': 'PB',
+      'Haryana': 'HR',
+      'Bihar': 'BR',
+      'Kerala': 'KL',
+      'Assam': 'AS'
+    };
+    if (map[stateName]) return map[stateName];
+    const words = stateName.split(' ');
+    if (words.length > 1) return words.map(w => w[0]).join('').toUpperCase();
+    return stateName.slice(0, 2).toUpperCase();
+  }
+
+  function getCurrentTargetState() {
+    if (window.NLAMS_SELECTED_STATE) return window.NLAMS_SELECTED_STATE;
+    const jur = store.currentUser?.jurisdiction || '';
+    if (jur.includes('West Bengal')) return 'West Bengal';
+    if (jur.includes('Maharashtra')) return 'Maharashtra';
+    if (jur.includes('Gujarat')) return 'Gujarat';
+    if (jur.includes('Uttar Pradesh')) return 'Uttar Pradesh';
+    if (jur.includes('Tamil Nadu')) return 'Tamil Nadu';
+    if (jur.includes('Rajasthan')) return 'Rajasthan';
+    const cleaned = jur.replace(/State Directorate|State Government|Directorate|Apex Directorate|Cell|District/gi, '').trim();
+    if (cleaned && cleaned !== 'National' && cleaned !== 'Central Ministry' && cleaned !== 'ALL') {
+      return cleaned;
+    }
+    return 'West Bengal';
+  }
+
+  function updateStateDashboardHeaders(stateName) {
+    const targetState = stateName || getCurrentTargetState();
+    const abbr = getStateAbbreviation(targetState);
+
+    // 1. Breadcrumb Portal Name
+    const breadcrumbEl = document.getElementById('state-portal-breadcrumb');
+    if (breadcrumbEl) {
+      breadcrumbEl.textContent = `${targetState} State Land Acquisition & Requisition Portal (${abbr}-LARP)`;
+    }
+
+    // 2. Dashboard Title
+    const titleEl = document.getElementById('state-dashboard-title');
+    if (titleEl) {
+      titleEl.textContent = `State Land Acquisition Operations Dashboard - ${targetState}`;
+    }
+
+    // 3. Subtitle (Native localized)
+    const subtitleEl = document.getElementById('state-dashboard-subtitle');
+    if (subtitleEl) {
+      const subtitles = {
+        'West Bengal': 'রাজ্য ভূমি অধিগ্রহণ ও ব্যবস্থাপনা ড্যাশবোর্ড (পশ্চিমবঙ্গ সরকার) • ভূমি ও ভূমি সংস্কার দপ্তর',
+        'Maharashtra': 'राज्य भू-संपादन व महसूल संचालनालय (महाराष्ट्र शासन) • महसूल व वन विभाग',
+        'Gujarat': 'રાજ્ય જમીન સંપાદન નિયામક કચેરી (ગુજરાત સરકાર) • મહેસૂલ વિભાગ',
+        'Uttar Pradesh': 'राज्य भूमि अध्याप्ति एवं राजस्व निदेशालय (उत्तर प्रदेश शासन) • राजस्व परिषद',
+        'Tamil Nadu': 'நில எடுப்பு மற்றும் நில நிர்வாக இயக்ககம் (தமிழ்நாடு அரசு)',
+        'Rajasthan': 'राज्य भूमि अवाप्ति एवं राजस्व निदेशालय (राजस्थान सरकार) • राजस्व मंडल'
+      };
+      subtitleEl.textContent = subtitles[targetState] || `State Directorate of Land Acquisition & Revenue Management (${targetState} Government)`;
+    }
+
+    // 4. District Filter Options
+    const distFilter = document.getElementById('state-district-filter');
+    if (distFilter) {
+      const currentVal = distFilter.value;
+      let optionsHtml = `<option value="ALL">All Districts (${targetState})</option>`;
+      if (targetState === 'West Bengal') {
+        optionsHtml += `
+          <option value="Hooghly">Hooghly (EDFC & NH-319B)</option>
+          <option value="Howrah">Howrah (Kona & Salap)</option>
+          <option value="North 24 Parganas">North 24 Parganas (Barasat)</option>
+          <option value="Kolkata">Kolkata Metropolitan (KMDA)</option>
+          <option value="South 24 Parganas">South 24 Parganas (Alipore)</option>
+          <option value="Paschim Bardhaman">Paschim Bardhaman (Asansol)</option>
+          <option value="Purba Bardhaman">Purba Bardhaman</option>
+          <option value="Nadia">Nadia (Krishnanagar)</option>
+        `;
+      } else if (targetState === 'Maharashtra') {
+        optionsHtml += `
+          <option value="Pune">Pune (Metro Line 3 & PMRDA)</option>
+          <option value="Thane">Thane (High-Speed Rail)</option>
+          <option value="Palghar">Palghar (Bullet Train Corridor)</option>
+          <option value="Raigad">Raigad (DMIC Node)</option>
+          <option value="Nashik">Nashik (Samruddhi Mahamarg)</option>
+        `;
+      } else {
+        const stateProjects = store.projects.filter(p => p.state.toLowerCase() === targetState.toLowerCase());
+        const uniqueDists = [...new Set(stateProjects.map(p => p.district))];
+        uniqueDists.forEach(d => {
+          optionsHtml += `<option value="${d}">${d}</option>`;
+        });
+      }
+      distFilter.innerHTML = optionsHtml;
+      if (currentVal && Array.from(distFilter.options).some(o => o.value === currentVal)) {
+        distFilter.value = currentVal;
+      }
+    }
+  }
+
+  function mountStateGIS(stateName) {
+    const targetState = stateName || getCurrentTargetState();
     window.GISEngine.renderStateChoropleth('state-choropleth-mount', targetState, (district) => {
       const distFilter = document.getElementById('state-district-filter');
       if (distFilter) {
@@ -990,7 +1430,10 @@
   }
 
   function setupStateDashboard() {
-    mountStateGIS();
+    const targetState = getCurrentTargetState();
+    updateStateDashboardHeaders(targetState);
+    mountStateGIS(targetState);
+
     const distFilter = document.getElementById('state-district-filter');
     if (distFilter) {
       distFilter.addEventListener('change', () => {
@@ -1015,14 +1458,16 @@
     const syncBtn = document.getElementById('btn-state-sync');
     if (syncBtn) {
       syncBtn.addEventListener('click', () => {
-        showToast('PFMS Ledger Synchronization', 'Synced 36 District CALA bank accounts with Central Treasury.', 'success');
+        const state = getCurrentTargetState();
+        showToast('PFMS Ledger Synchronization', `Synced ${state} District CALA bank accounts with State Treasury.`, 'success');
       });
     }
 
     const directiveBtn = document.getElementById('btn-issue-state-directive');
     if (directiveBtn) {
       directiveBtn.addEventListener('click', () => {
-        showToast('State Nodal Directive Issued', 'Priority notice dispatched to Palghar Collectorate to complete JMS within 14 days.', 'warning');
+        const state = getCurrentTargetState();
+        showToast('State Nodal Directive Issued', `Priority notice dispatched to ${state} Collectorates to complete survey within 14 days.`, 'warning');
       });
     }
   }
@@ -1031,7 +1476,8 @@
     const tbody = document.getElementById('state-projects-table-body');
     if (!tbody) return;
 
-    const stats = store.getStateStats();
+    const targetState = getCurrentTargetState();
+    const stats = store.getStateStats(targetState);
     const disbEl = document.getElementById('state-stat-disbursed');
     const pendEl = document.getElementById('state-stat-pending');
     const haEl = document.getElementById('state-stat-ha');
@@ -1044,10 +1490,8 @@
     if (famEl) famEl.textContent = `${stats.familiesCount.toLocaleString('en-IN')} Families`;
     if (projCountEl) projCountEl.textContent = `${stats.totalProjects} Projects`;
 
-    // Strict State-Level Scoping: Maharashtra Only
-    const targetState = window.NLAMS_SELECTED_STATE || (store.currentUser?.role === 'state-revenue' && store.currentUser?.jurisdiction?.includes('Maharashtra') ? 'Maharashtra' : 'West Bengal');
     let filtered = store.projects.filter(p => p.state.toLowerCase() === targetState.toLowerCase());
-    if (filtered.length === 0) { filtered = store.projects.filter(p => p.state.toLowerCase().includes('bengal')); }
+    if (filtered.length === 0) { filtered = store.projects.filter(p => p.state.toLowerCase().includes(targetState.toLowerCase())); }
     if (filterDistrict !== 'ALL') {
       filtered = filtered.filter(p => p.district.toLowerCase().includes(filterDistrict.toLowerCase()));
     }
@@ -1262,6 +1706,11 @@
     if (areaEl) areaEl.textContent = `${props.areaHa} Ha (${props.areaSqM} m²)`;
     if (typeEl) typeEl.textContent = props.landType;
     if (overlapEl) overlapEl.textContent = `${props.overlapPercent}% RoW`;
+
+    const stateBreadcrumbEl = document.getElementById('district-breadcrumb-state');
+    if (stateBreadcrumbEl) stateBreadcrumbEl.textContent = props.state || 'West Bengal';
+    const deskBreadcrumbEl = document.getElementById('district-breadcrumb-desk');
+    if (deskBreadcrumbEl) deskBreadcrumbEl.textContent = `${props.district || 'Hooghly'} District CALA Clearance Desk`;
   }
 
   function renderDistrictCALAQueue() {
@@ -1463,6 +1912,17 @@
       }
     };
 
+    const citPersonaSelect = document.getElementById('cit-persona-select');
+    if (citPersonaSelect) {
+      citPersonaSelect.addEventListener('change', (e) => {
+        const personaId = e.target.value;
+        store.setCitizenProfile(personaId);
+        updateActiveUserBadge(store.currentUser);
+        renderCitizenParcel(store.currentUser.parcelId);
+        showToast('Citizen Persona Switched', `Logged in as ${store.currentUser.name} (${store.currentUser.state}).`, 'info');
+      });
+    }
+
     if (searchBtn) searchBtn.addEventListener('click', executeSearch);
     if (searchInput) {
       searchInput.addEventListener('keydown', (e) => {
@@ -1509,13 +1969,23 @@
 
     const status = props.status; // 'Submitted', 'Scrutiny', 'Scrutinized', 'Notified', 'Awarded', 'Possessed', 'Closed'
     
+    const userState = store.currentUser?.state || props.state || 'West Bengal';
+    let rorDesc = 'Verified against State Digital Land Records (RoR)';
+    if (userState === 'West Bengal' || props.state === 'West Bengal') {
+      rorDesc = 'Verified against Banglarbhumi e-Bhuchitra RoR';
+    } else if (userState === 'Maharashtra' || props.state === 'Maharashtra') {
+      rorDesc = 'Verified against MahaBhumi 7/12 land records';
+    } else if (userState === 'Uttar Pradesh' || props.state === 'Uttar Pradesh') {
+      rorDesc = 'Verified against UP Bhulekh Khatauni records';
+    }
+
     const stages = [
       { num: 1, name: 'Proposal Submission (Form 1)', desc: `${props.projectName} RoW Requisition Registered`, key: 'Submitted' },
-      { num: 2, name: 'Digital Scrutiny & RoR Validation', desc: 'Verified against MahaBhumi 7/12 land records', key: 'Scrutinized' },
+      { num: 2, name: 'Digital Scrutiny & RoR Validation', desc: rorDesc, key: 'Scrutinized' },
       { num: 3, name: 'Section 11 & 19 Gazette Declaration', desc: `Statutory Gazette Published: ${props.gazetteRef || 'GSR 742(E)'}`, key: 'Notified' },
       { num: 4, name: 'Section 3G Award Declaration', desc: `₹${(props.totalCompensation/100000).toFixed(2)} Lakhs determined with 100% solatium`, key: 'Awarded' },
       { num: 5, name: 'Compensation DBT Disbursed', desc: props.dbtStatus || 'Aadhaar PFMS Direct Transfer', key: 'Disbursed' },
-      { num: 6, name: 'R&R Model Colony Resettlement', desc: 'Section 31 housing plot & annuity grants', key: 'Resettled' },
+      { num: 6, name: 'R&R Model Colony Resettlement', desc: props.rrEntitlement || 'Section 31 housing plot & annuity grants', key: 'Resettled' },
       { num: 7, name: 'Physical Possession Handover', desc: 'Title vested under Section 16 of RFCTLARR Act', key: 'Possessed' },
       { num: 8, name: 'Statutory Project Closure & Archival', desc: 'Archived under SHA-256 cryptographic audit seal', key: 'Closed' }
     ];
@@ -1557,24 +2027,77 @@
   }
 
   function renderCitizenParcel(parcelId) {
+    const isCitizen = store.currentUser?.role === 'citizen';
+    let targetParcelId = parcelId;
+
+    // If logged in as citizen and no specific parcel requested, bind to currentUser's parcel
+    if (isCitizen && (!targetParcelId || targetParcelId === 'selected' || targetParcelId === 'default')) {
+      targetParcelId = store.currentUser.parcelId || 'WB-HGY-DNK-01';
+    }
+
     // Dynamic parcel lookup
-    const parcel = store.parcels.find(p => (p.properties || p).id === parcelId) || store.parcels[0];
+    let parcel = store.parcels.find(p => (p.properties || p).id === targetParcelId);
+    if (!parcel) {
+      if (isCitizen && store.currentUser.parcelId) {
+        parcel = store.parcels.find(p => (p.properties || p).id === store.currentUser.parcelId);
+      }
+      if (!parcel) parcel = store.parcels[0];
+    }
     const props = parcel.properties || parcel;
     selectedParcelId = props.id;
 
+    const user = store.currentUser;
+    const isOwnerOfParcel = user && (user.name === props.ownerName || user.parcelId === props.id);
+
+    // 1. Top Right Citizen Card (Single Consistent Identity)
+    const cardNameEl = document.getElementById('cit-card-user-name');
+    const cardAadhaarEl = document.getElementById('cit-card-aadhaar');
+    if (cardNameEl) cardNameEl.textContent = user.name || props.ownerName;
+    if (cardAadhaarEl) {
+      const masked = user.maskedAadhaar || props.ownerAadhaar || '•••• •••• ' + (user.ownerAadhaar || '1012').slice(-4);
+      cardAadhaarEl.textContent = `Aadhaar: ${masked} (Verified)`;
+    }
+
+    // 2. Authenticated Landowner Verified Banner (Strict Consistency)
+    const bannerNameEl = document.getElementById('cit-banner-user-name');
+    const bannerUidEl = document.getElementById('cit-banner-uid-info');
+    const bannerHoldingEl = document.getElementById('cit-banner-holding');
+
+    if (bannerNameEl) bannerNameEl.textContent = user.name || props.ownerName;
+    if (bannerUidEl) {
+      const masked = user.maskedAadhaar || props.ownerAadhaar || '•••• •••• ' + (user.ownerAadhaar || '1012').slice(-4);
+      const mobile = user.maskedMobile || user.ownerMobile || props.ownerMobile || '+91 ••••• ••418';
+      const docType = user.landRecordDoc || (props.state === 'West Bengal' ? 'Banglarbhumi Verified Patta Holder' : 'DigiLocker Verified Patta Holder');
+      bannerUidEl.innerHTML = `UID: <strong>${masked}</strong> • ${docType} • Registered Mobile: ${mobile}`;
+    }
+    if (bannerHoldingEl) {
+      const holding = user.holdingRef || `${props.gutNumber} (${props.khasraNo || props.gutNumber}) • ${props.village}`;
+      bannerHoldingEl.textContent = holding;
+    }
+
+    // 3. Search Input
+    const searchInput = document.getElementById('cit-search-input');
+    if (searchInput && (!searchInput.value || searchInput.value.includes('Gut No. 142/1') || isOwnerOfParcel)) {
+      searchInput.value = props.gutNumber;
+    }
+
+    // 4. Active Land Parcel Status Card
     const titleEl = document.getElementById('cit-gut-title');
     const statusPill = document.getElementById('cit-status-pill');
     const projEl = document.getElementById('cit-project-name');
     const areaEl = document.getElementById('cit-area');
     const typeEl = document.getElementById('cit-type');
     const valEl = document.getElementById('cit-total-val');
+    const calcMarketVal = document.getElementById('cit-calc-market-val');
+    const calcSolatium = document.getElementById('cit-calc-solatium');
+    const calcInterest = document.getElementById('cit-calc-interest');
     const calcFinalEl = document.getElementById('cit-calc-final');
     const dbtDescEl = document.getElementById('cit-dbt-desc');
     const pillsContainer = document.getElementById('cit-parcel-pills');
 
     if (titleEl) titleEl.textContent = props.gutNumber;
     if (statusPill) {
-      statusPill.textContent = props.statusLabel.toUpperCase();
+      statusPill.textContent = (props.statusLabel || props.status || 'POSSESSED').toUpperCase();
       statusPill.style.backgroundColor = props.statusColor || '#15803d';
       statusPill.style.color = '#ffffff';
     }
@@ -1582,14 +2105,27 @@
     if (areaEl) areaEl.textContent = `${props.areaHa} Ha`;
     if (typeEl) typeEl.textContent = props.landType;
     if (valEl) valEl.textContent = `₹${(props.totalCompensation / 100000).toFixed(2)} L`;
+
+    const halfVal = Math.round(props.totalCompensation / 2);
+    const intVal = Math.round(props.totalCompensation * 0.12 / 2.12);
+    if (calcMarketVal) calcMarketVal.textContent = `₹${halfVal.toLocaleString('en-IN')}`;
+    if (calcSolatium) calcSolatium.textContent = `+ ₹${halfVal.toLocaleString('en-IN')}`;
+    if (calcInterest) calcInterest.textContent = `+ ₹${intVal.toLocaleString('en-IN')} (Included)`;
     if (calcFinalEl) calcFinalEl.textContent = `₹${props.totalCompensation.toLocaleString('en-IN')}`;
+
     if (dbtDescEl) {
-      dbtDescEl.textContent = `Status: ${props.dbtStatus || 'Pending Section 3G Award'} | Entitlement: ${props.rrEntitlement || 'Eligible for Model Colony Plot'}`;
+      const bank = user.bankAccount || (props.state === 'West Bengal' ? 'Punjab National Bank A/c •••• 5012' : 'SBI A/c •••• 4120');
+      const utr = user.utrNumber || props.dbtStatus || 'UTR: #SBINWB2408912 on 18-Oct-2024';
+      dbtDescEl.textContent = `Amount of ₹${props.totalCompensation.toLocaleString('en-IN')} credited to ${bank} via PFMS Treasury Node. ${utr}`;
     }
 
-    // Render Quick Selection Pills
+    // 5. Quick Select Pills (filtered by user state/corridor)
     if (pillsContainer) {
-      pillsContainer.innerHTML = store.parcels.slice(0, 4).map(p => {
+      const targetState = user.state || props.state || 'West Bengal';
+      let stateParcels = store.parcels.filter(p => (p.properties || p).state === targetState);
+      if (!stateParcels.length) stateParcels = store.parcels.slice(0, 4);
+
+      pillsContainer.innerHTML = stateParcels.slice(0, 5).map(p => {
         const pProps = p.properties || p;
         const isSelected = pProps.id === selectedParcelId;
         return `
@@ -1600,7 +2136,13 @@
       }).join('');
     }
 
-    // Render dynamic milestones
+    // 6. Sync Persona Switcher Dropdown
+    const personaSwitcher = document.getElementById('cit-persona-select');
+    if (personaSwitcher && user.id) {
+      personaSwitcher.value = user.id;
+    }
+
+    // 7. Dynamic Milestones
     renderCitizenMilestones(props);
   }
 
@@ -1878,6 +2420,7 @@
   // Drilldown helper
   window.drillToState = function(stateName) {
     window.NLAMS_SELECTED_STATE = stateName;
+    updateStateDashboardHeaders(stateName);
     switchView('view-state', true);
     showToast(`State Directorate: ${stateName}`, `Displaying ${stateName} state corridor pipeline metrics.`, 'info');
   };
@@ -1979,28 +2522,26 @@
       });
     }
 
-    // 8. User Profile Badge & Dropdown Popup Menu
+    // 8. User Profile Badge, Modal & Dropdown
     const userBadge = document.getElementById('header-user-badge');
     const userMenu = document.getElementById('user-profile-menu');
     const popupLogout = document.getElementById('btn-popup-logout');
     const popupSettings = document.getElementById('btn-popup-settings');
+    const popupViewProfile = document.getElementById('btn-popup-view-profile');
 
-    if (userBadge && userMenu) {
+    if (userBadge) {
       userBadge.addEventListener('click', (e) => {
         e.stopPropagation();
-        userMenu.classList.toggle('hidden');
-        const nameEl = document.getElementById('popup-profile-name');
-        const deptEl = document.getElementById('popup-profile-dept');
-        const jurEl = document.getElementById('popup-profile-jurisdiction');
-        if (nameEl) nameEl.textContent = store.currentUser.name;
-        if (deptEl) deptEl.textContent = store.currentUser.badge;
-        if (jurEl) jurEl.textContent = `Jurisdiction: ${store.currentUser.jurisdiction}`;
+        if (userMenu) userMenu.classList.add('hidden');
+        openMyProfileModal();
       });
+    }
 
-      document.addEventListener('click', (e) => {
-        if (!userMenu.contains(e.target) && !userBadge.contains(e.target)) {
-          userMenu.classList.add('hidden');
-        }
+    if (popupViewProfile) {
+      popupViewProfile.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (userMenu) userMenu.classList.add('hidden');
+        openMyProfileModal();
       });
     }
 
@@ -2017,6 +2558,90 @@
         e.preventDefault();
         if (userMenu) userMenu.classList.add('hidden');
         openProfileSetupModal(getUserRole());
+      });
+    }
+
+    // Profile Modal Actions
+    const btnCloseProfile = document.getElementById('btn-close-profile-modal');
+    if (btnCloseProfile) {
+      btnCloseProfile.addEventListener('click', closeMyProfileModal);
+    }
+    const btnDoneProfile = document.getElementById('btn-profile-done');
+    if (btnDoneProfile) {
+      btnDoneProfile.addEventListener('click', closeMyProfileModal);
+    }
+    const btnSignoutProfile = document.getElementById('btn-profile-signout');
+    if (btnSignoutProfile) {
+      btnSignoutProfile.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeMyProfileModal();
+        handleLogout();
+      });
+    }
+
+    // Editable Mobile Handler with OTP verification simulation
+    const btnEditMobile = document.getElementById('btn-edit-mobile');
+    const btnSaveMobile = document.getElementById('btn-save-mobile');
+    const btnCancelMobile = document.getElementById('btn-cancel-mobile');
+    const boxMobile = document.getElementById('profile-mobile-edit-box');
+    const inputMobile = document.getElementById('profile-mobile-input');
+    const dispMobile = document.getElementById('profile-mobile-display');
+
+    if (btnEditMobile && boxMobile) {
+      btnEditMobile.addEventListener('click', () => {
+        boxMobile.classList.toggle('hidden');
+        if (inputMobile) inputMobile.focus();
+      });
+    }
+    if (btnCancelMobile && boxMobile) {
+      btnCancelMobile.addEventListener('click', () => {
+        boxMobile.classList.add('hidden');
+      });
+    }
+    if (btnSaveMobile && inputMobile) {
+      btnSaveMobile.addEventListener('click', () => {
+        const val = inputMobile.value.trim();
+        if (val.length < 10) {
+          showToast('Invalid Mobile', 'Please enter a valid 10-digit mobile number with country code.', 'error');
+          return;
+        }
+        (window.NLAMS_STORE || store).updateUserContact(val, undefined);
+        if (dispMobile) dispMobile.textContent = store.currentUser.maskedMobile || val;
+        boxMobile.classList.add('hidden');
+        showToast('OTP Verification Sent', 'A verification OTP was sent to ' + val + '. Registered mobile updated successfully.', 'success');
+      });
+    }
+
+    // Editable Email Handler with verification simulation
+    const btnEditEmail = document.getElementById('btn-edit-email');
+    const btnSaveEmail = document.getElementById('btn-save-email');
+    const btnCancelEmail = document.getElementById('btn-cancel-email');
+    const boxEmail = document.getElementById('profile-email-edit-box');
+    const inputEmail = document.getElementById('profile-email-input');
+    const dispEmail = document.getElementById('profile-email-display');
+
+    if (btnEditEmail && boxEmail) {
+      btnEditEmail.addEventListener('click', () => {
+        boxEmail.classList.toggle('hidden');
+        if (inputEmail) inputEmail.focus();
+      });
+    }
+    if (btnCancelEmail && boxEmail) {
+      btnCancelEmail.addEventListener('click', () => {
+        boxEmail.classList.add('hidden');
+      });
+    }
+    if (btnSaveEmail && inputEmail) {
+      btnSaveEmail.addEventListener('click', () => {
+        const val = inputEmail.value.trim();
+        if (!val.includes('@') || !val.includes('.')) {
+          showToast('Invalid Email', 'Please provide a valid government or registered email address.', 'error');
+          return;
+        }
+        (window.NLAMS_STORE || store).updateUserContact(undefined, val);
+        if (dispEmail) dispEmail.textContent = val;
+        boxEmail.classList.add('hidden');
+        showToast('Verification Dispatched', 'A confirmation link has been sent to ' + val + '. Registered email updated.', 'success');
       });
     }
 

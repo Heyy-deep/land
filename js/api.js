@@ -40,9 +40,11 @@
 
       // Role-based data scoping
       if (role === 'state-revenue') {
-        scoped = scoped.filter(p => p.state === 'Maharashtra');
+        const userState = (this.store.currentUser?.jurisdiction || '').includes('Maharashtra') ? 'Maharashtra' : (window.NLAMS_SELECTED_STATE || 'West Bengal');
+        scoped = scoped.filter(p => p.state.toLowerCase() === userState.toLowerCase());
       } else if (role === 'dro-cala') {
-        scoped = scoped.filter(p => p.district === 'Pune' || p.state === 'Maharashtra');
+        const userDistrict = this.store.currentUser?.jurisdiction || 'Hooghly';
+        scoped = scoped.filter(p => p.district.toLowerCase().includes(userDistrict.toLowerCase()) || p.state.toLowerCase() === 'west bengal');
       } else if (role === 'requiring-body') {
         const userAgency = this.store.currentUser?.agency || 'NHAI';
         scoped = scoped.filter(p => p.agency === userAgency || p.agency.includes('NHAI') || p.agency.includes('MSRDC'));

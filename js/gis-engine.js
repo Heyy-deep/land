@@ -47,8 +47,8 @@
       if (!container) return;
 
       container.innerHTML = `
-        <div class="relative w-full aspect-[4/3] max-w-[640px] flex items-center justify-center">
-          <svg class="w-full h-full drop-shadow-sm select-none" viewBox="0 0 600 500" xmlns="http://www.w3.org/2000/svg">
+        <div class="relative w-full max-w-[640px] h-[460px] max-h-[460px] flex items-center justify-center overflow-hidden" style="height: 460px; max-height: 460px; overflow: hidden;">
+          <svg class="w-auto h-full max-h-full max-w-full drop-shadow-sm select-none" viewBox="0 0 600 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-height: 440px; height: 100%; width: auto; overflow: hidden;">
             <defs>
               <filter id="map-glow" x="-10%" y="-10%" width="120%" height="120%">
                 <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
@@ -276,7 +276,7 @@
 
       // Authentic West Bengal District Polygons (SVG Projection)
       container.innerHTML = `
-        <div class="relative w-full h-[420px] bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex flex-col p-spacing-sm">
+        <div class="relative w-full h-[440px] max-h-[440px] flex flex-col overflow-hidden" style="height: 440px; max-height: 440px; overflow: hidden;">
           <div class="flex items-center justify-between pb-2 border-b border-surface-container">
             <span class="font-headline-sm text-headline-sm text-primary font-bold">
               ${stateName} District-Wise Acquisition Progress
@@ -286,8 +286,8 @@
             </span>
           </div>
 
-          <div class="relative flex-1 flex items-center justify-center">
-            <svg class="w-full h-full select-none" viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg">
+          <div class="relative flex-1 w-full h-full min-h-0 overflow-hidden flex items-center justify-center py-2" style="height: 380px; max-height: 380px; overflow: hidden;">
+            <svg class="w-auto h-full max-h-full max-w-full select-none" viewBox="0 0 500 360" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-height: 370px; height: 100%; width: auto; overflow: hidden;">
               <defs>
                 <filter id="dist-glow">
                   <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.12"/>
@@ -368,7 +368,7 @@
             </svg>
 
             <!-- District Callout Box -->
-            <div id="district-info-pill" class="absolute bottom-2 right-2 bg-surface-container-high px-3 py-1.5 rounded shadow text-xs font-semibold text-on-surface flex items-center gap-2 border border-outline-variant/30">
+            <div id="district-info-pill" class="absolute bottom-2 right-2 bg-surface-container-high px-3 py-1.5 rounded shadow text-xs font-semibold text-on-surface flex items-center gap-2 border border-outline-variant/30 pointer-events-auto z-10">
               <span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
               <span id="district-info-text">Selected: Hooghly (74.2% Complete • 7 Projects)</span>
             </div>
@@ -410,7 +410,7 @@
       if (!selected.totalCompensation) selected.totalCompensation = 31808000;
 
       container.innerHTML = `
-        <div class="relative w-full h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30">
+        <div class="relative w-full h-[580px] max-h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30" style="height: 580px; max-height: 580px; overflow: hidden;">
           <!-- Cartographic Grid Lines and RoW Corridor Background -->
           <svg id="cadastral-svg" class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
