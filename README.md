@@ -104,7 +104,7 @@ The entire land acquisition journey is digitally enforced through a linear 8-sta
 
 ---
 
-## 🛠️ Tech Stack & Key Files
+🛠️ Tech Stack & Key Files
 
 | Layer | Technologies Used | Key Repository Files |
 | :--- | :--- | :--- |
