@@ -1,6 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
+from geoalchemy2 import Geometry
 from backend.database import Base
 
 class User(Base):
@@ -58,7 +59,7 @@ class LandParcel(Base):
     state = Column(String(100), nullable=False, index=True)
     owner_name = Column(String(255), nullable=False)
     owner_aadhaar = Column(String(50), default="•••• •••• 8921")
-    geometry = Column(Text, nullable=False)  # GeoJSON representation of polygon
+    geometry = Column(Geometry(geometry_type="POLYGON", srid=4326), nullable=False)
     area_ha = Column(Float, nullable=False, default=1.0)
     land_type = Column(String(100), default="Agricultural (Jirayat)")
     market_rate_sqm = Column(Float, default=500.0)
@@ -204,6 +205,14 @@ def model_to_dict(obj):
         val = getattr(obj, c.name)
         if isinstance(val, (datetime.datetime, datetime.date)):
             res[c.name] = val.isoformat()
+        elif type(val).__name__ in ("WKBElement", "WKTElement") or hasattr(val, "data"):
+            try:
+                from geoalchemy2.shape import to_shape
+                import shapely.geometry
+                shape = to_shape(val)
+                res[c.name] = shapely.geometry.mapping(shape)
+            except Exception:
+                res[c.name] = str(val)
         else:
             res[c.name] = val
     return res

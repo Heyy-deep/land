@@ -5,6 +5,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from geoalchemy2.functions import ST_AsGeoJSON
 from backend.database import get_db
 from backend.models import LandParcel, Project, StatutoryStage, Compensation, AuditLog, User, model_to_dict
 from backend.auth import get_current_user
@@ -38,7 +39,7 @@ def get_parcels(
     project_id: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    q = db.query(LandParcel)
+    q = db.query(LandParcel, ST_AsGeoJSON(LandParcel.geometry).label("geom_geojson"))
     if state and state != "ALL":
         q = q.filter(LandParcel.state == state)
     if district and district != "ALL":
@@ -46,10 +47,10 @@ def get_parcels(
     if project_id:
         q = q.filter(LandParcel.project_id == project_id)
 
-    parcels = q.all()
+    results = q.all()
     features = []
-    for p in parcels:
-        geom = json.loads(p.geometry) if isinstance(p.geometry, str) else p.geometry
+    for p, geom_json in results:
+        geom = json.loads(geom_json) if geom_json else (json.loads(p.geometry) if isinstance(p.geometry, str) else model_to_dict(p).get("geometry"))
         features.append({
             "type": "Feature",
             "id": p.id,
@@ -90,6 +91,8 @@ def notify_parcel(
 ):
     parcel = db.query(LandParcel).filter(LandParcel.id == id).first()
     if not parcel:
+        parcel = db.query(LandParcel).filter(LandParcel.project_id == id).first()
+    if not parcel:
         raise HTTPException(status_code=404, detail="Parcel not found")
 
     parcel.status = "Notified"
@@ -98,7 +101,7 @@ def notify_parcel(
 
     # Add statutory stage record
     stage = StatutoryStage(
-        parcel_id=id,
+        parcel_id=parcel.id,
         project_id=parcel.project_id,
         stage="3D",
         gazette_ref=req.gazette_ref,
@@ -115,13 +118,13 @@ def notify_parcel(
         proj.current_milestone = f"Section 3D Notification Published: {req.gazette_ref}"
 
     audit = AuditLog(
-        entity=f"Parcel:{id}",
+        entity=f"Parcel:{parcel.id}",
         action="GAZETTE_NOTIFICATION_ISSUED",
         user_id=current_user.email,
         actor_name=current_user.full_name,
         actor_role=current_user.role,
         details=f"Digitally signed statutory gazette notification {req.gazette_ref} under DSC Token.",
-        sha256_hash=hashlib.sha256(f"{id}:{req.gazette_ref}".encode()).hexdigest()
+        sha256_hash=hashlib.sha256(f"{parcel.id}:{req.gazette_ref}".encode()).hexdigest()
     )
     db.add(audit)
     db.commit()
@@ -146,6 +149,8 @@ def declare_award(
 ):
     parcel = db.query(LandParcel).filter(LandParcel.id == id).first()
     if not parcel:
+        parcel = db.query(LandParcel).filter(LandParcel.project_id == id).first()
+    if not parcel:
         raise HTTPException(status_code=404, detail="Parcel not found")
 
     if req.market_rate_sqm:
@@ -162,7 +167,7 @@ def declare_award(
 
     # Add compensation record
     comp = Compensation(
-        parcel_id=id,
+        parcel_id=parcel.id,
         project_id=parcel.project_id,
         amount_assessed=parcel.total_compensation,
         amount_disbursed=0.0,
@@ -179,13 +184,13 @@ def declare_award(
         proj.current_milestone = "Compensation Computed with 100% Solatium & 12% Interest"
 
     audit = AuditLog(
-        entity=f"Parcel:{id}",
+        entity=f"Parcel:{parcel.id}",
         action="AWARD_DECLARED",
         user_id=current_user.email,
         actor_name=current_user.full_name,
         actor_role=current_user.role,
         details=f"Declared Section 3G Award: Total Compensation ₹{parcel.total_compensation:,.2f}",
-        sha256_hash=hashlib.sha256(f"{id}:{parcel.total_compensation}".encode()).hexdigest()
+        sha256_hash=hashlib.sha256(f"{parcel.id}:{parcel.total_compensation}".encode()).hexdigest()
     )
     db.add(audit)
     db.commit()
@@ -216,6 +221,8 @@ def confirm_possession(
 
     parcel = db.query(LandParcel).filter(LandParcel.id == id).first()
     if not parcel:
+        parcel = db.query(LandParcel).filter(LandParcel.project_id == id).first()
+    if not parcel:
         raise HTTPException(status_code=404, detail="Parcel not found")
 
     parcel.status = "Possessed"
@@ -226,7 +233,7 @@ def confirm_possession(
 
     # Statutory stage record
     stage = StatutoryStage(
-        parcel_id=id,
+        parcel_id=parcel.id,
         project_id=parcel.project_id,
         stage="Possession",
         gazette_ref="Form 3E Executed",
@@ -242,13 +249,13 @@ def confirm_possession(
         proj.current_milestone = f"Field Possession Confirmed for {parcel.gut_number}"
 
     audit = AuditLog(
-        entity=f"Parcel:{id}",
+        entity=f"Parcel:{parcel.id}",
         action="POSSESSION_CONFIRMED",
         user_id=current_user.email,
         actor_name=req.officer_name or current_user.full_name,
         actor_role="Field Officer",
         details=f"Confirmed physical possession on-site (Lat: {req.geo_lat}, Lng: {req.geo_lng}). Title vested in State under Section 16.",
-        sha256_hash=hashlib.sha256(f"{id}:POSSESSED:{req.officer_name}".encode()).hexdigest()
+        sha256_hash=hashlib.sha256(f"{parcel.id}:POSSESSED:{req.officer_name}".encode()).hexdigest()
     )
     db.add(audit)
     db.commit()

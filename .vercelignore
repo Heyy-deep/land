@@ -1,0 +1,9 @@
+backend/
+*.py
+*.db
+*.sqlite3
+docker-compose.yml
+render.yaml
+.agents/
+.env*
+uploads/

@@ -5,6 +5,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from geoalchemy2.elements import WKTElement
 from backend.database import get_db
 from backend.models import Project, LandParcel, ScrutinyLog, AuditLog, User, model_to_dict
 from backend.auth import get_current_user
@@ -75,10 +76,7 @@ def submit_proposal(
         state=req.state,
         owner_name="M/s Greenfield Agritech & Joint Landholders",
         owner_aadhaar="•••• •••• 9102",
-        geometry=json.dumps({
-            "type": "Polygon",
-            "coordinates": [[[73.85, 18.52], [73.86, 18.52], [73.86, 18.53], [73.85, 18.53], [73.85, 18.52]]]
-        }),
+        geometry=WKTElement("POLYGON((73.85 18.52, 73.86 18.52, 73.86 18.53, 73.85 18.53, 73.85 18.52))", srid=4326),
         area_ha=req.required_land_ha,
         land_type="Dry Agricultural (Jirayat)",
         market_rate_sqm=650.0,
@@ -130,6 +128,10 @@ def submit_scrutiny(
     """Stage 2: Digital Scrutiny by District Authority (Approve, Reject, Send Back)."""
     proj = db.query(Project).filter(Project.id == id).first()
     if not proj:
+        parcel = db.query(LandParcel).filter(LandParcel.id == id).first()
+        if parcel:
+            proj = db.query(Project).filter(Project.id == parcel.project_id).first()
+    if not proj:
         raise HTTPException(status_code=404, detail="Project not found")
 
     d = req.decision.upper().strip()
@@ -155,7 +157,7 @@ def submit_scrutiny(
         raise HTTPException(status_code=400, detail=f"Invalid scrutiny decision: {req.decision}")
 
     # Update associated parcels
-    parcels = db.query(LandParcel).filter(LandParcel.project_id == id).all()
+    parcels = db.query(LandParcel).filter(LandParcel.project_id == proj.id).all()
     for p in parcels:
         if decision == "APPROVE":
             p.status = "Scrutiny"

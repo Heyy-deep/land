@@ -9,7 +9,7 @@ load_dotenv()
 # Primary connection from environment (PostgreSQL / PostGIS or SQLite fallback)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://nlams_user:nlams_secure_password@localhost:5432/nlams_db"
+    "postgresql://nlams_user:nlams_secure_password@localhost:5433/nlams_db"
 )
 
 Base = declarative_base()

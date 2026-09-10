@@ -499,7 +499,18 @@ def seed_database(db: Session):
         }
     ]
 
+    import shapely.geometry
+    from geoalchemy2.elements import WKTElement
+
     for parcel_data in parcels_data:
+        raw_geom = parcel_data.get("geometry")
+        if isinstance(raw_geom, str):
+            geom_dict = json.loads(raw_geom)
+            shape = shapely.geometry.shape(geom_dict)
+            parcel_data["geometry"] = WKTElement(shape.wkt, srid=4326)
+        elif isinstance(raw_geom, dict):
+            shape = shapely.geometry.shape(raw_geom)
+            parcel_data["geometry"] = WKTElement(shape.wkt, srid=4326)
         parcel = LandParcel(**parcel_data)
         db.add(parcel)
 

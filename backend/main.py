@@ -23,6 +23,17 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Ensure PostGIS extension is enabled if using PostgreSQL
+    if "postgres" in str(engine.url):
+        try:
+            with engine.connect() as conn:
+                from sqlalchemy import text
+                conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
+                conn.commit()
+            print("[NLAMS PostGIS] PostGIS extension confirmed active in PostgreSQL.")
+        except Exception as e:
+            print(f"[NLAMS PostGIS Warning] Could not enable postgis extension: {e}")
+
     # Initialize all database tables (automatic migration on startup)
     Base.metadata.create_all(bind=engine)
     # Seed initial baseline users, projects, and parcels if database is empty
