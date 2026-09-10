@@ -463,6 +463,9 @@
   // Comprehensive State-to-District Mapping
   const STATE_DISTRICT_MAP = {
     'ALL': ['All Districts'],
+    'West Bengal': [
+      'All Districts', 'Hooghly', 'Howrah', 'Kolkata', 'North 24 Parganas', 'South 24 Parganas', 'Paschim Bardhaman', 'Purba Bardhaman', 'Nadia', 'Murshidabad', 'Malda', 'Darjeeling', 'Jalpaiguri', 'Alipurduar', 'Cooch Behar', 'Uttar Dinajpur', 'Dakshin Dinajpur', 'Birbhum', 'Bankura', 'Purulia', 'Jhargram', 'Paschim Medinipur', 'Purba Medinipur', 'Kalimpong'
+    ],
     'Maharashtra': [
       'All Districts', 'Pune', 'Thane', 'Nashik', 'Ahmednagar', 'Palghar', 'Raigad', 'Solapur', 'Nagpur', 'Aurangabad', 'Kolhapur', 'Satara', 'Amravati', 'Nanded'
     ],
@@ -1581,6 +1584,17 @@
       distFilter.innerHTML = optionsHtml;
       if (currentVal && Array.from(distFilter.options).some(o => o.value === currentVal)) {
         distFilter.value = currentVal;
+      }
+    }
+
+    // 5. Synchronize State Select Filter Dropdown
+    const stateSelect = document.getElementById('state-select-filter');
+    if (stateSelect) {
+      for (let i = 0; i < stateSelect.options.length; i++) {
+        if (stateSelect.options[i].value.toLowerCase() === targetState.toLowerCase()) {
+          stateSelect.selectedIndex = i;
+          break;
+        }
       }
     }
   }
