@@ -409,6 +409,15 @@
       if (!selected.overlapPercent) selected.overlapPercent = 100;
       if (!selected.totalCompensation) selected.totalCompensation = 31808000;
 
+      const getParcelColor = (id, fallback) => {
+        const p = parcels.find(item => item.id === id || item.properties?.id === id);
+        return p?.properties?.statusColor || p?.statusColor || fallback;
+      };
+      const getParcelStatus = (id, fallback) => {
+        const p = parcels.find(item => item.id === id || item.properties?.id === id);
+        return p?.properties?.status || p?.status || fallback;
+      };
+
       container.innerHTML = `
         <div class="relative w-full h-[580px] max-h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30" style="height: 580px; max-height: 580px; overflow: hidden;">
           <!-- Cartographic Grid Lines and RoW Corridor Background -->
@@ -442,63 +451,58 @@
             </text>
 
             <!-- Mouza 3: Begampur (JL 41) -->
-            <path d="M 150,280 L 410,260 L 440,510 L 170,530 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="180" y="300" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+            <path d="M 150,280 L 410,260 L 430,480 L 170,500 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="190" y="475" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
               MOUZA: BEGAMPUR (JL NO. 41) • SH-13 CORRIDOR
             </text>
 
             <!-- Mouza 4: Garalgachha (JL 52) -->
-            <path d="M 410,260 L 710,240 L 740,490 L 440,510 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="470" y="280" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
-              MOUZA: GARALGACHHA (JL NO. 52) • DANKUNI PS
+            <path d="M 410,260 L 710,240 L 740,460 L 430,480 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
+            <text x="430" y="475" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
+              MOUZA: GARALGACHHA (JL NO. 52) • DANKUNI YARD
             </text>
 
-            <!-- Proposed 110m Wide EDFC Dankuni Freight Terminal & Rail Linkage Buffer -->
-            <polygon points="30,220 740,90 770,175 60,305" fill="url(#rowBufferGrad)"></polygon>
-            <polyline points="30,220 740,90" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
-            <polyline points="60,305 770,175" stroke="#133e7c" stroke-width="2.5" stroke-dasharray="6,4"></polyline>
-
-            <!-- Dedicated Freight Rail Center Line Alignment -->
-            <line x1="45" y1="262" x2="755" y2="132" stroke="#fe932c" stroke-width="3" stroke-dasharray="8,6"></line>
-            <text x="240" y="190" transform="rotate(-11 240 190)" fill="#00285b" class="font-legal-code text-legal-code font-bold tracking-widest opacity-90 uppercase">
-              EDFC Dankuni Freight Terminal & Rail Linkage 110m RoW Alignment (Chainage: 0+000 to 18+400)
+            <!-- Central 110m EDFC Alignment Right-of-Way Buffer -->
+            <polygon points="100,200 750,110 750,210 100,300" fill="url(#rowBufferGrad)" stroke="#133e7c" stroke-width="1.5" stroke-dasharray="4,4"></polygon>
+            <text x="280" y="250" fill="#133e7c" fill-opacity="0.65" class="font-legal-code text-legal-code font-bold uppercase tracking-widest pointer-events-none">
+              EDFC DANKUNI FREIGHT TERMINAL &amp; RAIL LINKAGE (110m RoW BUFFER)
             </text>
 
             <!-- Cadastral Parcels Layer (Grounded in Authentic Hooghly Mouzas) -->
-            <!-- Parcel 1: WB-HGY-DNK-01 (Dankuni JL 34, Dag 412/1) - Possessed (Green) -->
+            <!-- Parcel 1: WB-HGY-DNK-01 (Dankuni JL 34, Dag 412/1) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-01"
-                     points="160,140 280,115 295,215 180,230" fill="#15803d" fill-opacity="0.55" stroke="#15803d" stroke-width="2.5"></polygon>
-            <text x="185" y="175" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/1 [Possessed]</text>
+                     points="160,140 280,115 295,215 180,230" fill="${getParcelColor('WB-HGY-DNK-01', '#15803d')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-DNK-01', '#15803d')}" stroke-width="2.5"></polygon>
+            <text x="185" y="175" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/1 [${getParcelStatus('WB-HGY-DNK-01', 'Possessed')}]</text>
             <text x="185" y="190" fill="#003112" class="text-label-sm font-label-sm pointer-events-none">Subrata Ghosh</text>
 
-            <!-- Parcel 2: WB-HGY-DNK-02 (Dankuni JL 34, Dag 412/2) - Scrutiny (Amber) -->
+            <!-- Parcel 2: WB-HGY-DNK-02 (Dankuni JL 34, Dag 412/2) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-02"
-                     points="290,110 400,90 415,185 305,205" fill="#d97706" fill-opacity="0.5" stroke="#d97706" stroke-width="2"></polygon>
-            <text x="315" y="145" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/2 [Scrutiny]</text>
+                     points="290,110 400,90 415,185 305,205" fill="${getParcelColor('WB-HGY-DNK-02', '#d97706')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-DNK-02', '#d97706')}" stroke-width="2"></polygon>
+            <text x="315" y="145" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/2 [${getParcelStatus('WB-HGY-DNK-02', 'Scrutiny')}]</text>
             <text x="315" y="160" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">A. Mukherjee</text>
 
-            <!-- Parcel 3: WB-HGY-JNI-03 (Janai JL 49, Dag 218/4) - Awarded (Blue) -->
+            <!-- Parcel 3: WB-HGY-JNI-03 (Janai JL 49, Dag 218/4) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-JNI-03"
-                     points="450,75 580,55 600,160 470,175" fill="#133e7c" fill-opacity="0.55" stroke="#133e7c" stroke-width="2.5"></polygon>
-            <text x="480" y="110" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 218/4 [Awarded]</text>
+                     points="450,75 580,55 600,160 470,175" fill="${getParcelColor('WB-HGY-JNI-03', '#133e7c')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-JNI-03', '#133e7c')}" stroke-width="2.5"></polygon>
+            <text x="480" y="110" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 218/4 [${getParcelStatus('WB-HGY-JNI-03', 'Awarded')}]</text>
             <text x="480" y="125" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">D. Banerjee (Sec 3G)</text>
 
-            <!-- Parcel 4: WB-HGY-BGP-04 (Begampur JL 41, Dag 105/3) - Scrutiny (Amber) -->
+            <!-- Parcel 4: WB-HGY-BGP-04 (Begampur JL 41, Dag 105/3) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-BGP-04"
-                     points="220,320 340,300 360,400 240,415" fill="#d97706" fill-opacity="0.5" stroke="#d97706" stroke-width="2"></polygon>
-            <text x="245" y="360" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 105/3 [Scrutiny]</text>
+                     points="220,320 340,300 360,400 240,415" fill="${getParcelColor('WB-HGY-BGP-04', '#d97706')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-BGP-04', '#d97706')}" stroke-width="2"></polygon>
+            <text x="245" y="360" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 105/3 [${getParcelStatus('WB-HGY-BGP-04', 'Scrutiny')}]</text>
             <text x="245" y="375" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">Mousumi Das</text>
 
-            <!-- Parcel 5: WB-HGY-SNG-05 (Beraberi Singur JL 24, Dag 520/1A) - Awarded (Blue) -->
+            <!-- Parcel 5: WB-HGY-SNG-05 (Beraberi Singur JL 24, Dag 520/1A) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-SNG-05"
-                     points="490,270 630,245 660,370 520,390" fill="#133e7c" fill-opacity="0.55" stroke="#133e7c" stroke-width="2.5"></polygon>
-            <text x="525" y="315" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 520/1A [Awarded]</text>
+                     points="490,270 630,245 660,370 520,390" fill="${getParcelColor('WB-HGY-SNG-05', '#133e7c')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-SNG-05', '#133e7c')}" stroke-width="2.5"></polygon>
+            <text x="525" y="315" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 520/1A [${getParcelStatus('WB-HGY-SNG-05', 'Awarded')}]</text>
             <text x="525" y="330" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">P. P. Roy (PHE Scheme)</text>
 
-            <!-- Parcel 6: WB-HWH-SLP-06 (Salap JL 12, Dag 88/2) - Objection / Stay (Red) -->
+            <!-- Parcel 6: WB-HWH-SLP-06 (Salap JL 12, Dag 88/2) -->
             <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HWH-SLP-06"
-                     points="360,390 490,370 515,480 385,495" fill="#dc2626" fill-opacity="0.55" stroke="#dc2626" stroke-width="2.5"></polygon>
-            <text x="395" y="435" fill="#93000a" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 88/2 [CIVIL STAY]</text>
+                     points="360,390 490,370 515,480 385,495" fill="${getParcelColor('WB-HWH-SLP-06', '#dc2626')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HWH-SLP-06', '#dc2626')}" stroke-width="2.5"></polygon>
+            <text x="395" y="435" fill="#93000a" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 88/2 [${getParcelStatus('WB-HWH-SLP-06', 'CIVIL STAY')}]</text>
             <text x="395" y="450" fill="#93000a" class="text-label-sm font-label-sm pointer-events-none">T. K. Mondal (Sec 64)</text>
           </svg>
 

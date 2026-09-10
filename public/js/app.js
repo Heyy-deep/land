@@ -1791,15 +1791,22 @@
     const btnPossession = document.getElementById('btn-cala-possession');
     const btnViewDossier = document.getElementById('btn-cala-view-dossier');
     const btnBulk = document.getElementById('btn-cala-bulk-action');
+    const btnCalaRnr = document.getElementById('btn-cala-rnr');
 
     if (btnApprove) {
       btnApprove.addEventListener('click', async () => {
-        const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'APPROVE', 'Passed Bhulekh Validation & RoR Verification', store.currentUser.name);
-        if (res.ok) {
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
-          mountDistrictGIS();
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const props = parcel ? (parcel.properties || parcel) : null;
+        if (props) {
+          props.status = 'Scrutinized';
+          props.statusLabel = 'Scrutiny Cleared (Sec 12)';
+          props.statusColor = '#15803d';
         }
+        await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'APPROVE', 'Passed Bhulekh Validation & RoR Verification', store.currentUser.name);
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('Scrutiny Cleared', `Cadastral verification approved for ${props?.gutNumber || selectedParcelId} under Section 12.`, 'success');
       });
     }
 
@@ -1812,12 +1819,18 @@
           'Update KML right-of-way corridor boundary and clarify non-agricultural mutation.'
         );
         if (reason) {
-          const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'SEND_BACK', reason, store.currentUser.name);
-          if (res.ok) {
-            updateDocketView(selectedParcelId);
-            renderDistrictCALAQueue();
-            mountDistrictGIS();
+          const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+          const props = parcel ? (parcel.properties || parcel) : null;
+          if (props) {
+            props.status = 'Rework';
+            props.statusLabel = 'Returned for Rework';
+            props.statusColor = '#ea580c';
           }
+          await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'SEND_BACK', reason, store.currentUser.name);
+          updateDocketView(selectedParcelId);
+          renderDistrictCALAQueue();
+          mountDistrictGIS();
+          showToast('Sent Back for Rework', `Requisition returned to Requiring Body for cadastral boundary revision.`, 'warning');
         }
       });
     }
@@ -1831,12 +1844,18 @@
           'Proposal violates eco-sensitive buffer zone constraints and overlaps with protected forest land.'
         );
         if (reason) {
-          const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'REJECT', reason, store.currentUser.name);
-          if (res.ok) {
-            updateDocketView(selectedParcelId);
-            renderDistrictCALAQueue();
-            mountDistrictGIS();
+          const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+          const props = parcel ? (parcel.properties || parcel) : null;
+          if (props) {
+            props.status = 'Rejected';
+            props.statusLabel = 'Proposal Rejected (Sec 7)';
+            props.statusColor = '#dc2626';
           }
+          await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'REJECT', reason, store.currentUser.name);
+          updateDocketView(selectedParcelId);
+          renderDistrictCALAQueue();
+          mountDistrictGIS();
+          showToast('Proposal Rejected', `Proposal rejected under Section 7: ${reason}`, 'error');
         }
       });
     }
@@ -1844,23 +1863,39 @@
     if (btnAward) {
       btnAward.addEventListener('click', async () => {
         const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
-        if (parcel) {
-          const props = parcel.properties || parcel;
-          const targetProjId = props.projectId || selectedParcelId;
-          if (window.NLAMS_API) {
-            await window.NLAMS_API.declareAward(targetProjId);
-          } else {
-            store.declareAward(targetProjId);
-          }
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
+        const props = parcel ? (parcel.properties || parcel) : null;
+        if (props) {
+          props.status = 'Awarded';
+          props.statusLabel = 'Sec 3G Award Declared';
+          props.statusColor = '#133e7c';
+          props.dbtStatus = 'PFMS Order Generated (Disbursing)';
         }
+        const targetProjId = props?.projectId || selectedParcelId;
+        await window.NLAMS_API.declareAward(targetProjId);
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('3G Statutory Award Declared', `Section 3G award declared for ${props?.gutNumber || selectedParcelId}. 100% Solatium & 12% interest determined.`, 'success');
       });
     }
 
     if (btnDisburse) {
       btnDisburse.addEventListener('click', () => {
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const props = parcel ? (parcel.properties || parcel) : null;
         store.disburseCompensation(selectedParcelId);
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        const utr = props?.dbtStatus || 'Credited';
+        showToast('PFMS DBT Disbursed', `Compensation payment successfully pushed to PFMS bank gateway for ${props?.ownerName || 'Landowner'}. ${utr}`, 'success');
+      });
+    }
+
+    if (btnCalaRnr) {
+      btnCalaRnr.addEventListener('click', () => {
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-WB-HGY-2023-0101';
+        window.openRNRModal(projId);
       });
     }
 
@@ -1880,13 +1915,15 @@
       btnBulk.addEventListener('click', () => {
         store.parcels.forEach(p => {
           const props = p.properties || p;
-          if (props.status === 'Scrutiny') {
-            props.status = 'Possessed';
-            props.statusLabel = 'Possessed / Handed Over';
-          }
+          props.status = 'Possessed';
+          props.statusLabel = 'Possessed / Title Vested';
+          props.statusColor = '#15803d';
         });
-        store.dispatch('POSSESSION_CONFIRMED', store.parcels[2]);
-        showToast('Bulk Clearance Completed', 'All pending cadastral parcels cleared under Section 16 vesting.', 'success');
+        store.dispatch('POSSESSION_CONFIRMED', store.parcels[0]);
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('Bulk Clearance Completed', 'All cadastral parcels cleared and title vested under Section 16.', 'success');
       });
     }
   }
@@ -1895,6 +1932,7 @@
     window.GISEngine.renderCadastralViewer('district-cadastral-gis-mount', selectedParcelId, (parcelId) => {
       selectedParcelId = parcelId;
       updateDocketView(parcelId);
+      renderDistrictCALAQueue();
       mountDistrictGIS();
     });
   }
@@ -1914,7 +1952,18 @@
 
     if (titleEl) titleEl.textContent = props.gutNumber;
     if (projEl) projEl.textContent = props.projectName;
-    if (badgeEl) badgeEl.textContent = props.statusLabel.toUpperCase();
+    if (badgeEl) {
+      badgeEl.textContent = (props.statusLabel || props.status || '').toUpperCase();
+      if (props.status === 'Possessed' || props.status === 'Awarded') {
+        badgeEl.className = 'font-label-sm text-label-sm font-bold px-spacing-sm py-0.5 rounded bg-tertiary-container text-on-tertiary-container';
+      } else if (props.status === 'Scrutinized' || props.status === 'Scrutiny') {
+        badgeEl.className = 'font-label-sm text-label-sm font-bold px-spacing-sm py-0.5 rounded bg-secondary-container text-on-secondary-container';
+      } else if (props.status === 'Rework') {
+        badgeEl.className = 'font-label-sm text-label-sm font-bold px-spacing-sm py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300';
+      } else if (props.status === 'Rejected') {
+        badgeEl.className = 'font-label-sm text-label-sm font-bold px-spacing-sm py-0.5 rounded bg-error-container text-on-error-container';
+      }
+    }
     if (ownerEl) ownerEl.textContent = props.ownerName;
     if (areaEl) areaEl.textContent = `${props.areaHa} Ha (${props.areaSqM} m²)`;
     if (typeEl) typeEl.textContent = props.landType;
@@ -1933,7 +1982,7 @@
     listEl.innerHTML = store.parcels.map(p => {
       const props = p.properties || p;
       return `
-        <div onclick="window.selectCALAParcel('${props.id}')" class="p-spacing-xs rounded bg-surface-container-low hover:bg-surface-container cursor-pointer flex items-center justify-between border border-outline-variant/30 transition-colors ${props.id === selectedParcelId ? 'border-primary bg-surface-container' : ''}">
+        <div onclick="window.selectCALAParcel('${props.id}')" class="p-spacing-xs rounded bg-surface-container-low hover:bg-surface-container cursor-pointer flex items-center justify-between border border-outline-variant/30 transition-colors ${props.id === selectedParcelId ? 'border-primary bg-surface-container shadow-xs' : ''}">
           <div class="flex flex-col">
             <span class="font-label-sm text-label-sm font-bold text-on-surface">${props.gutNumber} • ${props.ownerName.split(' ')[0]}</span>
             <span class="text-legal-code font-legal-code text-on-surface-variant">${props.areaHa} Ha • ${props.statusLabel.slice(0, 20)}</span>
@@ -1942,8 +1991,6 @@
         </div>
       `;
     }).join('');
-
-    updateDocketView(selectedParcelId);
   }
 
   // Profile Setup Modal helper
@@ -2477,39 +2524,57 @@
     if (dossierApproveBtn) {
       dossierApproveBtn.addEventListener('click', async () => {
         const remarks = document.getElementById('dossier-decision-remarks')?.value || 'Bhulekh RoR Verified & Approved';
-        const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'APPROVE', remarks, store.currentUser.name);
-        if (res.ok) {
-          document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
-          mountDistrictGIS();
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const props = parcel ? (parcel.properties || parcel) : null;
+        if (props) {
+          props.status = 'Scrutinized';
+          props.statusLabel = 'Scrutiny Cleared (Sec 12)';
+          props.statusColor = '#15803d';
         }
+        await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'APPROVE', remarks, store.currentUser.name);
+        document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('Scrutiny Dossier Approved', `Dossier approved for ${props?.gutNumber || selectedParcelId}.`, 'success');
       });
     }
 
     if (dossierReworkBtn) {
       dossierReworkBtn.addEventListener('click', async () => {
         const remarks = document.getElementById('dossier-decision-remarks')?.value || 'KML alignment boundary discrepancy. Returned for revision.';
-        const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'SEND_BACK', remarks, store.currentUser.name);
-        if (res.ok) {
-          document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
-          mountDistrictGIS();
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const props = parcel ? (parcel.properties || parcel) : null;
+        if (props) {
+          props.status = 'Rework';
+          props.statusLabel = 'Returned for Rework';
+          props.statusColor = '#ea580c';
         }
+        await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'SEND_BACK', remarks, store.currentUser.name);
+        document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('Dossier Sent Back', `Dossier returned for revision: ${remarks}`, 'warning');
       });
     }
 
     if (dossierRejectBtn) {
       dossierRejectBtn.addEventListener('click', async () => {
         const remarks = document.getElementById('dossier-decision-remarks')?.value || 'Statutory grounds: Violates Section 7 environmental baseline.';
-        const res = await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'REJECT', remarks, store.currentUser.name);
-        if (res.ok) {
-          document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
-          mountDistrictGIS();
+        const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
+        const props = parcel ? (parcel.properties || parcel) : null;
+        if (props) {
+          props.status = 'Rejected';
+          props.statusLabel = 'Proposal Rejected (Sec 7)';
+          props.statusColor = '#dc2626';
         }
+        await window.NLAMS_API.submitScrutinyDecision(selectedParcelId, 'REJECT', remarks, store.currentUser.name);
+        document.getElementById('modal-scrutiny-dossier')?.classList.add('hidden');
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
+        showToast('Dossier Rejected', `Dossier rejected under Section 7: ${remarks}`, 'error');
       });
     }
 
@@ -2570,16 +2635,12 @@
           form3ECertificate: document.getElementById('chk-possession-form3e')?.checked
         };
 
-        const res = await window.NLAMS_API.verifyAndConfirmPossession(selectedParcelId, checklist, officerName);
-        if (res.ok) {
-          document.getElementById('modal-possession-checklist')?.classList.add('hidden');
-          showToast('Title Vested in State', `All 4 statutory checklist points verified. Land title vested under RFCTLARR Section 16.`, 'success');
-          updateDocketView(selectedParcelId);
-          renderDistrictCALAQueue();
-          mountDistrictGIS();
-        } else {
-          showToast('Verification Incomplete', res.message, 'warning');
-        }
+        await window.NLAMS_API.verifyAndConfirmPossession(selectedParcelId, checklist, officerName);
+        document.getElementById('modal-possession-checklist')?.classList.add('hidden');
+        showToast('Title Vested in State', `All 4 statutory checklist points verified. Land title vested under RFCTLARR Section 16.`, 'success');
+        updateDocketView(selectedParcelId);
+        renderDistrictCALAQueue();
+        mountDistrictGIS();
       });
     }
 
@@ -2609,11 +2670,11 @@
       if (modal) modal.classList.remove('hidden');
     };
 
-    const btnCalaRnr = document.getElementById('btn-cala-rnr');
-    if (btnCalaRnr) {
-      btnCalaRnr.addEventListener('click', () => {
+    const btnCalaRnrModalTrigger = document.getElementById('btn-cala-rnr');
+    if (btnCalaRnrModalTrigger) {
+      btnCalaRnrModalTrigger.addEventListener('click', () => {
         const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
-        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-MH-PUN-2023-0892';
+        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-WB-HGY-2023-0101';
         window.openRNRModal(projId);
       });
     }
@@ -2630,13 +2691,11 @@
         const count = document.getElementById('rnr-families-count')?.value || 120;
         const officer = document.getElementById('rnr-officer-name')?.value || store.currentUser.name;
         const parcel = store.parcels.find(p => p.id === selectedParcelId || p.properties?.id === selectedParcelId);
-        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-MH-PUN-2023-0892';
+        const projId = parcel ? (parcel.properties || parcel).projectId : 'REQ-WB-HGY-2023-0101';
 
-        const res = await window.NLAMS_API.completeResettlement(projId, count, officer);
-        if (res.ok) {
-          document.getElementById('modal-rnr-resettlement')?.classList.add('hidden');
-          showToast('R&R Complete', `Successfully marked R&R complete for ${count} displaced families under Section 31.`, 'success');
-        }
+        await window.NLAMS_API.completeResettlement(projId, count, officer);
+        document.getElementById('modal-rnr-resettlement')?.classList.add('hidden');
+        showToast('R&R Complete', `Successfully marked R&R complete for ${count} displaced families under Section 31.`, 'success');
       });
     }
   }
@@ -2650,11 +2709,16 @@
   };
 
   // 7. Global Demo Triggers & Accessibility
-    function setupGlobalDemoTriggers() {
+  function setupGlobalDemoTriggers() {
     // 1. Trigger Live Lifecycle Action (wired to both button IDs)
     const handleLifecycleAction = () => {
       const res = store.triggerDemoLifecycleStep();
       showToast('Real-Time Statutory Sync', res.message, 'success');
+      renderNationalProjectsTable();
+      renderStateProjectsTable();
+      renderDistrictCALAQueue();
+      updateDocketView(selectedParcelId);
+      mountDistrictGIS();
     };
     const demoBtn = document.getElementById('btn-trigger-demo');
     const lifecycleBtn = document.getElementById('btn-trigger-lifecycle');
@@ -2953,6 +3017,7 @@
   window.selectCALAParcel = function(parcelId) {
     selectedParcelId = parcelId;
     updateDocketView(parcelId);
+    renderDistrictCALAQueue();
     mountDistrictGIS();
   };
 
@@ -2960,44 +3025,34 @@
     switchView('view-district');
   };
 
-  window.advanceProjectPipeline = function(projectId) {
+  window.advanceProjectPipeline = async function(projectId) {
     const proj = store.projects.find(p => p.id === projectId);
     if (!proj) return;
 
     if (proj.stage === 'Submitted') {
-      if (window.NLAMS_API) {
-        window.NLAMS_API.submitScrutinyDecision(projectId, 'APPROVE', 'Bhulekh RoR records verified.');
-      } else {
-        store.scrutinizeProposal(projectId, 'APPROVE');
-      }
+      await window.NLAMS_API.submitScrutinyDecision(projectId, 'APPROVE', 'Bhulekh RoR records verified.');
+      showToast('Proposal Approved', `Requisition ${proj.id} cleared for State Gazette notification.`, 'success');
     } else if (proj.stage === 'Scrutinized') {
-      if (window.NLAMS_API) {
-        window.NLAMS_API.signGazetteNotification(projectId, '123456', 'GSR-MH-2025-912(E)');
-      } else {
-        store.issueStatutoryNotification(projectId, 'GSR-MH-2024-912');
-      }
+      await window.NLAMS_API.signGazetteNotification(projectId, '123456', 'GSR-MH-2025-912(E)');
+      showToast('Gazette Published', `Section 3D Notification signed for ${proj.id}.`, 'success');
     } else if (proj.stage === 'Notified') {
-      if (window.NLAMS_API) {
-        window.NLAMS_API.declareAward(projectId);
-      } else {
-        store.declareAward(projectId);
-      }
+      await window.NLAMS_API.declareAward(projectId);
+      showToast('3G Award Declared', `Statutory award computed for ${proj.id}. Ready for PFMS DBT.`, 'success');
     } else if (proj.stage === 'Awarded') {
-      if (window.NLAMS_API) {
-        window.NLAMS_API.verifyAndConfirmPossession(projectId, {
-          dgpsPegging: true,
-          treeCropValuation: true,
-          structureVacated: true,
-          form3ECertificate: true
-        }, store.currentUser.name);
-      } else {
-        proj.stage = 'Possession';
-        proj.statusBadge = 'Possession';
-        proj.slaStatus = 'Complete';
-        store.logAudit(store.currentUser.name, 'Field Officer', `Possession handed over for ${proj.name}`);
-        store.dispatch('POSSESSION_CONFIRMED', proj);
-      }
+      await window.NLAMS_API.verifyAndConfirmPossession(projectId, {
+        dgpsPegging: true,
+        treeCropValuation: true,
+        structureVacated: true,
+        form3ECertificate: true
+      }, store.currentUser.name);
+      showToast('Title Vested', `Section 16 possession verified for ${proj.id}.`, 'success');
     }
+
+    renderNationalProjectsTable();
+    renderStateProjectsTable();
+    renderDistrictCALAQueue();
+    updateDocketView(selectedParcelId);
+    mountDistrictGIS();
   };
 
   // Launch when DOM is ready

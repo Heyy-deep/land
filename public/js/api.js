@@ -152,7 +152,7 @@
       return { status: 200, ok: true, data: scoped, fallback: true };
     }
 
-    // POST /projects - Submits Form 1 Requisition to real FastAPI backend
+    // POST /projects - Submits Form 1 Requisition to real FastAPI backend (with offline store fallback)
     async submitProposal(formData, actor) {
       const payload = {
         name: formData.projectName || formData.name,
@@ -171,44 +171,71 @@
         body: JSON.stringify(payload)
       }, 'requiring-body');
 
+      let adapted = null;
       if (res.ok && res.data) {
-        const adapted = this._adaptProject(res.data);
-        if (this.store) {
-          this.store.projects.unshift(adapted);
-          const newParcel = {
-            id: `PAR-${res.data.id}-01`,
-            type: 'Feature',
-            properties: {
-              id: `PAR-${res.data.id}-01`,
-              projectId: res.data.id,
-              projectName: res.data.name,
-              khasraNo: `${Math.floor(Math.random() * 200) + 50}/1`,
-              gutNumber: `GUT-${Math.floor(Math.random() * 800) + 100}`,
-              village: `${res.data.district} Sector 4`,
-              ownerName: 'Shri Ramdas Patil & Co-sharers',
-              areaHa: (parseFloat(res.data.required_land_ha) * 0.15).toFixed(2),
-              areaSqM: Math.round(parseFloat(res.data.required_land_ha) * 0.15 * 10000),
-              status: 'Scrutiny',
-              statusLabel: 'Under CALA Scrutiny (Form 1)',
-              statusColor: '#d97706',
-              compensationAssessed: Math.round(parseFloat(res.data.budget_cr) * 1000000),
-              disbursed: false,
-              disbursedAmount: 0
-            },
-            geometry: {
-              type: 'Polygon',
-              coordinates: [[[73.85, 18.52], [73.86, 18.52], [73.86, 18.53], [73.85, 18.53], [73.85, 18.52]]]
-            }
-          };
-          this.store.parcels.unshift(newParcel);
-          this.store.dispatch('PROJECT_ADDED', adapted);
-        }
-        return { ...res, data: adapted };
+        adapted = this._adaptProject(res.data);
+      } else {
+        // Standalone/offline fallback
+        const newId = `REQ-${(formData.state || 'MH').slice(0, 2).toUpperCase()}-${(formData.district || 'PUN').slice(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+        adapted = {
+          id: newId,
+          name: payload.name,
+          agency: payload.agency,
+          sector: payload.sector,
+          state: payload.state,
+          district: payload.district,
+          division: `${payload.district} Acquisition Sub-Division`,
+          requiredLandHa: payload.required_land_ha,
+          khasraCount: Math.round(payload.required_land_ha * 4.5),
+          stage: 'Submitted',
+          statusBadge: 'Under Scrutiny',
+          budgetCr: payload.budget_cr,
+          disbursedCr: 0,
+          percentDisbursed: 0,
+          gazetteDate: 'Pending Scrutiny',
+          slaStatus: 'Under Scrutiny Queue',
+          affectedFamilies: Math.round(payload.required_land_ha * 12),
+          rehabilitatedFamilies: 0,
+          currentMilestone: 'Form 1 Proposal Submitted for CALA Scrutiny',
+          coordinates: { lat: payload.lat, lng: payload.lng }
+        };
       }
-      return res;
+
+      if (this.store) {
+        this.store.projects.unshift(adapted);
+        const newParcel = {
+          id: `PAR-${adapted.id}-01`,
+          type: 'Feature',
+          properties: {
+            id: `PAR-${adapted.id}-01`,
+            projectId: adapted.id,
+            projectName: adapted.name,
+            khasraNo: `${Math.floor(Math.random() * 200) + 50}/1`,
+            gutNumber: `GUT-${Math.floor(Math.random() * 800) + 100}`,
+            village: `${adapted.district} Sector 4`,
+            ownerName: 'Shri Ramdas Patil & Co-sharers',
+            areaHa: (adapted.requiredLandHa * 0.15).toFixed(2),
+            areaSqM: Math.round(adapted.requiredLandHa * 0.15 * 10000),
+            status: 'Scrutiny',
+            statusLabel: 'Under CALA Scrutiny (Form 1)',
+            statusColor: '#d97706',
+            compensationAssessed: Math.round(adapted.budgetCr * 1000000),
+            disbursed: false,
+            disbursedAmount: 0
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[73.85, 18.52], [73.86, 18.52], [73.86, 18.53], [73.85, 18.53], [73.85, 18.52]]]
+          }
+        };
+        this.store.parcels.unshift(newParcel);
+        this.store.logAudit(actor || this.store.currentUser?.name || 'Requiring Body', 'Requiring Body', `Submitted Form 1 Requisition for ${adapted.name} [${adapted.id}]`);
+        this.store.dispatch('PROJECT_ADDED', adapted);
+      }
+      return { status: 201, ok: true, data: adapted, fallback: !res.ok };
     }
 
-    // POST /projects/{id}/scrutiny - Handles Approve, Reject, Send-Back in backend
+    // POST /projects/{id}/scrutiny - Handles Approve, Reject, Send-Back in backend & client store
     async submitScrutinyDecision(parcelId, decision, remarks, actor) {
       let targetId = parcelId;
       if (this.store) {
@@ -226,37 +253,71 @@
         })
       }, 'dro-cala');
 
-      if (res.ok) {
-        if (this.store) {
-          const proj = this.store.projects.find(p => p.id === targetId || p.id === parcelId);
-          if (proj) {
-            if (decision === 'APPROVE') {
-              proj.stage = 'Scrutinized';
-              proj.statusBadge = 'Scrutiny Cleared';
-              proj.slaStatus = 'Awaiting State Gazette Signing';
-              proj.currentMilestone = 'Digital Scrutiny Approved. Sent to State Gazette.';
-            } else if (decision === 'REJECT') {
-              proj.stage = 'Rejected';
-              proj.statusBadge = 'Rejected';
-            } else if (decision === 'SEND_BACK') {
-              proj.stage = 'Rework';
-              proj.statusBadge = 'Returned (Rework)';
-            }
+      // Seamlessly update client store regardless of network response
+      if (this.store) {
+        const proj = this.store.projects.find(p => p.id === targetId || p.id === parcelId);
+        if (proj) {
+          if (decision === 'APPROVE') {
+            proj.stage = 'Scrutinized';
+            proj.statusBadge = 'Scrutiny Cleared';
+            proj.slaStatus = 'Awaiting State Gazette Signing';
+            proj.currentMilestone = 'Digital Scrutiny Approved. Sent to State Gazette.';
+          } else if (decision === 'REJECT') {
+            proj.stage = 'Rejected';
+            proj.statusBadge = 'Rejected';
+            proj.slaStatus = 'Rejected under Section 7';
+            proj.currentMilestone = `Proposal Rejected: ${remarks || 'Non-compliant with statutory criteria'}`;
+          } else if (decision === 'SEND_BACK') {
+            proj.stage = 'Rework';
+            proj.statusBadge = 'Returned (Rework)';
+            proj.slaStatus = 'Returned for Correction';
+            proj.currentMilestone = `Returned for Rework: ${remarks || 'Cadastral alignment clarification'}`;
           }
-
-          const parcel = this.store.parcels.find(p => p.id === parcelId || p.properties?.id === parcelId);
-          if (parcel) {
-            const props = parcel.properties || parcel;
-            if (decision === 'APPROVE') {
-              props.status = 'Awarded';
-              props.statusLabel = 'Sec 3G Award Ready';
-              props.statusColor = '#15803d';
-            }
-          }
-          this.store.dispatch(decision === 'APPROVE' ? 'SCRUTINY_APPROVED' : 'SCRUTINY_REJECTED', { targetId, decision });
         }
+
+        // Update targeted parcel
+        const parcel = this.store.parcels.find(p => p.id === parcelId || p.properties?.id === parcelId);
+        if (parcel) {
+          const props = parcel.properties || parcel;
+          if (decision === 'APPROVE') {
+            props.status = 'Scrutinized';
+            props.statusLabel = 'Scrutiny Cleared (Sec 12)';
+            props.statusColor = '#15803d';
+          } else if (decision === 'REJECT') {
+            props.status = 'Rejected';
+            props.statusLabel = 'Proposal Rejected (Sec 7)';
+            props.statusColor = '#dc2626';
+          } else if (decision === 'SEND_BACK') {
+            props.status = 'Rework';
+            props.statusLabel = 'Returned for Rework';
+            props.statusColor = '#ea580c';
+          }
+        }
+
+        // Update all related corridor parcels
+        this.store.parcels.forEach(p => {
+          const props = p.properties || p;
+          if (props.projectId === targetId) {
+            if (decision === 'APPROVE') {
+              props.status = 'Scrutinized';
+              props.statusLabel = 'Scrutiny Cleared (Sec 12)';
+              props.statusColor = '#15803d';
+            } else if (decision === 'REJECT') {
+              props.status = 'Rejected';
+              props.statusLabel = 'Proposal Rejected (Sec 7)';
+              props.statusColor = '#dc2626';
+            } else if (decision === 'SEND_BACK') {
+              props.status = 'Rework';
+              props.statusLabel = 'Returned for Rework';
+              props.statusColor = '#ea580c';
+            }
+          }
+        });
+
+        this.store.logAudit(actor || this.store.currentUser?.name || 'CALA Desk', 'CALA Desk', `Statutory scrutiny decision [${decision}] on ${parcelId || targetId}: ${remarks || 'Processed'}`);
+        this.store.dispatch(decision === 'APPROVE' ? 'SCRUTINY_APPROVED' : (decision === 'SEND_BACK' ? 'SCRUTINY_RETURNED' : 'SCRUTINY_REJECTED'), { targetId, decision, parcelId });
       }
-      return res;
+      return { status: 200, ok: true, data: { targetId, decision }, fallback: !res.ok };
     }
 
     // POST /parcels/{id}/notify - Digital Signature DSC signing for Gazette under Section 11/19
@@ -269,20 +330,25 @@
         })
       }, 'state-revenue');
 
-      if (res.ok) {
-        if (this.store) {
-          const proj = this.store.projects.find(p => p.id === projectId);
-          if (proj) {
-            proj.stage = 'Notified';
-            proj.statusBadge = 'Notified (Sec 3D)';
-            proj.gazetteDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
-            proj.slaStatus = 'Objections / Award Phase';
-            proj.currentMilestone = `Section 3D Notification Published: ${gazetteRef || 'GSR-MH-2025-912(E)'}`;
-          }
-          this.store.dispatch('GAZETTE_ISSUED', { projectId, gazetteRef });
+      if (this.store) {
+        const proj = this.store.projects.find(p => p.id === projectId);
+        if (proj) {
+          proj.stage = 'Notified';
+          proj.statusBadge = 'Notified (Sec 3D)';
+          proj.gazetteDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
+          proj.slaStatus = 'Objections / Award Phase';
+          proj.currentMilestone = `Section 3D Notification Published: ${gazetteRef || 'GSR-MH-2025-912(E)'}`;
         }
+        this.store.parcels.forEach(p => {
+          const props = p.properties || p;
+          if (props.projectId === projectId || p.id === projectId) {
+            props.gazetteRef = gazetteRef || 'GSR-MH-2025-912(E)';
+          }
+        });
+        this.store.logAudit(actor || this.store.currentUser?.name || 'State Directorate', 'State Revenue Directorate', `Attested Gazette Notification under Sec 3D/19 for ${projectId} [${gazetteRef || 'GSR 742(E)'}]`);
+        this.store.dispatch('GAZETTE_ISSUED', { projectId, gazetteRef });
       }
-      return res;
+      return { status: 200, ok: true, fallback: !res.ok };
     }
 
     // POST /parcels/{id}/award - Declare Statutory Award under Section 3G
@@ -296,19 +362,27 @@
         })
       }, 'state-revenue');
 
-      if (res.ok) {
-        if (this.store) {
-          const proj = this.store.projects.find(p => p.id === projectId);
-          if (proj) {
-            proj.stage = 'Awarded';
-            proj.statusBadge = 'Award (Sec 3G)';
-            proj.slaStatus = 'Award Passed / DBT Ready';
-            proj.currentMilestone = 'Compensation Computed with 100% Solatium & 12% Interest';
-          }
-          this.store.dispatch('AWARD_DECLARED', { projectId });
+      if (this.store) {
+        const proj = this.store.projects.find(p => p.id === projectId);
+        if (proj) {
+          proj.stage = 'Awarded';
+          proj.statusBadge = 'Award (Sec 3G)';
+          proj.slaStatus = 'Award Passed / DBT Ready';
+          proj.currentMilestone = 'Compensation Computed with 100% Solatium & 12% Interest';
         }
+        this.store.parcels.forEach(p => {
+          const props = p.properties || p;
+          if (props.projectId === projectId || p.id === projectId || props.id === projectId) {
+            props.status = 'Awarded';
+            props.statusLabel = 'Sec 3G Award Declared';
+            props.statusColor = '#133e7c';
+            props.dbtStatus = 'PFMS Order Generated (Disbursing)';
+          }
+        });
+        this.store.logAudit(this.store.currentUser?.name || 'CALA Authority', 'CALA Authority', `Declared Section 3G Statutory Award for ${projectId}`);
+        this.store.dispatch('AWARD_DECLARED', { projectId });
       }
-      return res;
+      return { status: 200, ok: true, fallback: !res.ok };
     }
 
     // POST /parcels/{id}/possess - Validates 4-point checklist and vests title under Section 16
@@ -316,35 +390,36 @@
       const res = await this._request(`/parcels/${parcelId}/possess`, {
         method: 'POST',
         body: JSON.stringify({
-          dgps_pegging: !!checklist.dgpsPegging,
-          tree_crop_valuation: !!checklist.treeCropValuation,
-          structure_vacated: !!checklist.structureVacated,
-          form3e_certificate: !!checklist.form3ECertificate,
-          officer_name: officerName || 'R. K. Meena, IAS'
+          dgps_pegging: !!checklist?.dgpsPegging,
+          tree_crop_valuation: !!checklist?.treeCropValuation,
+          structure_vacated: !!checklist?.structureVacated,
+          form3e_certificate: !!checklist?.form3ECertificate,
+          officer_name: officerName || 'Smt. Sreemoyee Sen, WBCS (Exe)'
         })
       }, 'dro-cala');
 
-      if (res.ok) {
-        if (this.store) {
-          const parcel = this.store.parcels.find(p => p.id === parcelId || p.properties?.id === parcelId);
-          if (parcel) {
-            const props = parcel.properties || parcel;
-            props.status = 'Possessed';
-            props.statusLabel = 'Title Vested in State';
-            props.statusColor = '#15803d';
+      if (this.store) {
+        const parcel = this.store.parcels.find(p => p.id === parcelId || p.properties?.id === parcelId);
+        if (parcel) {
+          const props = parcel.properties || parcel;
+          props.status = 'Possessed';
+          props.statusLabel = 'Possessed / Vested (Sec 16)';
+          props.statusColor = '#15803d';
+          props.possessionDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          props.possessionOfficer = officerName || this.store.currentUser?.name || 'CALA Inspection Cell';
 
-            const proj = this.store.projects.find(p => p.id === props.projectId || p.id === parcelId);
-            if (proj) {
-              proj.stage = 'Possession';
-              proj.statusBadge = 'Possession';
-              proj.slaStatus = 'Complete';
-              proj.currentMilestone = 'Physical Handover Completed. Title Vested in State under Section 16.';
-            }
+          const proj = this.store.projects.find(p => p.id === props.projectId || p.id === parcelId);
+          if (proj) {
+            proj.stage = 'Possession';
+            proj.statusBadge = 'Possession';
+            proj.slaStatus = 'Complete';
+            proj.currentMilestone = 'Physical Handover Completed. Title Vested in State under Section 16.';
           }
-          this.store.dispatch('POSSESSION_CONFIRMED', { parcelId });
         }
+        this.store.logAudit(officerName || this.store.currentUser?.name || 'Field Officer', 'CALA Inspection Cell', `Field possession confirmed for ${parcelId} [Title Vested under Sec 16]`);
+        this.store.dispatch('POSSESSION_CONFIRMED', { parcelId });
       }
-      return res;
+      return { status: 200, ok: true, fallback: !res.ok };
     }
 
     // POST /rehabilitation/{id} - Marks R&R resettlement complete
@@ -358,16 +433,21 @@
         })
       }, 'rehab-authority');
 
-      if (res.ok) {
-        if (this.store) {
-          const proj = this.store.projects.find(p => p.id === projectId);
-          if (proj) {
-            proj.rehabilitatedFamilies = familiesCount || 120;
-          }
-          this.store.dispatch('RNR_COMPLETED', { projectId, familiesCount });
+      if (this.store) {
+        const proj = this.store.projects.find(p => p.id === projectId) || this.store.projects[0];
+        const count = parseInt(familiesCount) || (proj ? proj.affectedFamilies : 120);
+        if (proj) {
+          proj.rehabilitatedFamilies = count;
+          proj.currentMilestone = `R&R Complete: ${count} Displaced Families Resettled with Housing & Grants`;
         }
+        this.store.logAudit(
+          actor || this.store.currentUser?.name || 'Rehabilitation Authority',
+          'Rehabilitation Authority',
+          `Completed R&R Resettlement for [${proj ? proj.id : projectId}]: ${count} Families Relocated with Housing & Grants`
+        );
+        this.store.dispatch('RNR_COMPLETED', { projectId, familiesCount: count });
       }
-      return res;
+      return { status: 200, ok: true, fallback: !res.ok };
     }
 
     // POST /api/v1/projects/:projectId/close - Stage 8 Statutory Closure & Archival
