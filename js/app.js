@@ -2022,6 +2022,53 @@
     if (docketDetails && window.i18n && typeof window.i18n.applyTranslations === 'function') {
       window.i18n.applyTranslations(docketDetails);
     }
+
+    // Asynchronously fetch and render AI Litigation & Delay Risk Score from ML model
+    const riskBadgeEl = document.getElementById('docket-risk-badge');
+    const riskBarEl = document.getElementById('docket-risk-bar');
+    const riskFactorsEl = document.getElementById('docket-risk-factors');
+
+    if (window.NLAMS_API) {
+      if (riskBadgeEl) {
+        riskBadgeEl.textContent = 'EVALUATING...';
+        riskBadgeEl.style.cssText = 'display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; background: #eaedff !important; color: #434750 !important; border: 1px solid #c3c6d2 !important;';
+      }
+      if (riskBarEl) riskBarEl.style.width = '20%';
+
+      window.NLAMS_API.getRiskScore(props.id).then(res => {
+        if (!res || !res.data) return;
+        const data = res.data;
+        const score = typeof data.risk_score === 'number' ? data.risk_score : 0.04;
+        const level = (data.risk_level || 'Low').toUpperCase();
+        const rawFactors = data.top_factors && data.top_factors.length ? data.top_factors : ['nominal_survey'];
+        const factors = rawFactors.map(f => f.replace(/_/g, ' ')).join(', ');
+
+        if (riskBadgeEl) {
+          riskBadgeEl.textContent = `${level} RISK (${score.toFixed(2)})`;
+          if (level === 'HIGH') {
+            riskBadgeEl.style.cssText = 'display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; background: #fee2e2 !important; color: #991b1b !important; border: 1.5px solid #ef4444 !important;';
+            if (riskBarEl) {
+              riskBarEl.style.cssText = `height: 100% !important; background: #ef4444 !important; border-radius: 9999px !important; width: ${Math.min(100, Math.round(score * 100))}% !important; transition: width 0.5s ease !important;`;
+            }
+          } else if (level === 'MEDIUM') {
+            riskBadgeEl.style.cssText = 'display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; background: #fef3c7 !important; color: #92400e !important; border: 1.5px solid #f59e0b !important;';
+            if (riskBarEl) {
+              riskBarEl.style.cssText = `height: 100% !important; background: #f59e0b !important; border-radius: 9999px !important; width: ${Math.min(100, Math.round(score * 100))}% !important; transition: width 0.5s ease !important;`;
+            }
+          } else {
+            riskBadgeEl.style.cssText = 'display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; background: #d1fae5 !important; color: #065f46 !important; border: 1.5px solid #10b981 !important;';
+            if (riskBarEl) {
+              riskBarEl.style.cssText = `height: 100% !important; background: #10b981 !important; border-radius: 9999px !important; width: ${Math.max(4, Math.round(score * 100))}% !important; transition: width 0.5s ease !important;`;
+            }
+          }
+        }
+
+        if (riskFactorsEl) {
+          riskFactorsEl.textContent = factors;
+          riskFactorsEl.title = factors;
+        }
+      });
+    }
   }
 
   function renderDistrictCALAQueue() {
@@ -2030,13 +2077,26 @@
 
     listEl.innerHTML = store.parcels.map(p => {
       const props = p.properties || p;
+      const isHigh = props.status === 'Objection';
+      const isMed = props.status === 'Scrutiny';
+      const badgeStyle = isHigh 
+        ? 'background: #fee2e2 !important; color: #991b1b !important; border: 1px solid #ef4444 !important;' 
+        : (isMed 
+            ? 'background: #fef3c7 !important; color: #92400e !important; border: 1px solid #f59e0b !important;' 
+            : 'background: #d1fae5 !important; color: #065f46 !important; border: 1px solid #10b981 !important;');
+      const riskText = isHigh ? 'HIGH RISK' : (isMed ? 'MED RISK' : 'LOW RISK');
       return `
         <div onclick="window.selectCALAParcel('${props.id}')" class="p-spacing-xs rounded bg-surface-container-low hover:bg-surface-container cursor-pointer flex items-center justify-between border border-outline-variant/30 transition-colors ${props.id === selectedParcelId ? 'border-primary bg-surface-container shadow-xs' : ''}">
           <div class="flex flex-col">
             <span class="font-label-sm text-label-sm font-bold text-on-surface">${props.gutNumber} • ${props.ownerName.split(' ')[0]}</span>
             <span class="text-legal-code font-legal-code text-on-surface-variant">${props.areaHa} Ha • ${props.statusLabel.slice(0, 20)}</span>
           </div>
-          <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${props.statusColor || '#15803d'}"></span>
+          <div class="flex items-center gap-1.5">
+            <span style="display: inline-block !important; padding: 2px 6px !important; border-radius: 4px !important; font-size: 10px !important; font-weight: 700 !important; font-family: monospace !important; ${badgeStyle}">
+              ${riskText}
+            </span>
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${props.statusColor || '#15803d'}"></span>
+          </div>
         </div>
       `;
     }).join('');
@@ -2552,6 +2612,48 @@
 
       // Reset to first tab
       switchDossierTab('form1');
+
+      // Populate AI Risk Model tab in Dossier
+      if (window.NLAMS_API) {
+        window.NLAMS_API.getRiskScore(props.id).then(res => {
+          if (!res || !res.data) return;
+          const data = res.data;
+          const score = typeof data.risk_score === 'number' ? data.risk_score : 0.04;
+          const level = (data.risk_level || 'Low').toUpperCase();
+
+          const scoreValEl = document.getElementById('dossier-risk-score-val');
+          const delayValEl = document.getElementById('dossier-risk-delay-val');
+          const levelBadgeEl = document.getElementById('dossier-risk-level-badge');
+          const factorsListEl = document.getElementById('dossier-risk-factors-list');
+
+          if (scoreValEl) scoreValEl.textContent = `${score.toFixed(2)} / 1.00`;
+          if (delayValEl) {
+            if (level === 'HIGH') delayValEl.textContent = 'High Delay (>180 days litigation)';
+            else if (level === 'MEDIUM') delayValEl.textContent = 'Moderate (60-120 days scrutiny)';
+            else delayValEl.textContent = 'Minimal (<30 days clearance)';
+          }
+
+          if (levelBadgeEl) {
+            levelBadgeEl.textContent = `${level} RISK`;
+            if (level === 'HIGH') {
+              levelBadgeEl.className = 'px-2.5 py-1 rounded font-legal-code text-xs font-bold bg-red-100 text-red-800 border border-red-300';
+            } else if (level === 'MEDIUM') {
+              levelBadgeEl.className = 'px-2.5 py-1 rounded font-legal-code text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300';
+            } else {
+              levelBadgeEl.className = 'px-2.5 py-1 rounded font-legal-code text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+            }
+          }
+
+          if (factorsListEl && data.top_factors) {
+            factorsListEl.innerHTML = data.top_factors.map(f => `
+              <span class="px-2.5 py-1 bg-surface-container rounded border border-outline-variant/30 text-on-surface font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-secondary">analytics</span>
+                ${f.replace(/_/g, ' ')}
+              </span>
+            `).join('');
+          }
+        });
+      }
 
       const modal = document.getElementById('modal-scrutiny-dossier');
       if (modal) {
