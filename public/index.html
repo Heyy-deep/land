@@ -142,6 +142,11 @@
       color: #ffffff !important;
       box-shadow: 0 2px 6px rgba(0, 40, 91, 0.35);
     }
+    /* Compensation Calculator Mode Rules */
+    #modal-compensation-calculator.calc-mode-simple .calc-detailed-only { display: none !important; }
+    #modal-compensation-calculator.calc-mode-detailed .calc-simple-only { display: none !important; }
+    #modal-compensation-calculator.calc-mode-simple .calc-field-card { padding: 1.15rem; }
+    #modal-compensation-calculator.calc-mode-simple .calc-input-box { font-size: 1.125rem; }
   </style>
 </head>
 
@@ -275,13 +280,24 @@
           </button>
         </nav>
 
-        <!-- Real-Time Demo Sync Button -->
-        <div class="flex items-center gap-spacing-sm py-0.5 flex-shrink-0">
+        <!-- Real-Time Demo Sync Button & Fast-Action Evaluator Modals -->
+        <div class="flex items-center gap-spacing-xs py-0.5 flex-shrink-0 flex-wrap">
+          <button id="btn-open-audit-trail" class="px-spacing-sm py-1 bg-surface-container-high/30 hover:bg-surface-container-high text-primary-fixed-dim hover:text-white font-label-sm text-label-sm font-semibold rounded flex items-center gap-1 transition-colors border border-outline-variant/30 whitespace-nowrap" title="Inspect live immutable cryptographic audit ledger">
+            <span class="material-symbols-outlined text-[16px] text-tertiary-container">verified</span>
+            <span>Audit Trail</span>
+          </button>
+          <button id="btn-open-reports-center" class="px-spacing-sm py-1 bg-surface-container-high/30 hover:bg-surface-container-high text-primary-fixed-dim hover:text-white font-label-sm text-label-sm font-semibold rounded flex items-center gap-1 transition-colors border border-outline-variant/30 whitespace-nowrap" title="Statutory Gazette, 3G Award and PFMS DBT report generator">
+            <span class="material-symbols-outlined text-[16px] text-secondary">summarize</span>
+            <span>Reports Center</span>
+          </button>
+          <button id="btn-open-compensation-calc" class="px-spacing-sm py-1 bg-surface-container-high/30 hover:bg-surface-container-high text-primary-fixed-dim hover:text-white font-label-sm text-label-sm font-semibold rounded flex items-center gap-1 transition-colors border border-outline-variant/30 whitespace-nowrap" title="Statutory RFCTLARR Act 2013 Compensation Calculator">
+            <span class="material-symbols-outlined text-[16px] text-tertiary">calculate</span>
+            <span>Compensation Calculator</span>
+          </button>
           <button id="btn-trigger-lifecycle" class="px-spacing-sm py-1 bg-secondary-container text-on-secondary-container hover:bg-secondary font-label-sm text-label-sm font-bold rounded flex items-center gap-1 shadow-sm transition-transform active:scale-95 whitespace-nowrap" title="Advances a proposal or parcel through the shared database and updates all 5 dashboards in real time">
             <span class="material-symbols-outlined text-[16px] animate-spin">autorenew</span>
             <span data-i18n="header.trigger_lifecycle">Trigger Live Lifecycle Action</span>
           </button>
-          
         </div>
       </div>
     </div>
@@ -376,18 +392,7 @@
                 </select>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">arrow_drop_down</span>
               </div>
-              <!-- Citizen Persona Picker (Visible when Citizen role is chosen) -->
-              <div id="citizen-persona-picker" class="space-y-spacing-2xs hidden bg-surface-container-low p-spacing-sm rounded border border-outline-variant/30">
-                <label class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1" for="login-citizen-persona-select">
-                  <span class="material-symbols-outlined text-[16px]">account_circle</span>
-                  <span data-i18n="sso.citizen_profile_label">Select Citizen Landowner Profile</span>
-                </label>
-                <select id="login-citizen-persona-select" class="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded px-spacing-sm py-1.5 border border-outline-variant/40 outline-none cursor-pointer">
-                  <option value="WB-CIT-01" selected>Subrata Ghosh — West Bengal (Dag No. 412/1, Hooghly)</option>
-                  <option value="MH-CIT-01">Ramesh Narayan Patil — Maharashtra (Gut No. 142/1, Pune)</option>
-                  <option value="UP-CIT-01">Ram Swarup Yadav — Uttar Pradesh (Khasra No. 348/2, Jewar)</option>
-                </select>
-              </div>
+
               <!-- Dynamic Role Privilege Notice Pill -->
               <div id="role-privilege-pill" class="bg-surface-container-low text-primary px-spacing-md py-spacing-xs rounded flex items-center gap-spacing-xs font-body-sm text-body-sm border border-outline-variant/30">
                 <span class="material-symbols-outlined text-base text-primary">info</span>
@@ -1552,8 +1557,51 @@
                 Issue State Directive
               </button>
             </div>
-          </div>
         </div>
+
+        <!-- ======================================================== -->
+        <!-- STATE SECTION 15 PUBLIC HEARING & GRIEVANCE OVERSIGHT -->
+        <!-- ======================================================== -->
+        <section class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-spacing-md border-b border-surface-container pb-spacing-md">
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="material-symbols-outlined text-primary text-[24px]">gavel</span>
+                <h3 class="font-headline-md text-headline-md text-primary font-bold">State Section 15 Public Hearing & Grievance Directorate</h3>
+                <span id="state-objection-pendency-count" class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-legal-code text-xs font-bold uppercase tracking-wider">
+                  2 PENDING HEARINGS
+                </span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                State-wide statutory register of citizen hearing petitions, CALA order pronouncements, and 60-day milestone compliance under RFCTLARR Act 2013.
+              </p>
+            </div>
+            <div class="flex items-center gap-spacing-sm">
+              <span class="text-legal-code font-legal-code text-xs text-on-surface-variant bg-surface-container-low px-spacing-sm py-1 rounded border border-outline-variant/30">
+                Statutory Hearing Window: <strong>60 Days (Sec 15(1))</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="w-full overflow-x-auto rounded-lg bg-surface-container-low border border-outline-variant/30">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container text-on-surface-variant font-legal-code text-legal-code uppercase tracking-wider">
+                  <th class="py-spacing-sm px-spacing-md font-bold">Petition Ref & Date</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">District & Claimant</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Khasra / Holding</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Category & Grounds</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Hearing Status</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Statutory Order / Record</th>
+                </tr>
+              </thead>
+              <tbody id="state-objections-table-body" class="divide-y divide-surface-container text-body-sm font-body-sm text-on-surface">
+                <!-- Dynamically populated from store.objections -->
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <!-- ======================================================== -->
         <!-- DSC GAZETTE E-SIGN DIGITAL SIGNATURE MODAL -->
@@ -1788,6 +1836,12 @@
                     Declare 3G Award
                   </button>
                 </div>
+                <div class="pt-spacing-2xs">
+                  <button type="button" id="btn-cala-comp-calc" class="w-full py-1.5 px-spacing-sm bg-surface-container hover:bg-surface-container-high text-primary rounded font-label-sm text-xs font-bold transition-colors flex items-center justify-center gap-1 border border-outline-variant/30 shadow-2xs" title="Estimate award before formal declaration using RFCTLARR statutory formula">
+                    <span class="material-symbols-outlined text-[16px]">calculate</span>
+                    <span>Estimate Award (Compensation Calculator)</span>
+                  </button>
+                </div>
                 <!-- Row 2: Reject & Send-Back (Rework) -->
                 <div class="grid grid-cols-2 gap-spacing-sm pt-spacing-2xs">
                   <button id="btn-cala-rework" class="py-spacing-sm px-spacing-md bg-secondary-container text-on-secondary-container hover:bg-secondary rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
@@ -1827,8 +1881,51 @@
                 </div>
               </div>
             </div>
-          </div>
         </div>
+
+        <!-- ======================================================== -->
+        <!-- CALA SECTION 15 HEARING PETITIONS & OBJECTIONS DOCKET -->
+        <!-- ======================================================== -->
+        <section class="col-span-1 xl:col-span-12 w-full bg-surface-container-lowest p-spacing-xl rounded-xl shadow-md border border-outline-variant/30 flex flex-col gap-spacing-md">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-spacing-md border-b border-surface-container pb-spacing-md">
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <span class="material-symbols-outlined text-secondary text-[24px]">gavel</span>
+                <h3 class="font-headline-md text-headline-md text-primary font-bold">Section 15 Statutory Public Hearing Docket & Objections Queue</h3>
+                <span id="cala-objections-count-badge" class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-legal-code text-xs font-bold uppercase tracking-wider">
+                  0 PENDING HEARINGS
+                </span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Public Hearings of Objections under Section 15(2) of RFCTLARR Act 2013 • Competent Authority (CALA) Statutory Order Desk.
+              </p>
+            </div>
+            <div class="flex items-center gap-spacing-sm">
+              <span class="text-legal-code font-legal-code text-xs text-on-surface-variant bg-surface-container-low px-spacing-sm py-1 rounded border border-outline-variant/30">
+                Statutory Hearing Window: <strong>60 Days from Sec 11 Notice</strong>
+              </span>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="w-full overflow-x-auto rounded-lg bg-surface-container-low border border-outline-variant/30">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container text-on-surface-variant font-legal-code text-legal-code uppercase tracking-wider">
+                  <th class="py-spacing-sm px-spacing-md font-bold">Petition Ref & Date</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Claimant & Holding</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Objection Category & Grounds</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Statutory Status</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold">Hearing / Order Record</th>
+                  <th class="py-spacing-sm px-spacing-md font-bold text-right">CALA Action</th>
+                </tr>
+              </thead>
+              <tbody id="cala-objections-table-body" class="divide-y divide-surface-container text-body-sm font-body-sm text-on-surface">
+                <!-- Dynamically populated by renderDistrictCALAObjections() -->
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <!-- ======================================================== -->
                 <!-- ======================================================== -->
@@ -2823,18 +2920,10 @@
             <div class="flex items-center gap-spacing-xs w-full md:w-auto flex-wrap">
               <span class="material-symbols-outlined text-primary text-[22px]">search</span>
               <span class="font-label-md text-label-md font-bold text-primary whitespace-nowrap">Track Land Parcel:</span>
-              <input id="cit-search-input" type="text" value="Dag No. 412/1" placeholder="Enter Dag / Gut / Khasra No. or Project ID" class="bg-surface-container-low text-on-surface font-body-sm px-spacing-sm py-1 rounded border border-outline-variant/40 focus:outline-none w-full md:w-64" />
+              <input id="cit-search-input" type="text" placeholder="Enter Dag / Gut / Khasra No. or Project ID" class="bg-surface-container-low text-on-surface font-body-sm px-spacing-sm py-1 rounded border border-outline-variant/40 focus:outline-none w-full md:w-64" />
               <button id="btn-cit-search" type="button" class="px-spacing-md py-1 bg-primary text-on-primary font-label-sm text-xs font-bold rounded shadow-xs hover:bg-primary-container transition-colors">
                 Search
               </button>
-              <div class="flex items-center gap-1 bg-surface-container-low px-spacing-sm py-1 rounded border border-outline-variant/30 text-xs ml-2">
-                <span class="text-on-surface-variant font-semibold whitespace-nowrap">Citizen Persona:</span>
-                <select id="cit-persona-select" class="bg-transparent font-bold text-primary outline-none cursor-pointer">
-                  <option value="WB-CIT-01" selected>Subrata Ghosh (West Bengal)</option>
-                  <option value="MH-CIT-01">Ramesh Narayan Patil (Maharashtra)</option>
-                  <option value="UP-CIT-01">Ram Swarup Yadav (Uttar Pradesh)</option>
-                </select>
-              </div>
             </div>
             <div id="cit-parcel-pills" class="flex items-center gap-1.5 flex-wrap">
               <!-- Quick Select Buttons -->
@@ -2870,8 +2959,8 @@
         </div>
 
         <!-- Parcel Details & Live Status Tracker -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-lg">
-          <!-- Left: Parcel Information & Compensation Calculator (7 cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-lg items-start">
+          <!-- Left: Parcel Information & Compensation Calculator + Objections Register (7 cols) -->
           <div class="lg:col-span-7 flex flex-col gap-spacing-lg">
             <!-- Active Land Parcel Status Card -->
             <div class="bg-surface-container-lowest p-spacing-xl rounded-xl shadow-md border border-outline-variant/30 flex flex-col gap-spacing-md">
@@ -2913,10 +3002,16 @@
 
               <!-- Compensation Formula Breakdown under RFCTLARR Act 2013 -->
               <div class="p-spacing-md bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-spacing-xs">
-                <span class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[18px]">calculate</span>
-                  Statutory Compensation Breakdown (RFCTLARR Act 2013 Sec 26-30)
-                </span>
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <span class="font-label-md text-label-md text-primary font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[18px]">calculate</span>
+                    Statutory Compensation Breakdown (RFCTLARR Act 2013 Sec 26-30)
+                  </span>
+                  <button id="btn-open-citizen-comp-calc" class="text-xs px-2.5 py-1 rounded bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary font-label-sm font-bold flex items-center gap-1 transition-all shadow-xs cursor-pointer" title="Open Interactive Compensation Calculator for this parcel">
+                    <span class="material-symbols-outlined text-[14px]">tune</span>
+                    <span>Interactive Calculator</span>
+                  </button>
+                </div>
                 <div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant">
                   <div class="flex justify-between">
                     <span>Base Market Value (Circle Rate × Factor):</span>
@@ -2946,6 +3041,22 @@
                     Amount of ₹3,18,08,000 credited to Punjab National Bank A/c •••• 5012 via PFMS Treasury Node. UTR: #SBINWB2408912 on 18-Oct-2024.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            <!-- My Filed Objections & Hearing Status Card -->
+            <div class="bg-surface-container-lowest p-spacing-lg rounded-xl shadow-sm border border-outline-variant/30 flex flex-col gap-spacing-md">
+              <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
+                <div class="flex items-center gap-spacing-xs">
+                  <span class="material-symbols-outlined text-primary text-[22px]">balance</span>
+                  <h3 class="font-headline-sm text-headline-sm text-primary font-bold">My Filed Objections & Hearing Status</h3>
+                </div>
+                <span id="cit-objections-count-badge" class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-legal-code text-xs font-bold">
+                  0 Recorded
+                </span>
+              </div>
+              <div id="cit-objections-list" class="space-y-spacing-sm max-h-80 overflow-y-auto custom-scroll pr-1">
+                <!-- Dynamically populated per parcel from store.objections -->
               </div>
             </div>
           </div>
@@ -2991,6 +3102,19 @@
                   <textarea id="obj-grounds" rows="3" placeholder="State specific grounds (e.g. 15 mature mango trees omitted from horticulture survey)..." class="w-full bg-surface-container-low text-on-surface p-spacing-sm rounded border border-outline-variant/40 font-body-sm outline-none resize-none focus:bg-surface-container"></textarea>
                 </div>
 
+                <div class="space-y-spacing-2xs">
+                  <label class="font-label-sm text-label-sm text-on-surface font-semibold" for="obj-document">Supporting Evidentiary Document:</label>
+                  <div class="relative flex items-center justify-between bg-surface-container-low p-spacing-xs px-spacing-sm rounded border border-dashed border-outline-variant/60 hover:border-primary transition-colors cursor-pointer" onclick="document.getElementById('obj-document').click();">
+                    <div class="flex items-center gap-spacing-xs overflow-hidden">
+                      <span class="material-symbols-outlined text-primary text-[20px] shrink-0">upload_file</span>
+                      <span id="obj-doc-filename" class="font-body-sm text-body-sm text-on-surface-variant truncate">Attach Land Records / Valuation Proof (.pdf, .jpg)</span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-surface-container text-primary font-legal-code text-xs font-bold shrink-0">Browse</span>
+                    <input type="file" id="obj-document" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" />
+                  </div>
+                  <span class="text-[11px] text-on-surface-variant block">Attach RoR excerpt, registered title deed, or Horticulture assessment (Max 15MB).</span>
+                </div>
+
                 <button type="submit" id="btn-submit-objection" class="w-full py-spacing-xs bg-secondary text-on-secondary hover:bg-secondary-container rounded font-label-md text-label-md font-bold transition-colors flex items-center justify-center gap-1 shadow-sm">
                   <span class="material-symbols-outlined text-[18px]">send</span>
                   Submit Objection to District CALA Desk
@@ -3002,6 +3126,670 @@
       </div>
     </section>
 
+    <!-- ======================================================== -->
+    <!-- GLOBAL MODAL: SECTION 15 PUBLIC HEARING OUTCOME & STATUTORY ORDER -->
+    <!-- ======================================================== -->
+    <div id="modal-hearing-outcome" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Header -->
+        <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+          <div class="flex items-center gap-spacing-sm">
+            <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-[24px]">gavel</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <h3 class="font-headline-sm text-headline-sm font-bold">Section 15(2) Statutory Hearing & Order</h3>
+                <span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary font-legal-code text-xs font-bold uppercase">CALA Decree</span>
+              </div>
+              <p class="text-legal-code font-legal-code text-primary-fixed-dim text-xs">
+                RFCTLARR Act 2013 • Competent Authority for Land Acquisition Public Hearing Registry
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-hearing-modal" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors" aria-label="Close Hearing Modal">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Content & Form -->
+        <form id="form-hearing-outcome" class="p-spacing-xl flex flex-col gap-spacing-md overflow-y-auto custom-scroll">
+          <div class="p-spacing-md bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span id="hearing-obj-id" class="font-headline-sm text-sm font-bold text-primary">OBJ-2025-XXXX</span>
+              <span id="hearing-category-badge" class="px-2 py-0.5 rounded bg-surface-container text-secondary font-legal-code text-xs font-bold">Valuation Dispute</span>
+            </div>
+            <div class="grid grid-cols-2 gap-spacing-sm text-body-sm font-body-sm text-on-surface">
+              <div>
+                <span class="text-on-surface-variant block text-xs">Claimant:</span>
+                <strong id="hearing-claimant-name">Subrata Ghosh</strong>
+              </div>
+              <div>
+                <span class="text-on-surface-variant block text-xs">Holding / Khasra:</span>
+                <strong id="hearing-khasra-no">Dag No. 412/1</strong>
+              </div>
+            </div>
+            <div class="text-xs text-on-surface bg-surface-container-lowest p-2 rounded border border-outline-variant/20">
+              <strong class="text-on-surface-variant">Grounds Submitted:</strong>
+              <p id="hearing-grounds-text" class="mt-0.5 text-on-surface">Initial joint survey overlooked 12 mature teak trees and masonry boundary wall.</p>
+            </div>
+            <div id="hearing-doc-wrapper" class="flex items-center gap-1 text-xs text-primary font-semibold">
+              <span class="material-symbols-outlined text-[14px]">attachment</span>
+              <span id="hearing-doc-name">Attached: Document.pdf</span>
+            </div>
+          </div>
+
+          <!-- Hearing Verdict Selection -->
+          <div class="space-y-spacing-2xs">
+            <label class="font-label-sm text-label-sm text-on-surface font-bold" for="hearing-verdict-select">Statutory Hearing Verdict (Sec 15(2)):</label>
+            <select id="hearing-verdict-select" required class="w-full bg-surface-container-low text-on-surface py-spacing-xs px-spacing-sm rounded border border-outline-variant/40 font-body-sm outline-none cursor-pointer">
+              <option value="Upheld">Upheld — Relief Granted / Supplementary Award or Re-survey Ordered</option>
+              <option value="Rejected">Rejected — Objection Dismissed / Statutory Grounds Not Met</option>
+              <option value="Hearing Scheduled">Hearing Scheduled — Formal Summons & Hearing Date Fixed</option>
+              <option value="Field Verification">Field Verification — Joint Measurement Survey (DGPS) Ordered</option>
+            </select>
+          </div>
+
+          <!-- Hearing Date & Presiding Officer -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-spacing-md">
+            <div class="space-y-spacing-2xs">
+              <label class="font-label-sm text-label-sm text-on-surface font-semibold" for="hearing-date-input">Hearing / Pronouncement Date:</label>
+              <input type="text" id="hearing-date-input" value="28-Nov-2025" required class="w-full bg-surface-container-low text-on-surface px-spacing-sm py-spacing-xs rounded border border-outline-variant/40 font-body-sm outline-none" />
+            </div>
+            <div class="space-y-spacing-2xs">
+              <label class="font-label-sm text-label-sm text-on-surface font-semibold" for="hearing-officer-input">Presiding Officer (CALA):</label>
+              <input type="text" id="hearing-officer-input" value="R. K. Meena, IAS (District CALA)" required class="w-full bg-surface-container-low text-on-surface px-spacing-sm py-spacing-xs rounded border border-outline-variant/40 font-body-sm outline-none" />
+            </div>
+          </div>
+
+          <!-- Order Findings & Statement of Reasons -->
+          <div class="space-y-spacing-2xs">
+            <label class="font-label-sm text-label-sm text-on-surface font-bold" for="hearing-notes-input">Statutory Findings & Statement of Reasons (Sec 15(2)):</label>
+            <textarea id="hearing-notes-input" rows="3" required placeholder="Enter reasoned order of the Competent Authority (e.g. Horticulturist report verified; supplementary award approved under Section 29)..." class="w-full bg-surface-container-low text-on-surface p-spacing-sm rounded border border-outline-variant/40 font-body-sm outline-none resize-none focus:bg-surface-container"></textarea>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="flex items-center justify-end gap-spacing-sm pt-spacing-xs border-t border-surface-container">
+            <button type="button" id="btn-cancel-hearing" class="px-spacing-md py-spacing-xs rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold">
+              Cancel
+            </button>
+            <button type="submit" id="btn-save-hearing-order" class="px-spacing-lg py-spacing-xs rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold transition-all shadow-md flex items-center gap-1">
+              <span class="material-symbols-outlined text-[18px]">verified</span>
+              Pronounce & Save Statutory Order
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- GLOBAL MODAL: IMMUTABLE CRYPTOGRAPHIC AUDIT TRAIL (SHA-256) -->
+    <!-- ======================================================== -->
+    <div id="modal-audit-trail" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Header -->
+        <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+          <div class="flex items-center gap-spacing-sm">
+            <div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-[24px]">verified</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <h3 class="font-headline-sm text-headline-sm font-bold">Statutory Cryptographic Audit Trail Ledger</h3>
+                <span id="audit-trail-count-badge" class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase">Live Sync</span>
+              </div>
+              <p class="text-legal-code font-legal-code text-primary-fixed-dim text-xs">
+                SHA-256 Tamper-Evident Chronological Ledger • CERT-IN & STQC Validated
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-audit-modal" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors" aria-label="Close Audit Trail Modal">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+          </button>
+        </div>
+
+        <!-- Filter & Search Strip -->
+        <div class="p-spacing-md bg-surface-container-low flex flex-wrap items-center justify-between gap-spacing-sm border-b border-outline-variant/30">
+          <div class="relative flex-1 min-w-[240px]">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+            <input id="audit-search-input" type="text" placeholder="Filter by Actor, Role, Action, or SHA-256..." class="w-full bg-surface-container-lowest text-on-surface pl-9 pr-spacing-md py-1.5 rounded border border-outline-variant/40 font-body-sm outline-none focus:border-primary" />
+          </div>
+          <div class="flex items-center gap-spacing-xs">
+            <button id="btn-export-audit-json" class="px-spacing-sm py-1.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-xs font-bold transition-colors flex items-center gap-1 border border-outline-variant/30">
+              <span class="material-symbols-outlined text-[14px]">data_object</span> Export JSON
+            </button>
+            <button id="btn-export-audit-csv" class="px-spacing-sm py-1.5 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-xs font-bold transition-colors flex items-center gap-1 shadow-xs">
+              <span class="material-symbols-outlined text-[14px]">download</span> Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <div class="overflow-y-auto custom-scroll p-spacing-md flex-1 max-h-[60vh]">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant font-legal-code text-xs uppercase tracking-wider sticky top-0">
+                <th class="py-2 px-3 font-bold">Timestamp</th>
+                <th class="py-2 px-3 font-bold">Actor & Designation</th>
+                <th class="py-2 px-3 font-bold">Statutory Action</th>
+                <th class="py-2 px-3 font-bold">SHA-256 Hash</th>
+              </tr>
+            </thead>
+            <tbody id="audit-trail-table-body" class="divide-y divide-surface-container text-xs font-body-sm text-on-surface">
+              <!-- Dynamically populated from store.audit -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- GLOBAL MODAL: STATUTORY REPORTS & DOSSIER EXPORT CENTER -->
+    <!-- ======================================================== -->
+    <div id="modal-reports-center" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Header -->
+        <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+          <div class="flex items-center gap-spacing-sm">
+            <div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-[24px]">summarize</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <h3 class="font-headline-sm text-headline-sm font-bold">Statutory Reports & Dossier Export Center</h3>
+                <span class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase">RFCTLARR 2013</span>
+              </div>
+              <p class="text-legal-code font-legal-code text-primary-fixed-dim text-xs">
+                Official Gazettes, Section 3G Awards, PFMS DBT Ledgers & Section 15 Hearing Registers
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-reports-modal" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors" aria-label="Close Reports Modal">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+          </button>
+        </div>
+
+        <!-- Report Selector Tabs -->
+        <div class="p-spacing-sm bg-surface-container-low flex flex-wrap items-center justify-between gap-spacing-sm border-b border-outline-variant/30">
+          <div class="flex items-center gap-1 overflow-x-auto custom-scroll">
+            <button data-report="gazette" class="btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-primary text-on-primary shadow-xs transition-all">
+              Sec 19 Gazette Notice
+            </button>
+            <button data-report="award" class="btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all">
+              Sec 3G Award Statement
+            </button>
+            <button data-report="dbt" class="btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all">
+              PFMS DBT Ledger
+            </button>
+            <button data-report="objections" class="btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all">
+              Sec 15 Objections Register
+            </button>
+          </div>
+          <div class="flex items-center gap-spacing-xs">
+            <button id="btn-print-report" class="px-spacing-sm py-1.5 rounded bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-xs font-bold transition-colors flex items-center gap-1 border border-outline-variant/30">
+              <span class="material-symbols-outlined text-[14px]">print</span> Print / PDF
+            </button>
+            <button id="btn-download-report-csv" class="px-spacing-sm py-1.5 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-xs font-bold transition-colors flex items-center gap-1 shadow-xs">
+              <span class="material-symbols-outlined text-[14px]">download</span> Download CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Preview Surface -->
+        <div id="report-preview-surface" class="overflow-y-auto custom-scroll p-spacing-xl flex-1 bg-surface-container-lowest max-h-[60vh]">
+          <!-- Dynamically populated by renderReportPreview() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: STATUTORY COMPENSATION CALCULATOR (RFCTLARR Sec 26-30) -->
+    <!-- ======================================================== -->
+    <div id="modal-compensation-calculator" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-gutter-mobile calc-mode-simple">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-5xl w-full max-h-[92vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        <!-- Modal Header -->
+        <div class="bg-primary text-on-primary px-spacing-xl py-spacing-md flex items-center justify-between shrink-0 border-b border-primary-container">
+          <div class="flex items-center gap-spacing-sm">
+            <div class="w-10 h-10 rounded-full bg-tertiary-container text-on-tertiary flex items-center justify-center font-bold shadow-xs">
+              <span class="material-symbols-outlined text-[24px]">calculate</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-spacing-xs">
+                <h3 id="calc-modal-title" class="font-headline-sm text-headline-sm font-bold">Land Compensation Calculator</h3>
+                <span id="calc-modal-badge" class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold uppercase">Citizen Estimate Mode</span>
+              </div>
+              <p id="calc-modal-subtitle" class="text-legal-code font-legal-code text-primary-fixed-dim text-xs">
+                Statutory Award Simulation Engine • Live Backend Formula Execution
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-close-comp-calc-modal" class="text-primary-fixed-dim hover:text-on-primary p-1 rounded transition-colors cursor-pointer" aria-label="Close Compensation Calculator">
+            <span class="material-symbols-outlined text-[24px]">close</span>
+          </button>
+        </div>
+
+        <!-- Sub-header Toolbar: Active Parcel & Mode Switcher -->
+        <div class="px-spacing-xl py-2 bg-surface-container-low flex flex-wrap items-center justify-between gap-spacing-sm border-b border-outline-variant/30">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[18px]">travel_explore</span>
+            <span class="text-xs font-bold text-on-surface">Active Parcel:</span>
+            <span id="calc-active-parcel-pill" class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-legal-code text-xs font-bold border border-outline-variant/30">
+              None (Custom Mode)
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Mode Switcher Segmented Control -->
+            <div class="flex items-center bg-surface-container rounded-lg p-0.5 border border-outline-variant/30">
+              <button type="button" id="calc-mode-btn-simple" class="px-2.5 py-1 rounded-md text-xs font-bold transition-all shadow-xs bg-primary text-on-primary cursor-pointer flex items-center gap-1" title="Citizen-friendly simplified view">
+                <span class="material-symbols-outlined text-[14px]">face</span>
+                <span>Simple Mode</span>
+              </button>
+              <button type="button" id="calc-mode-btn-detailed" class="px-2.5 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer flex items-center gap-1" title="Official statutory legal breakdown">
+                <span class="material-symbols-outlined text-[14px]">gavel</span>
+                <span>Legal Details</span>
+              </button>
+            </div>
+
+            <!-- Action buttons -->
+            <button type="button" id="btn-calc-populate-current" disabled class="opacity-50 cursor-not-allowed pointer-events-none px-2.5 py-1 bg-surface-container text-on-surface-variant rounded font-label-sm text-xs font-bold transition-all flex items-center gap-1 border border-outline-variant/30 shadow-2xs" title="Sign in to auto-fill from your parcel">
+              <span class="material-symbols-outlined text-[15px]">sync_alt</span>
+              <span class="calc-detailed-only">Auto-populate from Parcel</span>
+              <span class="calc-simple-only">Auto-fill my land</span>
+            </button>
+            <button type="button" id="btn-calc-reset" class="px-2.5 py-1 bg-surface-container hover:bg-surface-container-high text-on-surface rounded font-label-sm text-xs font-semibold transition-colors flex items-center gap-1 border border-outline-variant/30 cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">refresh</span>
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Modal Body: Grid with Form on Left and Breakdown on Right -->
+        <div class="p-spacing-xl overflow-y-auto custom-scroll flex-1">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-spacing-xl">
+            <!-- Left Column: Interactive Input Controls (7 cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-spacing-md">
+              <form id="form-comp-calculator" class="space-y-spacing-md" onsubmit="event.preventDefault();">
+                
+                <!-- 1. Land Area & Unit Toggle -->
+                <div class="bg-surface-container-low/60 calc-field-card p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <!-- Detailed Label -->
+                    <label for="calc-input-area" class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1 calc-detailed-only">
+                      <span>1. Land Extent / Area</span>
+                      <span class="text-xs text-on-surface-variant font-normal">(Sec 26(1))</span>
+                    </label>
+                    <!-- Simple Label -->
+                    <label for="calc-input-area" class="font-label-lg text-base text-on-surface font-bold flex items-center gap-1.5 calc-simple-only">
+                      <span>How much land are you giving up?</span>
+                      <span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-normal cursor-help" title="Section 26(1) of RFCTLARR Act 2013: Acquired extent from official record of rights (RoR)">ⓘ</span>
+                    </label>
+                    <span class="text-legal-code font-legal-code text-xs text-primary font-semibold" id="calc-area-converted-label">
+                      = 0 m²
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div class="sm:col-span-2 relative">
+                      <input type="number" id="calc-input-area" step="any" min="0" value="" class="w-full bg-surface-container-lowest text-on-surface px-3 py-2 rounded-lg border border-outline-variant/40 font-headline-sm text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary font-semibold calc-input-box" placeholder="e.g. 1.00" required />
+                    </div>
+                    <div>
+                      <select id="calc-select-area-unit" class="w-full bg-surface-container-lowest text-on-surface px-2.5 py-2 rounded-lg border border-outline-variant/40 font-body-sm text-sm outline-none focus:border-primary font-bold">
+                        <option value="ha" selected>Hectares (Ha)</option>
+                        <option value="acres">Acres</option>
+                        <option value="sqm">Sq. Meters (m²)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Circle Rate & Rate Unit -->
+                <div class="bg-surface-container-low/60 calc-field-card p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <!-- Detailed Label -->
+                    <label for="calc-input-circle-rate" class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1 calc-detailed-only">
+                      <span>2. Market / Circle Rate</span>
+                      <span class="text-xs text-on-surface-variant font-normal">(Sec 26(1)(a))</span>
+                    </label>
+                    <!-- Simple Label -->
+                    <label for="calc-input-circle-rate" id="label-circle-rate-simple" class="font-label-lg text-base text-on-surface font-bold flex items-center gap-1.5 calc-simple-only">
+                      <span>What's the government rate for your land?</span>
+                      <span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-normal cursor-help" title="Section 26(1)(a) of RFCTLARR Act 2013: Minimum land value specified in the Indian Stamp Act circle rate schedule">ⓘ</span>
+                    </label>
+                    <span class="text-legal-code font-legal-code text-xs text-primary font-semibold" id="calc-rate-converted-label">
+                      = ₹0 / m²
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div class="sm:col-span-2 relative">
+                      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold">₹</span>
+                      <input type="number" id="calc-input-circle-rate" step="any" min="0" value="" class="w-full bg-surface-container-lowest text-on-surface pl-7 pr-3 py-2 rounded-lg border border-outline-variant/40 font-headline-sm text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary font-semibold calc-input-box" placeholder="e.g. 1000" required />
+                    </div>
+                    <div>
+                      <select id="calc-select-rate-unit" class="w-full bg-surface-container-lowest text-on-surface px-2.5 py-2 rounded-lg border border-outline-variant/40 font-body-sm text-sm outline-none focus:border-primary font-bold">
+                        <option value="sqm" selected>per Sq. Meter</option>
+                        <option value="ha">per Hectare</option>
+                        <option value="acres">per Acre</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Multiplication Factor -->
+                <!-- Simple Mode View: Auto-detected card with plain-language explanation and edit toggle -->
+                <div class="calc-simple-only bg-surface-container-low/60 calc-field-card p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="font-label-lg text-base text-on-surface font-bold flex items-center gap-1.5">
+                      <span>Location Multiplier</span>
+                      <span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-normal cursor-help" title="Schedule 1 of RFCTLARR Act 2013 — Rural multiplier between 1.12× and 2.00× based on distance from urban centers">ⓘ</span>
+                    </span>
+                    <button type="button" id="btn-toggle-simple-edit-multiplier" class="text-xs text-primary font-bold hover:underline cursor-pointer">
+                      Edit multiplier
+                    </button>
+                  </div>
+                  <div class="p-2.5 bg-surface-container-lowest rounded-lg border border-outline-variant/30 flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 font-bold">
+                      <span class="material-symbols-outlined text-[18px]">nature</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p id="calc-simple-multiplier-text" class="text-sm font-semibold text-on-surface">
+                        Standard statutory factor of 1.00× (Urban) / 1.12× (Rural) applies. Sign in to auto-detect from your land records.
+                      </p>
+                      <span class="text-[11px] text-on-surface-variant">Statutory multiplier under Schedule 1 of RFCTLARR Act</span>
+                    </div>
+                  </div>
+                  <!-- Collapsed override panel (only if citizen clicks Edit) -->
+                  <div id="calc-simple-multiplier-edit-panel" class="hidden pt-2 border-t border-outline-variant/20 space-y-2">
+                    <div class="flex items-center gap-2">
+                      <label class="text-xs font-bold text-on-surface">Custom Factor:</label>
+                      <input type="number" id="calc-simple-input-multiplier" step="0.01" min="1.00" max="2.00" value="1.12" class="w-24 bg-surface-container-lowest text-on-surface px-2.5 py-1 rounded border border-outline-variant/40 text-xs font-bold outline-none focus:border-primary" />
+                      <button type="button" id="btn-apply-simple-multiplier" class="px-2.5 py-1 bg-primary text-on-primary rounded text-xs font-bold cursor-pointer">Apply</button>
+                      <span class="text-[11px] text-on-surface-variant">Range: 1.00 (Urban) to 2.00 (Rural)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Detailed Mode View: Direct input with preset buttons -->
+                <div class="calc-detailed-only bg-surface-container-low/60 p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label for="calc-input-multiplier" class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1">
+                      <span>3. Multiplication Factor</span>
+                      <span class="text-xs text-on-surface-variant font-normal">(Schedule 1, RFCTLARR)</span>
+                    </label>
+                    <span class="text-xs text-on-surface-variant">Rural: 1.12–2.00 • Urban: 1.00</span>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <input type="number" id="calc-input-multiplier" step="0.01" min="1.00" max="2.00" value="1.12" class="w-24 bg-surface-container-lowest text-on-surface px-3 py-2 rounded-lg border border-outline-variant/40 font-headline-sm text-base outline-none focus:border-primary focus:ring-1 focus:ring-primary font-semibold" required />
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <button type="button" class="btn-multiplier-preset px-2.5 py-1 rounded bg-surface-container text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors border border-outline-variant/30 cursor-pointer" data-factor="1.12">
+                        Rural 1.12 (Dankuni)
+                      </button>
+                      <button type="button" class="btn-multiplier-preset px-2.5 py-1 rounded bg-surface-container text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors border border-outline-variant/30 cursor-pointer" data-factor="1.25">
+                        Rural 1.25
+                      </button>
+                      <button type="button" class="btn-multiplier-preset px-2.5 py-1 rounded bg-surface-container text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors border border-outline-variant/30 cursor-pointer" data-factor="1.50">
+                        Rural 1.50
+                      </button>
+                      <button type="button" class="btn-multiplier-preset px-2.5 py-1 rounded bg-surface-container text-xs font-bold hover:bg-primary hover:text-on-primary transition-colors border border-outline-variant/30 cursor-pointer" data-factor="1.00">
+                        Urban 1.00
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4. Itemized Asset Valuations (Section 29) -->
+                <!-- Simple Mode View: Plain Question + Yes/No toggle -->
+                <div class="calc-simple-only bg-surface-container-low/60 calc-field-card p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <span id="label-assets-simple" class="font-label-lg text-base text-on-surface font-bold flex items-center gap-1.5">
+                        <span>Do you have trees, wells, or structures on this land?</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-normal cursor-help" title="Section 29 of RFCTLARR Act 2013 — Determination of value of things attached to land or building">ⓘ</span>
+                      </span>
+                      <span class="text-xs text-on-surface-variant">Trees, wells, and buildings are valued separately for extra compensation.</span>
+                    </div>
+                    <div class="flex items-center bg-surface-container rounded-lg p-0.5 border border-outline-variant/30">
+                      <button type="button" id="calc-assets-btn-no" class="px-3 py-1 rounded-md text-xs font-bold transition-all bg-primary text-on-primary shadow-xs cursor-pointer">
+                        No
+                      </button>
+                      <button type="button" id="calc-assets-btn-yes" class="px-3 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer">
+                        Yes, add details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Detailed Mode View: Section 29 Accordion Header -->
+                <div class="calc-detailed-only bg-surface-container-low/60 rounded-xl border border-outline-variant/30 overflow-hidden">
+                  <button type="button" id="btn-toggle-asset-valuations" class="w-full p-spacing-md flex items-center justify-between text-left hover:bg-surface-container transition-colors cursor-pointer">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-secondary text-[20px]">park</span>
+                      <div>
+                        <span class="font-label-md text-label-md text-on-surface font-bold block">4. Itemized Assets & Immovables Valuation (Sec 29)</span>
+                        <span class="text-xs text-on-surface-variant">Trees, timber, wells, irrigation borewells, structures, buildings</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span id="calc-assets-subtotal-badge" class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container text-xs font-bold font-legal-code">₹0</span>
+                      <span id="calc-assets-toggle-icon" class="material-symbols-outlined text-[18px] text-on-surface-variant transition-transform">expand_more</span>
+                    </div>
+                  </button>
+                </div>
+
+                <!-- Shared Itemized Assets Inputs Container (collapsed by default in both modes) -->
+                <div id="calc-assets-content" class="p-spacing-md rounded-xl bg-surface-container-lowest border border-outline-variant/30 grid grid-cols-1 sm:grid-cols-3 gap-spacing-sm hidden">
+                  <div>
+                    <label for="calc-input-trees" class="font-label-sm text-xs text-on-surface-variant block mb-1">Trees / Orchard (₹)</label>
+                    <input type="number" id="calc-input-trees" min="0" value="0" step="1000" class="w-full bg-surface-container-low text-on-surface px-2.5 py-1.5 rounded border border-outline-variant/40 text-sm outline-none focus:border-primary font-semibold" placeholder="₹0" />
+                  </div>
+                  <div>
+                    <label for="calc-input-wells" class="font-label-sm text-xs text-on-surface-variant block mb-1">Wells / Borewells (₹)</label>
+                    <input type="number" id="calc-input-wells" min="0" value="0" step="1000" class="w-full bg-surface-container-low text-on-surface px-2.5 py-1.5 rounded border border-outline-variant/40 text-sm outline-none focus:border-primary font-semibold" placeholder="₹0" />
+                  </div>
+                  <div>
+                    <label for="calc-input-structures" class="font-label-sm text-xs text-on-surface-variant block mb-1">Houses / Structures (₹)</label>
+                    <input type="number" id="calc-input-structures" min="0" value="0" step="1000" class="w-full bg-surface-container-low text-on-surface px-2.5 py-1.5 rounded border border-outline-variant/40 text-sm outline-none focus:border-primary font-semibold" placeholder="₹0" />
+                  </div>
+                </div>
+
+                <!-- 5. Statutory Interest Settings (Section 30(3)) -->
+                <div class="bg-surface-container-low/60 calc-field-card p-spacing-md rounded-xl border border-outline-variant/30 space-y-2">
+                  <div class="flex items-center justify-between flex-wrap gap-1">
+                    <!-- Simple Header -->
+                    <div class="calc-simple-only">
+                      <span id="label-interest-simple" class="font-label-lg text-base text-on-surface font-bold flex items-center gap-1.5">
+                        <span>How long has this taken?</span>
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-normal cursor-help" title="Section 30(3) of RFCTLARR Act 2013 — Additional amount calculated at 12% per annum from notification to award">ⓘ</span>
+                      </span>
+                      <span class="text-xs text-on-surface-variant block mt-0.5">
+                        You get an extra 12% per year for the time this process has taken.
+                      </span>
+                    </div>
+
+                    <!-- Detailed Header -->
+                    <div class="calc-detailed-only">
+                      <label class="font-label-md text-label-md text-on-surface font-bold flex items-center gap-1">
+                        <span>5. Statutory Interest @ 12% p.a.</span>
+                        <span class="text-xs text-on-surface-variant font-normal">(Sec 30(3))</span>
+                      </label>
+                    </div>
+
+                    <span id="calc-interest-duration-text" class="text-xs font-bold text-tertiary">2.00 Years (Default)</span>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label for="calc-input-date-start" class="text-xs text-on-surface-variant block mb-0.5">Section 4 Notification Date</label>
+                      <input type="date" id="calc-input-date-start" value="2022-10-18" class="w-full bg-surface-container-lowest text-on-surface px-2.5 py-1.5 rounded border border-outline-variant/40 text-xs outline-none focus:border-primary font-medium" />
+                    </div>
+                    <div>
+                      <label for="calc-input-date-end" class="text-xs text-on-surface-variant block mb-0.5">Award / Possession Date</label>
+                      <input type="date" id="calc-input-date-end" value="2024-10-18" class="w-full bg-surface-container-lowest text-on-surface px-2.5 py-1.5 rounded border border-outline-variant/40 text-xs outline-none focus:border-primary font-medium" />
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="calc-check-include-interest" class="rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer" />
+                    <label for="calc-check-include-interest" class="text-xs text-on-surface select-none cursor-pointer">
+                      Include 12% interest directly in <strong>Final Disbursal Amount</strong> (otherwise displayed as separate entitlement)
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Trigger Button -->
+                <div>
+                  <button type="button" id="btn-calc-submit" class="w-full py-2.5 px-spacing-lg bg-primary text-on-primary hover:bg-primary-container font-label-md font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-sm cursor-pointer active:scale-[0.99]">
+                    <span class="material-symbols-outlined text-[20px]">calculate</span>
+                    <span class="calc-detailed-only">Calculate Statutory Award (Call Backend API)</span>
+                    <span class="calc-simple-only">Calculate My Estimated Compensation</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Column: Statutory Breakdown Card (5 cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-spacing-md">
+              <div class="bg-surface-container-low p-spacing-lg rounded-2xl border border-outline-variant/40 flex flex-col gap-spacing-md relative overflow-hidden shadow-sm">
+                
+                <!-- Card Header -->
+                <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
+                  <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-primary text-[20px]">account_balance</span>
+                    <h4 class="font-headline-sm text-sm font-bold text-primary calc-detailed-only">Award Breakdown Statement</h4>
+                    <h4 class="font-headline-sm text-sm font-bold text-primary calc-simple-only">Your Estimated Award Breakdown</h4>
+                  </div>
+                  <span id="calc-backend-status-pill" class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/30 text-[11px] font-bold font-legal-code flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+                    <span>Custom Mode</span>
+                  </span>
+                </div>
+
+                <!-- Breakdown Items -->
+                <div class="space-y-spacing-sm text-body-sm font-body-sm text-on-surface-variant">
+                  <!-- Row 1: Base Land Value -->
+                  <div class="flex items-center justify-between py-1">
+                    <div>
+                      <span class="block text-on-surface font-semibold text-xs calc-detailed-only">Base Market Value:</span>
+                      <span class="text-[11px] text-on-surface-variant font-legal-code calc-detailed-only">Area × Circle Rate × Factor</span>
+                      <span class="block text-on-surface font-bold text-sm calc-simple-only">Land value</span>
+                      <span class="text-[11px] text-on-surface-variant calc-simple-only">Market Value Subtotal • Sec 26</span>
+                    </div>
+                    <strong id="calc-res-base-market-val" class="font-headline-sm text-sm text-on-surface">₹0</strong>
+                  </div>
+
+                  <!-- Row 2: Itemized Assets (if added) -->
+                  <div id="calc-res-assets-row" class="flex items-center justify-between py-1 border-t border-outline-variant/10 hidden">
+                    <div>
+                      <span class="block text-on-surface font-semibold text-xs calc-detailed-only">Itemized Assets (Sec 29):</span>
+                      <span id="calc-res-assets-breakdown-text" class="text-[11px] text-on-surface-variant font-legal-code calc-detailed-only">Trees + Wells + Structures</span>
+                      <span class="block text-secondary font-bold text-sm calc-simple-only">Trees, Wells & Structures</span>
+                      <span class="text-[11px] text-on-surface-variant calc-simple-only">Sec 29 Asset Valuations</span>
+                    </div>
+                    <strong id="calc-res-assets-val" class="font-headline-sm text-sm text-secondary">+ ₹0</strong>
+                  </div>
+
+                  <!-- Row 3: Market Value Subtotal (Detailed only) -->
+                  <div class="calc-detailed-only flex items-center justify-between py-1 border-t border-outline-variant/10">
+                    <div>
+                      <span class="block text-on-surface font-semibold text-xs">Market Value Subtotal:</span>
+                      <span class="text-[11px] text-on-surface-variant font-legal-code">Sec 26 + Sec 29 Value</span>
+                    </div>
+                    <strong id="calc-res-market-subtotal" class="font-headline-sm text-sm text-on-surface">₹0</strong>
+                  </div>
+
+                  <!-- Row 4: 100% Solatium Award / Bonus -->
+                  <div class="flex items-center justify-between py-1 border-t border-outline-variant/10">
+                    <div>
+                      <span class="block text-tertiary font-semibold text-xs calc-detailed-only">100% Solatium Award:</span>
+                      <span class="text-[11px] text-on-surface-variant font-legal-code calc-detailed-only">Mandatory Sec 30(1)</span>
+                      <span class="block text-tertiary font-bold text-sm calc-simple-only">Bonus (Solatium)</span>
+                      <span class="text-[11px] text-on-surface-variant calc-simple-only">100% Government Solatium Award • Mandatory Sec 30(1)</span>
+                    </div>
+                    <strong id="calc-res-solatium" class="font-headline-sm text-sm text-tertiary">+ ₹0</strong>
+                  </div>
+
+                  <!-- Row 5: 12% Statutory Interest / Extra for Delay -->
+                  <div class="flex items-center justify-between py-1 border-t border-outline-variant/10">
+                    <div>
+                      <span class="block text-primary font-semibold text-xs calc-detailed-only">Statutory Interest @ 12% p.a.:</span>
+                      <span id="calc-res-interest-subtitle" class="text-[11px] text-on-surface-variant font-legal-code calc-detailed-only">Sec 30(3) for 2.00 yrs</span>
+                      <span class="block text-primary font-bold text-sm calc-simple-only">Extra for delay (Interest)</span>
+                      <span class="text-[11px] text-on-surface-variant calc-simple-only">12% per year statutory interest • Sec 30(3)</span>
+                    </div>
+                    <strong id="calc-res-interest" class="font-headline-sm text-sm text-primary">+ ₹0</strong>
+                  </div>
+
+                  <!-- Final Disbursal Amount Box -->
+                  <div class="p-spacing-md bg-surface-container-lowest rounded-xl border-2 border-primary/30 mt-2">
+                    <div class="flex items-center justify-between">
+                      <span class="font-label-md text-xs uppercase tracking-wide text-on-surface-variant font-bold calc-detailed-only">Final Disbursal Amount</span>
+                      <span class="font-label-md text-xs uppercase tracking-wide text-primary font-bold calc-simple-only">Estimated Total Payout</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-primary-container text-on-primary-container font-bold uppercase calc-detailed-only">RFCTLARR Award</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-bold uppercase calc-simple-only">Direct Bank Transfer</span>
+                    </div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                      <span id="calc-res-final" class="font-headline-sm text-2xl font-bold text-primary">₹0</span>
+                      <span id="calc-res-lakhs-label" class="text-xs font-bold text-on-surface-variant">₹0.00 Lakhs</span>
+                    </div>
+                    <div class="mt-1 pt-1 border-t border-outline-variant/20 flex justify-between text-[11px] text-on-surface-variant">
+                      <span>Total with Interest included:</span>
+                      <strong id="calc-res-total-interest" class="text-on-surface font-semibold">₹0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Statutory References Card (Detailed View Only) -->
+                <div id="calc-statutory-authority-box" class="calc-detailed-only bg-surface-container-lowest/80 p-2.5 rounded-lg border border-outline-variant/30 text-[11px] text-on-surface-variant space-y-1">
+                  <span class="font-bold text-on-surface block text-xs">Statutory Authority:</span>
+                  <div class="grid grid-cols-2 gap-1 text-[10px] font-legal-code">
+                    <span>• Market Value: Sec 26</span>
+                    <span>• Rural Multiplier: Sched 1</span>
+                    <span>• Assets: Sec 29</span>
+                    <span>• Solatium: Sec 30(1)</span>
+                    <span class="col-span-2">• Statutory Interest: Sec 30(3) @ 12% p.a.</span>
+                  </div>
+                </div>
+
+                <!-- Toggle Link between Simple and Detailed View -->
+                <div class="pt-2 border-t border-outline-variant/30 flex items-center justify-between">
+                  <button type="button" id="btn-toggle-view-link" class="text-xs text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-[14px]">gavel</span>
+                    <span id="calc-toggle-view-link-text">Show full statutory breakdown →</span>
+                  </button>
+                </div>
+
+                <!-- Statutory Disclaimer -->
+                <div class="border-t border-outline-variant/30 pt-2">
+                  <!-- Simple Mode Disclaimer -->
+                  <div class="calc-simple-only text-xs text-on-surface-variant leading-relaxed">
+                    <span>Estimated payout for your land. Official awards are confirmed during the formal hearing process.</span>
+                    <button type="button" id="btn-calc-learn-more" class="text-primary underline font-bold cursor-pointer ml-1">
+                      Learn more
+                    </button>
+                    <div id="calc-disclaimer-expandable" class="hidden mt-1.5 pt-1.5 border-t border-outline-variant/20 text-[11px] italic text-on-surface-variant">
+                      This calculator is an interactive estimation and transparency tool under the RFCTLARR Act 2013 (Sec 26–30). Official awards are declared exclusively through the formal Section 3G enquiry process conducted by the Competent Authority for Land Acquisition (CALA).
+                    </div>
+                  </div>
+
+                  <!-- Detailed Mode Disclaimer -->
+                  <div class="calc-detailed-only text-[11px] text-on-surface-variant italic leading-relaxed">
+                    <span class="font-bold not-italic text-on-surface">Disclaimer:</span>
+                    This calculator is an interactive estimation and transparency tool under the RFCTLARR Act 2013 (Sec 26–30). Official awards are declared exclusively through the formal Section 3G enquiry process conducted by the Competent Authority for Land Acquisition (CALA).
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-spacing-xl py-spacing-sm bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between shrink-0">
+          <span class="text-legal-code font-legal-code text-xs text-on-surface-variant">
+            Backend Endpoint: <code class="bg-surface-container px-1 py-0.5 rounded text-primary font-mono">POST /compensation/calculate</code>
+          </span>
+          <button type="button" id="btn-close-comp-calc-modal-footer" class="px-spacing-md py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface rounded font-label-sm text-xs font-bold transition-colors cursor-pointer">
+            Close Calculator
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- ======================================================== -->

@@ -291,7 +291,7 @@
         `;
       } else if (role === 'citizen') {
         const stateTerm = u.stateTerm || (u.state === 'Maharashtra' ? 'Gut No.' : (u.state === 'Uttar Pradesh' ? 'Khasra No.' : 'Dag No.'));
-        const holding = u.holdingRef || `${stateTerm} 412/1 • Mouza Dankuni (JL 34)`;
+        const holding = u.holdingRef || (u.gutNumber ? `${u.gutNumber} • Mouza ${u.village || ''}` : 'No Registered Holding');
         const address = u.address || `${u.village || 'Dankuni'}, ${u.taluka || 'Chanditala-II'}, ${u.district || 'Hooghly'}, ${u.state || 'West Bengal'}`;
         const recordSystem = u.landRecordSystem || (u.state === 'Maharashtra' ? 'MahaBhumi (MahaBhulekh 7/12)' : (u.state === 'Uttar Pradesh' ? 'UP Bhulekh (Khasra/Khatauni)' : 'Banglarbhumi (e-Bhuchitra)'));
 
@@ -381,7 +381,7 @@
 
   // Selected Active State
   let currentViewId = 'view-national';
-  let selectedParcelId = 'WB-HGY-DNK-01';
+  let selectedParcelId = null;
 
   // DOM Elements Cache
   let views = {};
@@ -510,6 +510,10 @@
     sessionStorage.removeItem('nlams_is_authenticated');
     sessionStorage.removeItem('nlams_session_role');
     sessionStorage.removeItem('nlams_token');
+    sessionStorage.removeItem('nlams_calc_mode');
+    sessionStorage.removeItem('nlams_citizen_persona');
+    selectedParcelId = null;
+    window.NLAMS_SELECTED_PARCEL_ID = null;
     if (window.NLAMS_API) {
       window.NLAMS_API.tokens = {};
     }
@@ -562,11 +566,13 @@
     renderNationalProjectsTable();
     renderStateProjectsTable();
     renderDistrictCALAQueue();
-    if (store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
+    if (isUserAuthenticated()) {
+      if (store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
         renderCitizenParcel(store.currentUser.parcelId);
-      } else {
+      } else if (selectedParcelId) {
         renderCitizenParcel(selectedParcelId);
       }
+    }
 
     // Initial View resolution: check session & URL hash
     const initialHash = window.location.hash;
@@ -825,6 +831,10 @@
         const deskBreadcrumbEl = document.getElementById('district-breadcrumb-desk');
         if (deskBreadcrumbEl) deskBreadcrumbEl.textContent = `${props.district || 'Hooghly'} District CALA Clearance Desk`;
       }
+    } else if (viewId === 'view-citizen') {
+      if (isUserAuthenticated() && store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
+        renderCitizenParcel(store.currentUser.parcelId);
+      }
     }
 
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
@@ -900,6 +910,12 @@
     renderNationalProjectsTable();
     renderStateProjectsTable();
     renderDistrictCALAQueue();
+    if (typeof renderDistrictCALAObjections === 'function') {
+      renderDistrictCALAObjections();
+    }
+    if (typeof renderStateObjections === 'function') {
+      renderStateObjections();
+    }
     if (selectedParcelId) {
       if (store.currentUser?.role === 'citizen' && store.currentUser.parcelId) {
         renderCitizenParcel(store.currentUser.parcelId);
@@ -938,7 +954,10 @@
         showToast('Physical Possession Handed Over', `${payload.gutNumber || payload.name} confirmed by Field Officer. Title vested in State under Section 16.`, 'success');
         break;
       case 'OBJECTION_FILED':
-        showToast('Section 15 Objection Registered', `Hearing listed before CALA Pune for ${payload.khasraNo}.`, 'warning');
+        showToast('Section 15 Objection Registered', `Hearing listed before CALA Desk for ${payload.khasraNo}. Ref: ${payload.id}`, 'warning');
+        break;
+      case 'OBJECTION_UPDATED':
+        showToast('Section 15 Order Pronounced', `Statutory verdict [${payload.status}] recorded for ${payload.khasraNo}.`, 'success');
         break;
       case 'RR_COMPLETED':
         showToast('R&R Resettlement Completed', `Rehabilitated ${payload.familiesCount} displaced families with alternative housing & grants under Section 31.`, 'success');
@@ -1013,31 +1032,15 @@
             rolePill.classList.add('bg-surface-container');
           }
         }
-        const citizenPicker = document.getElementById('citizen-persona-picker');
         if (val === 'citizen') {
-          if (citizenPicker) citizenPicker.classList.remove('hidden');
           if (authRadioAadhaar) {
             authRadioAadhaar.checked = true;
             selectAuthMethod('aadhaar');
           }
-          const personaSelect = document.getElementById('login-citizen-persona-select');
-          if (personaSelect) {
-            const syncPersonaAadhaar = () => {
-              const pid = personaSelect.value;
-              if (pid === 'WB-CIT-01' && uid1 && uid2 && uid3) {
-                uid1.value = '9876'; uid2.value = '5432'; uid3.value = '1012';
-              } else if (pid === 'MH-CIT-01' && uid1 && uid2 && uid3) {
-                uid1.value = '9842'; uid2.value = '5174'; uid3.value = '8921';
-              } else if (pid === 'UP-CIT-01' && uid1 && uid2 && uid3) {
-                uid1.value = '9821'; uid2.value = '4321'; uid3.value = '6534';
-              }
-              validateAadhaarDigits();
-            };
-            syncPersonaAadhaar();
-            personaSelect.onchange = syncPersonaAadhaar;
+          if (uid1 && uid2 && uid3) {
+            uid1.value = '9876'; uid2.value = '5432'; uid3.value = '1012';
+            validateAadhaarDigits();
           }
-        } else {
-          if (citizenPicker) citizenPicker.classList.add('hidden');
         }
         if (val === 'dro-cala' || val === 'state-revenue') {
           if (authRadioDsc) {
@@ -1263,8 +1266,24 @@
         sessionStorage.setItem('nlams_is_authenticated', 'true');
         sessionStorage.setItem('nlams_session_role', selectedRole);
         if (selectedRole === 'citizen') {
-          const pSelect = document.getElementById('login-citizen-persona-select');
-          const personaId = pSelect ? pSelect.value : (sessionStorage.getItem('nlams_citizen_persona') || 'WB-CIT-01');
+          let personaId = sessionStorage.getItem('nlams_citizen_persona');
+          const devSelect = document.getElementById('dev-citizen-persona-select');
+          if (devSelect && devSelect.value) {
+            personaId = devSelect.value;
+          }
+          if (!personaId) {
+            const u1 = document.getElementById('login-uid-1')?.value?.replace(/\D/g, '') || '';
+            const u2 = document.getElementById('login-uid-2')?.value?.replace(/\D/g, '') || '';
+            const u3 = document.getElementById('login-uid-3')?.value?.replace(/\D/g, '') || '';
+            const fullUid = `${u1}${u2}${u3}`;
+            if (fullUid.endsWith('8921') || fullUid === '984251748921') {
+              personaId = 'MH-CIT-01';
+            } else if (fullUid.endsWith('6534') || fullUid === '982143216534') {
+              personaId = 'UP-CIT-01';
+            } else {
+              personaId = 'WB-CIT-01';
+            }
+          }
           store.setUserRole('citizen', personaId);
         } else {
           store.setUserRole(selectedRole);
@@ -1346,6 +1365,51 @@
         switchView('view-citizen', true);
       });
     }
+
+    // Isolated Dev-Only Persona Switcher (Only mounted if ?dev=true or ?dev_personas=true or #dev)
+    function initDevPersonaSwitcher() {
+      const isDev = new URLSearchParams(window.location.search).get('dev') === 'true' 
+        || new URLSearchParams(window.location.search).get('dev_personas') === 'true'
+        || window.location.hash.includes('dev');
+      if (!isDev) return;
+      if (document.getElementById('dev-persona-switcher')) return;
+
+      const devBar = document.createElement('div');
+      devBar.id = 'dev-persona-switcher';
+      devBar.className = 'fixed bottom-4 right-4 z-[9999] bg-slate-900 text-slate-100 border border-slate-700 rounded-lg p-3 shadow-2xl text-xs space-y-1';
+      devBar.innerHTML = `
+        <div class="flex items-center justify-between gap-2 font-bold text-amber-400">
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">terminal</span> DEV TEST ONLY</span>
+          <button type="button" id="btn-close-dev-bar" class="hover:text-white">&times;</button>
+        </div>
+        <p class="text-[11px] text-slate-400">Persona override active (?dev=true)</p>
+        <select id="dev-citizen-persona-select" class="w-full bg-slate-800 text-white rounded px-2 py-1 border border-slate-600 mt-1 cursor-pointer">
+          <option value="WB-CIT-01">Subrata Ghosh (WB)</option>
+          <option value="MH-CIT-01">Ramesh Patil (MH)</option>
+          <option value="UP-CIT-01">Ram Swarup Yadav (UP)</option>
+        </select>
+      `;
+      document.body.appendChild(devBar);
+
+      document.getElementById('btn-close-dev-bar')?.addEventListener('click', () => {
+        devBar.remove();
+      });
+
+      const devSelect = document.getElementById('dev-citizen-persona-select');
+      devSelect?.addEventListener('change', () => {
+        const pid = devSelect.value;
+        sessionStorage.setItem('nlams_citizen_persona', pid);
+        if (pid === 'WB-CIT-01' && uid1 && uid2 && uid3) {
+          uid1.value = '9876'; uid2.value = '5432'; uid3.value = '1012';
+        } else if (pid === 'MH-CIT-01' && uid1 && uid2 && uid3) {
+          uid1.value = '9842'; uid2.value = '5174'; uid3.value = '8921';
+        } else if (pid === 'UP-CIT-01' && uid1 && uid2 && uid3) {
+          uid1.value = '9821'; uid2.value = '4321'; uid3.value = '6534';
+        }
+        validateAadhaarDigits();
+      });
+    }
+    initDevPersonaSwitcher();
   }
 
   // 2. National Dashboard Render & Controllers
@@ -1821,6 +1885,78 @@
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
       window.i18n.applyTranslations(tbody);
     }
+
+    renderStateObjections(targetState);
+  }
+
+  function renderStateObjections(targetState) {
+    const tableBody = document.getElementById('state-objections-table-body');
+    const countBadge = document.getElementById('state-objection-pendency-count');
+    if (!tableBody) return;
+
+    const objections = store.objections || [];
+    if (countBadge) {
+      const pendingCount = objections.filter(o => {
+        const st = (o.status || '').toLowerCase();
+        return !st.includes('upheld') && !st.includes('reject') && !st.includes('dismiss');
+      }).length;
+      countBadge.textContent = `${pendingCount} PENDING HEARINGS`;
+    }
+
+    if (!objections.length) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-6 text-center text-on-surface-variant font-body-sm">
+            No active Section 15 hearing petitions registered in the State directory.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = objections.map(o => {
+      let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ${o.status || 'Pending Hearing'}</span>`;
+      const s = (o.status || '').toLowerCase();
+      if (s.includes('upheld')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">check_circle</span> Upheld</span>`;
+      } else if (s.includes('reject') || s.includes('dismiss')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">cancel</span> Rejected</span>`;
+      } else if (s.includes('scheduled') || s.includes('listed')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 border border-sky-300 dark:border-sky-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">calendar_month</span> Scheduled</span>`;
+      }
+
+      return `
+        <tr class="hover:bg-surface-container transition-colors border-b border-surface-container">
+          <td class="py-spacing-sm px-spacing-md">
+            <span class="font-bold text-primary font-legal-code text-sm block">${o.id}</span>
+            <span class="text-xs text-on-surface-variant">${o.filingDate}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <strong class="text-on-surface text-sm block">${o.claimant}</strong>
+            <span class="text-xs text-secondary font-semibold">${o.projectId || 'Corridor REQ'}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <span class="text-xs font-bold text-on-surface block">${o.khasraNo}</span>
+            <span class="text-[11px] text-on-surface-variant">${o.parcelId}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <span class="font-semibold text-xs text-primary block">${o.type}</span>
+            <span class="text-xs text-on-surface-variant line-clamp-1" title="${o.grounds}">${o.grounds}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            ${statusBadge}
+            <span class="text-[11px] text-on-surface-variant block mt-1">${o.hearingDate || 'Pending'}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <span class="text-xs text-on-surface line-clamp-2 max-w-xs" title="${o.actionTaken || ''}">${o.actionTaken || 'Notice Issued'}</span>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(tableBody);
+    }
   }
 
   // 4. District / CALA Dashboard Controller
@@ -2044,6 +2180,87 @@
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
       window.i18n.applyTranslations(listEl);
     }
+
+    renderDistrictCALAObjections();
+  }
+
+  function renderDistrictCALAObjections() {
+    const tableBody = document.getElementById('cala-objections-table-body');
+    const countBadge = document.getElementById('cala-objections-count-badge');
+    if (!tableBody) return;
+
+    const objections = store.objections || [];
+    if (countBadge) {
+      const pendingCount = objections.filter(o => {
+        const st = (o.status || '').toLowerCase();
+        return !st.includes('upheld') && !st.includes('reject') && !st.includes('dismiss');
+      }).length;
+      countBadge.textContent = `${pendingCount} PENDING HEARINGS`;
+    }
+
+    if (!objections.length) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="py-6 text-center text-on-surface-variant font-body-sm">
+            No Section 15 objections registered for this CALA jurisdiction.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tableBody.innerHTML = objections.map(o => {
+      let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 flex items-center gap-1 w-fit"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ${o.status || 'Pending Hearing'}</span>`;
+      const s = (o.status || '').toLowerCase();
+      if (s.includes('upheld')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">check_circle</span> Upheld</span>`;
+      } else if (s.includes('reject') || s.includes('dismiss')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">cancel</span> Rejected</span>`;
+      } else if (s.includes('scheduled') || s.includes('listed')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 border border-sky-300 dark:border-sky-800 flex items-center gap-1 w-fit"><span class="material-symbols-outlined text-[14px]">calendar_month</span> Scheduled</span>`;
+      }
+
+      return `
+        <tr class="hover:bg-surface-container transition-colors border-b border-surface-container">
+          <td class="py-spacing-sm px-spacing-md">
+            <div class="flex flex-col">
+              <span class="font-bold text-primary font-legal-code text-sm">${o.id}</span>
+              <span class="text-xs text-on-surface-variant">${o.filingDate}</span>
+            </div>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <div class="flex flex-col">
+              <strong class="text-on-surface text-sm">${o.claimant}</strong>
+              <span class="text-xs text-on-surface-variant">${o.khasraNo} (${o.parcelId})</span>
+            </div>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <div class="flex flex-col max-w-xs">
+              <span class="font-semibold text-xs text-secondary truncate">${o.type}</span>
+              <span class="text-xs text-on-surface-variant line-clamp-2" title="${o.grounds}">${o.grounds}</span>
+              ${o.documentName ? `<span class="text-[11px] text-primary flex items-center gap-0.5 mt-0.5"><span class="material-symbols-outlined text-[12px]">attachment</span> ${o.documentName}</span>` : ''}
+            </div>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            ${statusBadge}
+            <span class="text-[11px] text-on-surface-variant block mt-1">Hearing: ${o.hearingDate || 'Pending Listing'}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md">
+            <span class="text-xs text-on-surface line-clamp-2 max-w-xs" title="${o.actionTaken || 'None'}">${o.actionTaken || 'CALA Notice Issued'}</span>
+          </td>
+          <td class="py-spacing-sm px-spacing-md text-right">
+            <button onclick="window.openHearingOutcomeModal('${o.id}')" class="btn-record-outcome px-spacing-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container text-xs font-bold transition-all flex items-center gap-1 ml-auto shadow-xs whitespace-nowrap">
+              <span class="material-symbols-outlined text-[14px]">gavel</span>
+              Record Outcome
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(tableBody);
+    }
   }
 
   // Profile Setup Modal helper
@@ -2219,15 +2436,25 @@
     const executeSearch = () => {
       const q = (searchInput?.value || '').trim();
       if (!q) return;
-      const found = store.parcels.find(p => {
+      const user = store.currentUser || {};
+      const userAadhaarLast4 = (user.ownerAadhaar || '').replace(/\D/g, '').slice(-4);
+
+      // Scoped strictly to parcels legally owned by the authenticated citizen
+      const ownedParcels = store.parcels.filter(p => {
+        const props = p.properties || p;
+        if (user.parcelId && props.id === user.parcelId) return true;
+        if (props.ownerAadhaar && userAadhaarLast4 && props.ownerAadhaar.replace(/\D/g, '').endsWith(userAadhaarLast4)) return true;
+        if (props.ownerName && user.name && props.ownerName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+        return false;
+      });
+
+      const found = ownedParcels.find(p => {
         const props = p.properties || p;
         return (
           (props.gutNumber && props.gutNumber.toLowerCase().includes(q.toLowerCase())) ||
           (props.khasraNo && props.khasraNo.toLowerCase().includes(q.toLowerCase())) ||
           (props.village && props.village.toLowerCase().includes(q.toLowerCase())) ||
-          (props.ownerName && props.ownerName.toLowerCase().includes(q.toLowerCase())) ||
-          props.id.toLowerCase().includes(q.toLowerCase()) ||
-          (props.projectId && props.projectId.toLowerCase().includes(q.toLowerCase()))
+          props.id.toLowerCase().includes(q.toLowerCase())
         );
       });
 
@@ -2237,20 +2464,9 @@
         renderCitizenParcel(props.id);
         showToast('Parcel Record Found', `Loaded record for ${props.gutNumber} (${props.village})`, 'success');
       } else {
-        showToast('No Record Found', `No cadastral parcel matched '${q}'. Try 'RS/LR-412/1', 'Dag No. 412/1', or 'Dankuni'`, 'warning');
+        showToast('Access Restricted', `You do not have registered ownership or authority to view records for '${q}'. You can only track your own authenticated holdings.`, 'warning');
       }
     };
-
-    const citPersonaSelect = document.getElementById('cit-persona-select');
-    if (citPersonaSelect) {
-      citPersonaSelect.addEventListener('change', (e) => {
-        const personaId = e.target.value;
-        store.setCitizenProfile(personaId);
-        updateActiveUserBadge(store.currentUser);
-        renderCitizenParcel(store.currentUser.parcelId);
-        showToast('Citizen Persona Switched', `Logged in as ${store.currentUser.name} (${store.currentUser.state}).`, 'info');
-      });
-    }
 
     if (searchBtn) searchBtn.addEventListener('click', executeSearch);
     if (searchInput) {
@@ -2262,7 +2478,20 @@
       });
     }
 
-    // Objection Form
+    // Section 15: Objection Form & Document Attachment
+    let attachedDocName = '';
+    const docInput = document.getElementById('obj-document');
+    const docFileNameEl = document.getElementById('obj-doc-filename');
+    if (docInput && docFileNameEl) {
+      docInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          attachedDocName = e.target.files[0].name;
+          docFileNameEl.textContent = attachedDocName;
+          docFileNameEl.classList.add('text-primary', 'font-bold');
+        }
+      });
+    }
+
     const objForm = document.getElementById('form-file-objection');
     if (objForm) {
       objForm.addEventListener('submit', (e) => {
@@ -2278,15 +2507,104 @@
         const parcel = store.parcels.find(p => (p.properties || p).id === selectedParcelId) || store.parcels[0];
         const props = parcel.properties || parcel;
 
-        store.fileObjection({
+        const newObj = store.fileObjection({
           parcelId: props.id,
           khasraNo: props.gutNumber,
+          projectId: props.projectId,
+          claimant: store.currentUser.name,
           type: type,
-          grounds: grounds
+          grounds: grounds,
+          documentName: attachedDocName || 'Land_Record_Valuation_Proof.pdf'
         });
 
         document.getElementById('obj-grounds').value = '';
+        if (docFileNameEl) {
+          docFileNameEl.textContent = 'Attach Land Records / Valuation Proof (.pdf, .jpg)';
+          docFileNameEl.classList.remove('text-primary', 'font-bold');
+        }
+        if (docInput) docInput.value = '';
+        attachedDocName = '';
+
+        showToast('Section 15 Objection Filed', `Objection registered for ${props.gutNumber}. Ref: ${newObj.id}`, 'warning');
+        renderCitizenObjections(props);
       });
+    }
+  }
+
+  // Section 15: Render Citizen's Filed Objections & Hearing Status
+  function renderCitizenObjections(props) {
+    const listEl = document.getElementById('cit-objections-list');
+    const badgeEl = document.getElementById('cit-objections-count-badge');
+    if (!listEl) return;
+
+    const parcelId = props.id;
+    const khasra = props.gutNumber;
+    const objs = (store.objections || []).filter(o => 
+      o.parcelId === parcelId || 
+      o.khasraNo === khasra ||
+      (o.claimant && store.currentUser && o.claimant === store.currentUser.name)
+    );
+
+    if (badgeEl) {
+      badgeEl.textContent = `${objs.length} Recorded`;
+    }
+
+    if (!objs.length) {
+      listEl.innerHTML = `
+        <div class="p-spacing-md bg-surface-container-low rounded-lg border border-outline-variant/30 text-center flex flex-col items-center justify-center gap-1 text-on-surface-variant">
+          <span class="material-symbols-outlined text-secondary text-2xl">verified</span>
+          <span class="font-label-sm font-semibold text-on-surface">No Objections Pending</span>
+          <p class="text-xs">No Section 15 hearing objections filed for ${khasra}. Landowner may submit an objection below within 60 days of preliminary notification.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = objs.map(o => {
+      let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> ${o.status || 'Pending Hearing'}</span>`;
+      const s = (o.status || '').toLowerCase();
+      if (s.includes('upheld')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Upheld</span>`;
+      } else if (s.includes('reject') || s.includes('dismiss')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-800 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">cancel</span> Rejected</span>`;
+      } else if (s.includes('scheduled') || s.includes('listed')) {
+        statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-sky-100 dark:bg-sky-950/40 text-sky-800 dark:text-sky-200 border border-sky-300 dark:border-sky-800 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_month</span> Scheduled</span>`;
+      }
+
+      return `
+        <div class="p-spacing-sm bg-surface-container-low rounded-lg border border-outline-variant/30 flex flex-col gap-1.5 transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="font-headline-sm text-sm font-bold text-primary flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px] text-secondary">gavel</span>
+                ${o.id} • ${o.type}
+              </span>
+              <span class="text-[11px] text-on-surface-variant">Filed on ${o.filingDate} • Holding: <strong>${o.khasraNo}</strong></span>
+            </div>
+            ${statusBadge}
+          </div>
+
+          <div class="text-xs text-on-surface bg-surface-container-lowest p-2 rounded border border-outline-variant/20 leading-relaxed">
+            <strong>Grounds:</strong> ${o.grounds}
+          </div>
+
+          ${o.documentName ? `
+            <div class="flex items-center gap-1 text-xs text-primary font-semibold">
+              <span class="material-symbols-outlined text-[14px]">attachment</span>
+              <span>Evidence: ${o.documentName}</span>
+            </div>
+          ` : ''}
+
+          <div class="flex flex-wrap items-center justify-between text-[11px] pt-1 border-t border-surface-container text-on-surface-variant">
+            <span>Hearing Date: <strong class="text-on-surface">${o.hearingDate || 'Pending Listing'}</strong></span>
+            <span class="text-right">CALA Action: <strong class="text-secondary">${o.actionTaken || 'Notice Issued to Requiring Body'}</strong></span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(listEl);
     }
   }
 
@@ -2360,21 +2678,37 @@
   }
 
   function renderCitizenParcel(parcelId) {
-    const isCitizen = store.currentUser?.role === 'citizen';
+    const isAuth = isUserAuthenticated();
+    const isCitizen = isAuth && store.currentUser?.role === 'citizen';
     let targetParcelId = parcelId;
 
-    // If logged in as citizen and no specific parcel requested, bind to currentUser's parcel
-    if (isCitizen && (!targetParcelId || targetParcelId === 'selected' || targetParcelId === 'default')) {
-      targetParcelId = store.currentUser.parcelId || 'WB-HGY-DNK-01';
+    // If logged in as citizen, strictly lock to citizen's owned parcels
+    if (isCitizen) {
+      const user = store.currentUser || {};
+      const userAadhaarLast4 = (user.ownerAadhaar || '').replace(/\D/g, '').slice(-4);
+      const isOwned = store.parcels.some(p => {
+        const pProps = p.properties || p;
+        if (pProps.id === parcelId) {
+          if (user.parcelId && user.parcelId === parcelId) return true;
+          if (pProps.ownerAadhaar && userAadhaarLast4 && pProps.ownerAadhaar.replace(/\D/g, '').endsWith(userAadhaarLast4)) return true;
+          if (pProps.ownerName && user.name && pProps.ownerName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+        }
+        return false;
+      });
+      targetParcelId = (parcelId && isOwned) ? parcelId : (user.parcelId || null);
+    }
+
+    if (!targetParcelId) {
+      return;
     }
 
     // Dynamic parcel lookup
     let parcel = store.parcels.find(p => (p.properties || p).id === targetParcelId);
+    if (!parcel && isCitizen && store.currentUser.parcelId) {
+      parcel = store.parcels.find(p => (p.properties || p).id === store.currentUser.parcelId);
+    }
     if (!parcel) {
-      if (isCitizen && store.currentUser.parcelId) {
-        parcel = store.parcels.find(p => (p.properties || p).id === store.currentUser.parcelId);
-      }
-      if (!parcel) parcel = store.parcels[0];
+      return;
     }
     const props = parcel.properties || parcel;
     selectedParcelId = props.id;
@@ -2452,13 +2786,18 @@
       dbtDescEl.textContent = `Amount of ₹${props.totalCompensation.toLocaleString('en-IN')} credited to ${bank} via PFMS Treasury Node. ${utr}`;
     }
 
-    // 5. Quick Select Pills (filtered by user state/corridor)
+    // 5. Quick Select Pills (strictly scoped to authenticated citizen's owned parcels)
     if (pillsContainer) {
-      const targetState = user.state || props.state || 'West Bengal';
-      let stateParcels = store.parcels.filter(p => (p.properties || p).state === targetState);
-      if (!stateParcels.length) stateParcels = store.parcels.slice(0, 4);
+      const userAadhaarLast4 = user.ownerAadhaar ? user.ownerAadhaar.replace(/\D/g, '').slice(-4) : '';
+      const citizenParcels = store.parcels.filter(p => {
+        const pProps = p.properties || p;
+        if (user.parcelId && pProps.id === user.parcelId) return true;
+        if (pProps.ownerAadhaar && userAadhaarLast4 && pProps.ownerAadhaar.replace(/\D/g, '').endsWith(userAadhaarLast4)) return true;
+        if (pProps.ownerName && user.name && pProps.ownerName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+        return false;
+      });
 
-      pillsContainer.innerHTML = stateParcels.slice(0, 5).map(p => {
+      pillsContainer.innerHTML = citizenParcels.map(p => {
         const pProps = p.properties || p;
         const isSelected = pProps.id === selectedParcelId;
         return `
@@ -2469,14 +2808,11 @@
       }).join('');
     }
 
-    // 6. Sync Persona Switcher Dropdown
-    const personaSwitcher = document.getElementById('cit-persona-select');
-    if (personaSwitcher && user.id) {
-      personaSwitcher.value = user.id;
-    }
 
-    // 7. Dynamic Milestones
+
+    // 6. Dynamic Milestones & Filed Objections Status
     renderCitizenMilestones(props);
+    renderCitizenObjections(props);
 
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
       const citPortal = document.getElementById('portal-citizen') || document.getElementById('view-citizen');
@@ -2485,6 +2821,25 @@
   }
 
   window.selectCitizenParcel = function(parcelId) {
+    const isAuth = isUserAuthenticated();
+    const isCitizen = isAuth && store.currentUser?.role === 'citizen';
+    if (isCitizen) {
+      const user = store.currentUser || {};
+      const userAadhaarLast4 = (user.ownerAadhaar || '').replace(/\D/g, '').slice(-4);
+      const isOwned = store.parcels.some(p => {
+        const pProps = p.properties || p;
+        if (pProps.id === parcelId) {
+          if (user.parcelId && user.parcelId === parcelId) return true;
+          if (pProps.ownerAadhaar && userAadhaarLast4 && pProps.ownerAadhaar.replace(/\D/g, '').endsWith(userAadhaarLast4)) return true;
+          if (pProps.ownerName && user.name && pProps.ownerName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+        }
+        return false;
+      });
+      if (!isOwned) {
+        showToast('Access Denied', 'You do not have authorization to view cadastral records belonging to another landowner.', 'error');
+        return;
+      }
+    }
     renderCitizenParcel(parcelId);
   };
 
@@ -2783,6 +3138,1031 @@
         await window.NLAMS_API.completeResettlement(projId, count, officer);
         document.getElementById('modal-rnr-resettlement')?.classList.add('hidden');
         showToast('R&R Complete', `Successfully marked R&R complete for ${count} displaced families under Section 31.`, 'success');
+      });
+    }
+
+    // --- 7G. Section 15 Hearing Outcome Modal ---
+    let activeHearingObjId = null;
+    window.openHearingOutcomeModal = function(objId) {
+      const obj = (store.objections || []).find(o => o.id === objId) || (store.objections || [])[0];
+      if (!obj) return;
+      activeHearingObjId = obj.id;
+
+      const idEl = document.getElementById('hearing-obj-id');
+      const catBadge = document.getElementById('hearing-category-badge');
+      const claimantEl = document.getElementById('hearing-claimant-name');
+      const khasraEl = document.getElementById('hearing-khasra-no');
+      const groundsEl = document.getElementById('hearing-grounds-text');
+      const docWrapper = document.getElementById('hearing-doc-wrapper');
+      const docNameEl = document.getElementById('hearing-doc-name');
+      const verdictSelect = document.getElementById('hearing-verdict-select');
+      const dateInput = document.getElementById('hearing-date-input');
+      const officerInput = document.getElementById('hearing-officer-input');
+      const notesInput = document.getElementById('hearing-notes-input');
+
+      if (idEl) idEl.textContent = `${obj.id} • ${obj.khasraNo}`;
+      if (catBadge) catBadge.textContent = obj.type;
+      if (claimantEl) claimantEl.textContent = obj.claimant;
+      if (khasraEl) khasraEl.textContent = `${obj.khasraNo} (${obj.parcelId})`;
+      if (groundsEl) groundsEl.textContent = obj.grounds;
+
+      if (docWrapper && docNameEl) {
+        if (obj.documentName) {
+          docWrapper.classList.remove('hidden');
+          docNameEl.textContent = `Attached: ${obj.documentName}`;
+        } else {
+          docWrapper.classList.add('hidden');
+        }
+      }
+
+      if (verdictSelect) {
+        if (obj.status && ['Upheld', 'Rejected', 'Hearing Scheduled', 'Field Verification'].includes(obj.status)) {
+          verdictSelect.value = obj.status;
+        } else {
+          verdictSelect.value = 'Upheld';
+        }
+      }
+
+      if (dateInput) {
+        dateInput.value = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+
+      if (officerInput) {
+        officerInput.value = store.currentUser?.name || 'R. K. Meena, IAS (District CALA)';
+      }
+
+      if (notesInput) {
+        notesInput.value = obj.actionTaken || 'Order pronounced under Section 15(2): Evidence verified. Relief granted to claimant under Section 29.';
+      }
+
+      const modal = document.getElementById('modal-hearing-outcome');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
+    };
+
+    const closeHearingBtn = document.getElementById('btn-close-hearing-modal');
+    const cancelHearingBtn = document.getElementById('btn-cancel-hearing');
+    if (closeHearingBtn) closeHearingBtn.addEventListener('click', () => document.getElementById('modal-hearing-outcome')?.classList.add('hidden'));
+    if (cancelHearingBtn) cancelHearingBtn.addEventListener('click', () => document.getElementById('modal-hearing-outcome')?.classList.add('hidden'));
+
+    const hearingForm = document.getElementById('form-hearing-outcome');
+    if (hearingForm) {
+      hearingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const verdict = document.getElementById('hearing-verdict-select')?.value || 'Upheld';
+        const hearingDate = document.getElementById('hearing-date-input')?.value;
+        const officerName = document.getElementById('hearing-officer-input')?.value;
+        const notes = document.getElementById('hearing-notes-input')?.value;
+
+        const updated = store.recordObjectionOutcome(activeHearingObjId, {
+          status: verdict,
+          hearingDate: hearingDate,
+          officerName: officerName,
+          outcomeNotes: notes
+        });
+
+        document.getElementById('modal-hearing-outcome')?.classList.add('hidden');
+        showToast('Section 15 Order Pronounced', `Statutory verdict [${verdict}] recorded for ${updated ? updated.khasraNo : 'objection'}.`, 'success');
+        renderDistrictCALAObjections();
+        if (typeof renderStateObjections === 'function') {
+          renderStateObjections();
+        }
+        if (typeof renderCitizenParcel === 'function') {
+          renderCitizenParcel(selectedParcelId);
+        }
+      });
+    }
+
+    // --- 7H. Cryptographic Audit Trail Modal ---
+    function renderAuditTrailTable(filterText = '') {
+      const tbody = document.getElementById('audit-trail-table-body');
+      const countBadge = document.getElementById('audit-trail-count-badge');
+      if (!tbody) return;
+
+      const auditList = store.audit || [];
+      if (countBadge) countBadge.textContent = `${auditList.length} Events Logged`;
+
+      let filtered = auditList;
+      if (filterText) {
+        const q = filterText.toLowerCase();
+        filtered = filtered.filter(a => 
+          (a.actor || '').toLowerCase().includes(q) ||
+          (a.role || '').toLowerCase().includes(q) ||
+          (a.action || '').toLowerCase().includes(q) ||
+          (a.hash || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-on-surface-variant font-body-sm">No matching audit events found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(a => `
+        <tr class="hover:bg-surface-container transition-colors">
+          <td class="py-2 px-3 text-on-surface-variant font-mono whitespace-nowrap">${a.timestamp}</td>
+          <td class="py-2 px-3">
+            <strong class="text-on-surface block">${a.actor}</strong>
+            <span class="text-[11px] text-secondary font-semibold">${a.role}</span>
+          </td>
+          <td class="py-2 px-3 text-on-surface leading-relaxed">${a.action}</td>
+          <td class="py-2 px-3 font-mono text-[11px] text-tertiary select-all" title="${a.hash}">${(a.hash || '').slice(0, 24)}...</td>
+        </tr>
+      `).join('');
+    }
+
+    window.openAuditTrailModal = function() {
+      renderAuditTrailTable();
+      const modal = document.getElementById('modal-audit-trail');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
+    };
+
+    const openAuditBtn = document.getElementById('btn-open-audit-trail');
+    const closeAuditBtn = document.getElementById('btn-close-audit-modal');
+    const searchAuditInput = document.getElementById('audit-search-input');
+    if (openAuditBtn) openAuditBtn.addEventListener('click', window.openAuditTrailModal);
+    if (closeAuditBtn) closeAuditBtn.addEventListener('click', () => document.getElementById('modal-audit-trail')?.classList.add('hidden'));
+    if (searchAuditInput) searchAuditInput.addEventListener('input', (e) => renderAuditTrailTable(e.target.value));
+
+    const exportAuditJson = document.getElementById('btn-export-audit-json');
+    if (exportAuditJson) {
+      exportAuditJson.addEventListener('click', () => {
+        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(store.audit, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute('href', dataStr);
+        dlAnchor.setAttribute('download', `nlams_cryptographic_audit_ledger_${Date.now()}.json`);
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+        showToast('Audit Log Exported', 'Downloaded complete SHA-256 JSON audit ledger.', 'info');
+      });
+    }
+
+    const exportAuditCsv = document.getElementById('btn-export-audit-csv');
+    if (exportAuditCsv) {
+      exportAuditCsv.addEventListener('click', () => {
+        const rows = [
+          ['Timestamp', 'Actor', 'Role', 'Action', 'SHA256_Hash'],
+          ...(store.audit || []).map(a => [
+            `"${(a.timestamp || '').replace(/"/g, '""')}"`,
+            `"${(a.actor || '').replace(/"/g, '""')}"`,
+            `"${(a.role || '').replace(/"/g, '""')}"`,
+            `"${(a.action || '').replace(/"/g, '""')}"`,
+            `"${(a.hash || '').replace(/"/g, '""')}"`
+          ])
+        ];
+        const csvContent = 'data:text/csv;charset=utf-8,' + encodeURI(rows.map(r => r.join(',')).join('\n'));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute('href', csvContent);
+        dlAnchor.setAttribute('download', `nlams_cryptographic_audit_ledger_${Date.now()}.csv`);
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+        showToast('Audit CSV Exported', 'Downloaded complete audit ledger spreadsheet.', 'info');
+      });
+    }
+
+    // --- 7I. Statutory Reports & Dossier Center Modal ---
+    let currentReportType = 'gazette';
+    function renderReportPreview(type = 'gazette') {
+      currentReportType = type;
+      const surface = document.getElementById('report-preview-surface');
+      if (!surface) return;
+
+      const tabs = document.querySelectorAll('.btn-report-tab');
+      tabs.forEach(t => {
+        if (t.getAttribute('data-report') === type) {
+          t.className = 'btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-primary text-on-primary shadow-xs transition-all';
+        } else {
+          t.className = 'btn-report-tab px-3 py-1.5 rounded text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all';
+        }
+      });
+
+      const activeProj = store.projects[0];
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      if (type === 'gazette') {
+        surface.innerHTML = `
+          <div class="max-w-2xl mx-auto bg-surface-container-lowest p-8 rounded-lg shadow-sm border border-outline-variant/40 text-on-surface space-y-6">
+            <div class="text-center border-b pb-4 border-outline-variant/40">
+              <span class="text-xs uppercase font-bold tracking-widest text-on-surface-variant block">The Gazette of India: Extraordinary</span>
+              <span class="text-xs text-on-surface-variant block">PART II — Section 3 — Sub-section (ii) • PUBLISHED BY AUTHORITY</span>
+              <h2 class="text-lg font-bold text-primary mt-2">MINISTRY OF RURAL DEVELOPMENT</h2>
+              <span class="text-xs font-semibold text-secondary">Department of Land Resources (DoLR)</span>
+              <p class="text-xs text-on-surface-variant mt-1">New Delhi, the ${dateStr} • Notification No. S.O. 4128(E)</p>
+            </div>
+
+            <div class="text-xs leading-relaxed space-y-3">
+              <p><strong>S.O. 4128(E).</strong>—WHEREAS by the notification of the Government of India in the Ministry of Rural Development, published under sub-section (1) of section 11 of the Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013 (30 of 2013);</p>
+              <p>AND WHEREAS the objections filed under Section 15(1) have been duly heard by the Competent Authority (CALA) and disposed of under Section 15(2);</p>
+              <p>NOW, THEREFORE, in exercise of powers conferred by sub-section (1) of Section 19 of the said Act, the Central Government hereby declares that the land specified in the Schedule hereto annexed is required for the public infrastructure project, namely: <strong>${activeProj.name} (${activeProj.id})</strong> in District ${activeProj.district}, State of ${activeProj.state}.</p>
+            </div>
+
+            <div class="border rounded border-outline-variant/40 p-3 bg-surface-container-low text-xs">
+              <div class="font-bold text-primary border-b pb-1 mb-2">Schedule of Demarcated Corridors</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><strong>Corridor Length:</strong> 88.40 Hectares</div>
+                <div><strong>Survey Blocks:</strong> 64 Khasra / Dag Holdings</div>
+                <div><strong>Requiring Body:</strong> ${activeProj.agency}</div>
+                <div><strong>Jurisdiction:</strong> ${activeProj.division}</div>
+              </div>
+            </div>
+
+            <div class="flex items-end justify-between pt-6 border-t border-outline-variant/40 text-xs">
+              <div>
+                <span class="text-tertiary font-bold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">verified</span> Digitally Signed by Principal Secretary
+                </span>
+                <span class="font-mono text-[10px] text-on-surface-variant">Class-3 DSC • SHA-256: 7f9a20b9c3e41c88d92a017e81</span>
+              </div>
+              <div class="text-right font-bold text-primary">
+                By Order and in the name of the President of India
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'award') {
+        surface.innerHTML = `
+          <div class="max-w-2xl mx-auto bg-surface-container-lowest p-8 rounded-lg shadow-sm border border-outline-variant/40 text-on-surface space-y-6">
+            <div class="text-center border-b pb-4 border-outline-variant/40">
+              <span class="text-xs uppercase font-bold tracking-widest text-on-surface-variant block">Office of the Competent Authority for Land Acquisition (CALA)</span>
+              <h2 class="text-lg font-bold text-primary mt-1">FORM 12 — STATUTORY AWARD DECREE</h2>
+              <span class="text-xs font-semibold text-secondary">Sections 23, 26, 27, 28, 29 & 30 of RFCTLARR Act 2013</span>
+              <p class="text-xs text-on-surface-variant mt-1">Award Order Ref: CALA/HGY/2024/AW-3G-014 • Dated ${dateStr}</p>
+            </div>
+
+            <div class="text-xs space-y-3">
+              <p>In the matter of Land Acquisition for <strong>${activeProj.name}</strong>, the undersigned Competent Authority hereby pronounces statutory determination of compensation:</p>
+            </div>
+
+            <table class="w-full text-xs text-left border-collapse border border-outline-variant/40">
+              <thead class="bg-surface-container font-bold text-primary">
+                <tr><th class="p-2 border">Statutory Component</th><th class="p-2 border">RFCTLARR Section</th><th class="p-2 border text-right">Computed Amount</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="p-2 border">Base Market Value (Circle Rate × Multiplier)</td><td class="p-2 border">Section 26</td><td class="p-2 border text-right font-bold">₹1,59,04,000</td></tr>
+                <tr><td class="p-2 border">Mandatory 100% Solatium Award</td><td class="p-2 border">Section 30(1)</td><td class="p-2 border text-right font-bold text-tertiary">+ ₹1,59,04,000</td></tr>
+                <tr><td class="p-2 border">12% Additional Statutory Interest</td><td class="p-2 border">Section 30(3)</td><td class="p-2 border text-right font-bold">+ ₹38,16,960</td></tr>
+                <tr><td class="p-2 border">Tree, Crop & Structure Assets</td><td class="p-2 border">Section 29</td><td class="p-2 border text-right font-bold text-secondary">+ ₹4,80,000</td></tr>
+                <tr class="bg-surface-container-high font-bold text-primary"><td class="p-2 border" colspan="2">TOTAL DETERMINED COMPENSATION</td><td class="p-2 border text-right text-sm">₹3,61,04,960</td></tr>
+              </tbody>
+            </table>
+
+            <div class="flex items-end justify-between pt-6 border-t border-outline-variant/40 text-xs">
+              <div>
+                <span class="text-tertiary font-bold">CALA Official Seal & Decree</span>
+                <p class="text-[11px] text-on-surface-variant">Approved for Direct PFMS Treasury Disbursal</p>
+              </div>
+              <div class="text-right font-bold text-primary">
+                R. K. Meena, IAS<br/><span class="text-xs font-normal">District Collector & CALA</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'dbt') {
+        surface.innerHTML = `
+          <div class="max-w-2xl mx-auto bg-surface-container-lowest p-6 rounded-lg shadow-sm border border-outline-variant/40 text-on-surface space-y-4">
+            <div class="border-b pb-3 border-outline-variant/40 flex justify-between items-start">
+              <div>
+                <h3 class="text-base font-bold text-primary">PFMS Direct Benefit Transfer (DBT) Treasury Ledger</h3>
+                <span class="text-xs text-on-surface-variant">Public Financial Management System • Ministry of Finance Integration</span>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-tertiary-container text-on-tertiary font-legal-code text-xs font-bold">LIVE SYNC</span>
+            </div>
+
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-surface-container text-primary font-bold">
+                <tr><th class="p-2">Beneficiary</th><th class="p-2">Bank & Account</th><th class="p-2">UTR Ref</th><th class="p-2 text-right">Amount (₹)</th><th class="p-2">Status</th></tr>
+              </thead>
+              <tbody class="divide-y text-on-surface">
+                <tr><td class="p-2 font-bold">Subrata Ghosh</td><td class="p-2">PNB •••• 5012</td><td class="p-2 font-mono text-[11px]">#SBINWB2408912</td><td class="p-2 text-right font-bold text-primary">₹3,18,08,000</td><td class="p-2 text-tertiary font-bold">Settled</td></tr>
+                <tr><td class="p-2 font-bold">Ramesh N. Patil</td><td class="p-2">SBI •••• 4120</td><td class="p-2 font-mono text-[11px]">#MAHABH2499102</td><td class="p-2 text-right font-bold text-primary">₹67,20,000</td><td class="p-2 text-tertiary font-bold">Settled</td></tr>
+                <tr><td class="p-2 font-bold">Baburao S. Gaikwad</td><td class="p-2">Bank of Maha •••• 1088</td><td class="p-2 font-mono text-[11px]">#PFMSMH2410884</td><td class="p-2 text-right font-bold text-primary">₹42,50,000</td><td class="p-2 text-secondary font-bold">Processing</td></tr>
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (type === 'objections') {
+        const objs = store.objections || [];
+        surface.innerHTML = `
+          <div class="max-w-3xl mx-auto bg-surface-container-lowest p-6 rounded-lg shadow-sm border border-outline-variant/40 text-on-surface space-y-4">
+            <div class="border-b pb-3 border-outline-variant/40 flex justify-between items-start">
+              <div>
+                <h3 class="text-base font-bold text-primary">Section 15 Statutory Public Hearing & Objections Register</h3>
+                <span class="text-xs text-on-surface-variant">RFCTLARR Act 2013 Section 15(2) Proceedings • Single Source of Truth</span>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-primary-container text-on-primary font-legal-code text-xs font-bold">${objs.length} Petitions</span>
+            </div>
+
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-surface-container text-primary font-bold">
+                <tr><th class="p-2">Ref ID</th><th class="p-2">Claimant</th><th class="p-2">Holding</th><th class="p-2">Category</th><th class="p-2">Status</th><th class="p-2">Statutory Order</th></tr>
+              </thead>
+              <tbody class="divide-y text-on-surface">
+                ${objs.map(o => `
+                  <tr>
+                    <td class="p-2 font-mono font-bold text-primary">${o.id}</td>
+                    <td class="p-2 font-semibold">${o.claimant}</td>
+                    <td class="p-2">${o.khasraNo}</td>
+                    <td class="p-2 text-secondary">${o.type}</td>
+                    <td class="p-2 font-bold">${o.status}</td>
+                    <td class="p-2 text-[11px]">${o.actionTaken || 'Notice Issued'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+    }
+
+    window.openReportsCenterModal = function(type = 'gazette') {
+      renderReportPreview(type);
+      const modal = document.getElementById('modal-reports-center');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
+    };
+
+    const openReportsBtn = document.getElementById('btn-open-reports-center');
+    const closeReportsBtn = document.getElementById('btn-close-reports-modal');
+    if (openReportsBtn) openReportsBtn.addEventListener('click', () => window.openReportsCenterModal('gazette'));
+    if (closeReportsBtn) closeReportsBtn.addEventListener('click', () => document.getElementById('modal-reports-center')?.classList.add('hidden'));
+
+    const reportTabs = document.querySelectorAll('.btn-report-tab');
+    reportTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const type = tab.getAttribute('data-report');
+        renderReportPreview(type);
+      });
+    });
+
+    const printReportBtn = document.getElementById('btn-print-report');
+    if (printReportBtn) {
+      printReportBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    const downloadReportCsvBtn = document.getElementById('btn-download-report-csv');
+    if (downloadReportCsvBtn) {
+      downloadReportCsvBtn.addEventListener('click', () => {
+        let rows = [];
+        let filename = 'statutory_report.csv';
+        if (currentReportType === 'objections') {
+          filename = 'section_15_objections_register.csv';
+          rows = [
+            ['Ref_ID', 'Filing_Date', 'Claimant', 'Holding_Khasra', 'Category', 'Grounds', 'Status', 'Hearing_Date', 'Action_Taken'],
+            ...(store.objections || []).map(o => [
+              `"${o.id}"`, `"${o.filingDate}"`, `"${o.claimant}"`, `"${o.khasraNo}"`, `"${o.type}"`,
+              `"${(o.grounds || '').replace(/"/g, '""')}"`, `"${o.status}"`, `"${o.hearingDate || ''}"`,
+              `"${(o.actionTaken || '').replace(/"/g, '""')}"`
+            ])
+          ];
+        } else if (currentReportType === 'award') {
+          filename = 'section_3g_statutory_award.csv';
+          rows = [
+            ['Component', 'Section', 'Amount_INR'],
+            ['Base Market Value', 'Section 26', '15904000'],
+            ['100% Solatium', 'Section 30(1)', '15904000'],
+            ['12% Statutory Interest', 'Section 30(3)', '3816960'],
+            ['Tree & Crop Valuation', 'Section 29', '480000'],
+            ['Total Final Award', 'RFCTLARR Act', '36104960']
+          ];
+        } else if (currentReportType === 'dbt') {
+          filename = 'pfms_dbt_disbursal_ledger.csv';
+          rows = [
+            ['Beneficiary', 'Account_Masked', 'UTR_Reference', 'Amount_INR', 'Status'],
+            ['Subrata Ghosh', 'PNB •••• 5012', '#SBINWB2408912', '31808000', 'Settled'],
+            ['Ramesh N. Patil', 'SBI •••• 4120', '#MAHABH2499102', '6720000', 'Settled'],
+            ['Baburao S. Gaikwad', 'Bank of Maha •••• 1088', '#PFMSMH2410884', '4250000', 'Processing']
+          ];
+        } else {
+          filename = 'section_19_gazette_declaration.csv';
+          rows = [
+            ['Notification_Ref', 'Project_ID', 'Project_Name', 'State', 'District', 'Demarcated_Area_Ha', 'Status'],
+            ['S.O. 4128(E)', store.projects[0].id, store.projects[0].name, store.projects[0].state, store.projects[0].district, store.projects[0].requiredLandHa, 'Gazette Published']
+          ];
+        }
+        const csvContent = 'data:text/csv;charset=utf-8,' + encodeURI(rows.map(r => r.join(',')).join('\n'));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute('href', csvContent);
+        dlAnchor.setAttribute('download', filename);
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+        showToast('Report CSV Downloaded', `Exported ${filename}`, 'info');
+      });
+    }
+
+    // --- 7J. Statutory Compensation Calculator Modal (RFCTLARR Sec 26-30) ---
+    const compCalcModal = document.getElementById('modal-compensation-calculator');
+    const openCompCalcHeader = document.getElementById('btn-open-compensation-calc');
+    const openCompCalcCitizen = document.getElementById('btn-open-citizen-comp-calc');
+    const openCompCalcCala = document.getElementById('btn-cala-comp-calc');
+    const closeCompCalcBtn = document.getElementById('btn-close-comp-calc-modal');
+    const closeCompCalcFooterBtn = document.getElementById('btn-close-comp-calc-modal-footer');
+    const compCalcPopulateBtn = document.getElementById('btn-calc-populate-current');
+    const compCalcResetBtn = document.getElementById('btn-calc-reset');
+    const compCalcSubmitBtn = document.getElementById('btn-calc-submit');
+    const compCalcToggleAssetsBtn = document.getElementById('btn-toggle-asset-valuations');
+
+    // Dual Mode Switcher elements
+    const calcModeBtnSimple = document.getElementById('calc-mode-btn-simple');
+    const calcModeBtnDetailed = document.getElementById('calc-mode-btn-detailed');
+    const calcToggleViewLink = document.getElementById('btn-toggle-view-link');
+    const calcToggleViewLinkText = document.getElementById('calc-toggle-view-link-text');
+    const calcLearnMoreBtn = document.getElementById('btn-calc-learn-more');
+    const calcDisclaimerExpandable = document.getElementById('calc-disclaimer-expandable');
+
+    // Simple Mode Specific elements
+    const btnToggleSimpleEditMultiplier = document.getElementById('btn-toggle-simple-edit-multiplier');
+    const calcSimpleMultiplierEditPanel = document.getElementById('calc-simple-multiplier-edit-panel');
+    const calcSimpleInputMultiplier = document.getElementById('calc-simple-input-multiplier');
+    const btnApplySimpleMultiplier = document.getElementById('btn-apply-simple-multiplier');
+    const calcSimpleMultiplierText = document.getElementById('calc-simple-multiplier-text');
+    const calcAssetsBtnNo = document.getElementById('calc-assets-btn-no');
+    const calcAssetsBtnYes = document.getElementById('calc-assets-btn-yes');
+
+    // Inputs
+    const calcAreaInput = document.getElementById('calc-input-area');
+    const calcAreaUnitSelect = document.getElementById('calc-select-area-unit');
+    const calcCircleRateInput = document.getElementById('calc-input-circle-rate');
+    const calcCircleRateUnitSelect = document.getElementById('calc-select-rate-unit');
+    const calcMultiplierInput = document.getElementById('calc-input-multiplier');
+    const calcTreesInput = document.getElementById('calc-input-trees');
+    const calcWellsInput = document.getElementById('calc-input-wells');
+    const calcStructuresInput = document.getElementById('calc-input-structures');
+    const calcDateStartInput = document.getElementById('calc-input-date-start');
+    const calcDateEndInput = document.getElementById('calc-input-date-end');
+    const calcIncludeInterestCheck = document.getElementById('calc-check-include-interest');
+
+    // Display / Label elements
+    const calcAreaConvertedLabel = document.getElementById('calc-area-converted-label');
+    const calcRateConvertedLabel = document.getElementById('calc-rate-converted-label');
+    const calcInterestDurationText = document.getElementById('calc-interest-duration-text');
+    const calcActiveParcelPill = document.getElementById('calc-active-parcel-pill');
+    const calcAssetsSubtotalBadge = document.getElementById('calc-assets-subtotal-badge');
+    const calcAssetsContent = document.getElementById('calc-assets-content');
+    const calcAssetsToggleIcon = document.getElementById('calc-assets-toggle-icon');
+
+    // Breakdown result elements
+    const calcResBaseMarketVal = document.getElementById('calc-res-base-market-val');
+    const calcResAssetsRow = document.getElementById('calc-res-assets-row');
+    const calcResAssetsVal = document.getElementById('calc-res-assets-val');
+    const calcResAssetsBreakdownText = document.getElementById('calc-res-assets-breakdown-text');
+    const calcResMarketSubtotal = document.getElementById('calc-res-market-subtotal');
+    const calcResSolatium = document.getElementById('calc-res-solatium');
+    const calcResInterest = document.getElementById('calc-res-interest');
+    const calcResInterestSubtitle = document.getElementById('calc-res-interest-subtitle');
+    const calcResFinal = document.getElementById('calc-res-final');
+    const calcResLakhsLabel = document.getElementById('calc-res-lakhs-label');
+    const calcResTotalInterest = document.getElementById('calc-res-total-interest');
+    const calcBackendStatusPill = document.getElementById('calc-backend-status-pill');
+
+    // Calculator View Mode State (Persisted in sessionStorage)
+    let compCalcMode = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nlams_calc_mode')) || 'simple';
+
+    function setCompCalcMode(mode, saveSession = true) {
+      compCalcMode = mode;
+      if (saveSession && typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('nlams_calc_mode', mode);
+      }
+
+      if (compCalcModal) {
+        if (mode === 'simple') {
+          compCalcModal.classList.remove('calc-mode-detailed');
+          compCalcModal.classList.add('calc-mode-simple');
+          if (calcModeBtnSimple) {
+            calcModeBtnSimple.className = 'active px-2.5 py-1 rounded-md text-xs font-bold transition-all shadow-xs bg-primary text-on-primary cursor-pointer flex items-center gap-1';
+          }
+          if (calcModeBtnDetailed) {
+            calcModeBtnDetailed.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer flex items-center gap-1';
+          }
+          if (calcToggleViewLinkText) calcToggleViewLinkText.textContent = 'Show full statutory breakdown →';
+          const modalTitle = document.getElementById('calc-modal-title');
+          if (modalTitle) modalTitle.textContent = 'Land Compensation Calculator';
+          const modalBadge = document.getElementById('calc-modal-badge');
+          if (modalBadge) modalBadge.textContent = 'Citizen Estimate Mode';
+        } else {
+          compCalcModal.classList.remove('calc-mode-simple');
+          compCalcModal.classList.add('calc-mode-detailed');
+          if (calcModeBtnSimple) {
+            calcModeBtnSimple.className = 'px-2.5 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer flex items-center gap-1';
+          }
+          if (calcModeBtnDetailed) {
+            calcModeBtnDetailed.className = 'active px-2.5 py-1 rounded-md text-xs font-bold transition-all shadow-xs bg-primary text-on-primary cursor-pointer flex items-center gap-1';
+          }
+          if (calcToggleViewLinkText) calcToggleViewLinkText.textContent = '← Back to Simple view';
+          const modalTitle = document.getElementById('calc-modal-title');
+          if (modalTitle) modalTitle.textContent = 'Statutory Compensation Calculator';
+          const modalBadge = document.getElementById('calc-modal-badge');
+          if (modalBadge) modalBadge.textContent = 'RFCTLARR 2013 Sec 26–30';
+        }
+      }
+    }
+
+    function formatINRCurrency(val) {
+      if (typeof val !== 'number' || isNaN(val)) return '₹0';
+      const rounded = Math.round(val);
+      const isNeg = rounded < 0;
+      const s = String(Math.abs(rounded));
+      if (s.length <= 3) return (isNeg ? '-₹' : '₹') + s;
+      const last3 = s.slice(-3);
+      let rem = s.slice(0, -3);
+      const chunks = [];
+      while (rem.length > 2) {
+        chunks.push(rem.slice(-2));
+        rem = rem.slice(0, -2);
+      }
+      if (rem.length) chunks.push(rem);
+      chunks.reverse();
+      return (isNeg ? '-₹' : '₹') + chunks.join(',') + ',' + last3;
+    }
+
+    function getActiveCalcParcel() {
+      if (!isUserAuthenticated()) {
+        return null;
+      }
+
+      const currentUserRole = (store.currentUser && store.currentUser.role) || '';
+
+      // Citizen security boundary: Citizens can ONLY ever access their own parcel
+      if (currentUserRole === 'citizen') {
+        const ownParcelId = store.currentUser && store.currentUser.parcelId;
+        if (!ownParcelId) return null;
+        const found = (store.parcels || []).find(p => (p.properties || p).id === ownParcelId);
+        return found ? (found.properties || found) : null;
+      }
+
+      // Officials (CALA, State Directorate, Ministry)
+      const pId = window.NLAMS_SELECTED_PARCEL_ID || selectedParcelId;
+      if (!pId) return null;
+      const parcel = (store.parcels || []).find(p => (p.properties || p).id === pId);
+      return parcel ? (parcel.properties || parcel) : null;
+    }
+
+    function setBlankCalcState() {
+      if (calcActiveParcelPill) {
+        calcActiveParcelPill.textContent = 'None (Custom Mode)';
+        calcActiveParcelPill.className = 'px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-legal-code text-xs font-bold border border-outline-variant/30';
+      }
+      if (calcAreaInput) calcAreaInput.value = '';
+      if (calcAreaUnitSelect) calcAreaUnitSelect.value = 'ha';
+      if (calcAreaConvertedLabel) calcAreaConvertedLabel.textContent = '= 0 m²';
+
+      if (calcCircleRateInput) calcCircleRateInput.value = '';
+      if (calcCircleRateUnitSelect) calcCircleRateUnitSelect.value = 'sqm';
+      if (calcRateConvertedLabel) calcRateConvertedLabel.textContent = '= ₹0 / m²';
+
+      if (calcMultiplierInput) calcMultiplierInput.value = '1.00';
+      if (calcSimpleInputMultiplier) calcSimpleInputMultiplier.value = '1.00';
+      if (calcSimpleMultiplierText) {
+        calcSimpleMultiplierText.textContent = 'Standard statutory factor of 1.00× (Urban) / 1.12× (Rural) applies. Sign in to auto-detect from your land records.';
+      }
+      if (calcSimpleMultiplierEditPanel) calcSimpleMultiplierEditPanel.classList.add('hidden');
+
+      if (calcTreesInput) calcTreesInput.value = '0';
+      if (calcWellsInput) calcWellsInput.value = '0';
+      if (calcStructuresInput) calcStructuresInput.value = '0';
+      if (calcAssetsSubtotalBadge) calcAssetsSubtotalBadge.textContent = '₹0';
+
+      if (calcAssetsBtnNo && calcAssetsBtnYes) {
+        calcAssetsBtnNo.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all bg-primary text-on-primary shadow-xs cursor-pointer';
+        calcAssetsBtnYes.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer';
+      }
+      if (calcAssetsContent) calcAssetsContent.classList.add('hidden');
+
+      if (calcResBaseMarketVal) calcResBaseMarketVal.textContent = '₹0';
+      if (calcResMarketSubtotal) calcResMarketSubtotal.textContent = '₹0';
+      if (calcResSolatium) calcResSolatium.textContent = '+ ₹0';
+      if (calcResAssetsRow) calcResAssetsRow.classList.add('hidden');
+      if (calcResAssetsVal) calcResAssetsVal.textContent = '+ ₹0';
+      if (calcResInterest) calcResInterest.textContent = '+ ₹0';
+      if (calcResFinal) calcResFinal.textContent = '₹0';
+      if (calcResLakhsLabel) calcResLakhsLabel.textContent = '₹0.00 Lakhs';
+      if (calcResTotalInterest) calcResTotalInterest.textContent = '₹0';
+
+      if (calcBackendStatusPill) {
+        calcBackendStatusPill.className = 'px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/30 text-[11px] font-bold font-legal-code flex items-center gap-1';
+        calcBackendStatusPill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span><span>Custom Mode</span>';
+      }
+    }
+
+    function updateCalcInputPreviews() {
+      const areaVal = parseFloat(calcAreaInput?.value) || 0;
+      const areaUnit = calcAreaUnitSelect?.value || 'ha';
+      let areaSqm = areaVal;
+      if (areaUnit === 'ha') areaSqm = areaVal * 10000;
+      else if (areaUnit === 'acres') areaSqm = areaVal * 4046.85642;
+      if (calcAreaConvertedLabel) calcAreaConvertedLabel.textContent = `= ${Math.round(areaSqm).toLocaleString('en-IN')} m²`;
+
+      const rateVal = parseFloat(calcCircleRateInput?.value) || 0;
+      const rateUnit = calcCircleRateUnitSelect?.value || 'sqm';
+      let rateSqm = rateVal;
+      if (rateUnit === 'ha') rateSqm = rateVal / 10000;
+      else if (rateUnit === 'acres') rateSqm = rateVal / 4046.85642;
+      if (calcRateConvertedLabel) calcRateConvertedLabel.textContent = `= ${formatINRCurrency(rateSqm)} / m²`;
+
+      const trees = parseFloat(calcTreesInput?.value) || 0;
+      const wells = parseFloat(calcWellsInput?.value) || 0;
+      const structures = parseFloat(calcStructuresInput?.value) || 0;
+      const assetsSubtotal = trees + wells + structures;
+      if (calcAssetsSubtotalBadge) calcAssetsSubtotalBadge.textContent = formatINRCurrency(assetsSubtotal);
+
+      if (calcDateStartInput && calcDateEndInput && calcInterestDurationText) {
+        if (calcDateStartInput.value && calcDateEndInput.value) {
+          const d1 = new Date(calcDateStartInput.value);
+          const d2 = new Date(calcDateEndInput.value);
+          const diffDays = Math.max(0, (d2 - d1) / (1000 * 60 * 60 * 24));
+          const years = (diffDays / 365.25).toFixed(2);
+          calcInterestDurationText.textContent = `${years} Years (${Math.round(diffDays)} days)`;
+        } else {
+          calcInterestDurationText.textContent = '2.00 Years (Default)';
+        }
+      }
+    }
+
+    async function executeBackendCompensationCalculation() {
+      const area = parseFloat(calcAreaInput?.value) || 0;
+      const area_unit = calcAreaUnitSelect?.value || 'ha';
+      const circle_rate = parseFloat(calcCircleRateInput?.value) || 0;
+      const circle_rate_unit = calcCircleRateUnitSelect?.value || 'sqm';
+      const multiplier_factor = parseFloat(calcMultiplierInput?.value) || 1.0;
+      const trees_valuation = parseFloat(calcTreesInput?.value) || 0;
+      const wells_valuation = parseFloat(calcWellsInput?.value) || 0;
+      const structures_valuation = parseFloat(calcStructuresInput?.value) || 0;
+      const start_date = calcDateStartInput?.value || null;
+      const end_date = calcDateEndInput?.value || null;
+      const include_interest_in_total = Boolean(calcIncludeInterestCheck?.checked);
+
+      const payload = {
+        area,
+        area_unit,
+        circle_rate,
+        circle_rate_unit,
+        multiplier_factor,
+        trees_valuation,
+        wells_valuation,
+        structures_valuation,
+        start_date,
+        end_date,
+        include_interest_in_total
+      };
+
+      if (compCalcSubmitBtn) {
+        compCalcSubmitBtn.disabled = true;
+        compCalcSubmitBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[20px] animate-spin">autorenew</span>
+          <span>Computing Award via Backend API...</span>
+        `;
+      }
+
+      try {
+        let result = null;
+        if (window.NLAMS_API && typeof window.NLAMS_API.calculateCompensation === 'function') {
+          const apiRes = await window.NLAMS_API.calculateCompensation(payload);
+          if (apiRes && apiRes.ok && apiRes.data) {
+            result = apiRes.data;
+          }
+        }
+
+        if (!result) {
+          const fallbackRes = await fetch('http://127.0.0.1:8000/compensation/calculate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (fallbackRes.ok) {
+            result = await fallbackRes.json();
+          }
+        }
+
+        if (result && result.breakdown) {
+          const b = result.breakdown;
+          if (calcResBaseMarketVal) calcResBaseMarketVal.textContent = b.base_market_value_formatted || formatINRCurrency(b.base_market_value);
+          
+          if (b.assets_valuation > 0) {
+            if (calcResAssetsRow) calcResAssetsRow.classList.remove('hidden');
+            if (calcResAssetsVal) calcResAssetsVal.textContent = b.assets_valuation_formatted || `+ ${formatINRCurrency(b.assets_valuation)}`;
+            if (calcResAssetsBreakdownText) {
+              calcResAssetsBreakdownText.textContent = `Trees: ${formatINRCurrency(b.trees_valuation)} • Wells: ${formatINRCurrency(b.wells_valuation)} • Struct: ${formatINRCurrency(b.structures_valuation)}`;
+            }
+          } else {
+            if (calcResAssetsRow) calcResAssetsRow.classList.add('hidden');
+          }
+
+          if (calcResMarketSubtotal) calcResMarketSubtotal.textContent = b.market_value_subtotal_formatted || formatINRCurrency(b.market_value_subtotal);
+          if (calcResSolatium) calcResSolatium.textContent = b.solatium_amount_formatted || `+ ${formatINRCurrency(b.solatium_amount)}`;
+          if (calcResInterest) calcResInterest.textContent = b.additional_interest_formatted || `+ ${formatINRCurrency(b.additional_interest)}`;
+          if (calcResInterestSubtitle && result.inputs) {
+            calcResInterestSubtitle.textContent = `Sec 30(3) for ${result.inputs.interest_years} yrs @ 12% p.a.`;
+          }
+          if (calcResFinal) calcResFinal.textContent = b.final_disbursal_amount_formatted || formatINRCurrency(b.final_disbursal_amount);
+          if (calcResLakhsLabel) {
+            const lakhs = (b.final_disbursal_amount / 100000).toFixed(2);
+            calcResLakhsLabel.textContent = `₹${lakhs} Lakhs`;
+          }
+          if (calcResTotalInterest) calcResTotalInterest.textContent = b.total_with_interest_formatted || formatINRCurrency(b.total_with_interest);
+
+          if (calcBackendStatusPill) {
+            calcBackendStatusPill.className = 'px-2 py-0.5 rounded bg-tertiary/10 text-tertiary border border-tertiary/20 text-[11px] font-bold font-legal-code flex items-center gap-1';
+            calcBackendStatusPill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span><span>Backend Synced (200 OK)</span>';
+          }
+        }
+      } catch (err) {
+        console.error('[Compensation Calculator] Error calling backend:', err);
+        if (calcBackendStatusPill) {
+          calcBackendStatusPill.className = 'px-2 py-0.5 rounded bg-error/10 text-error border border-error/20 text-[11px] font-bold font-legal-code flex items-center gap-1';
+          calcBackendStatusPill.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-error"></span><span>Backend Error</span>';
+        }
+      } finally {
+        if (compCalcSubmitBtn) {
+          compCalcSubmitBtn.disabled = false;
+          compCalcSubmitBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[20px]">calculate</span>
+            <span class="calc-detailed-only">Calculate Statutory Award (Call Backend API)</span>
+            <span class="calc-simple-only">Calculate My Estimated Compensation</span>
+          `;
+        }
+      }
+    }
+
+    let calcDebounceTimer = null;
+    function triggerDebouncedCalculation() {
+      updateCalcInputPreviews();
+      clearTimeout(calcDebounceTimer);
+      calcDebounceTimer = setTimeout(executeBackendCompensationCalculation, 250);
+    }
+
+    function populateCalcFromParcel(parcel) {
+      const p = parcel || getActiveCalcParcel();
+      if (!p) {
+        setBlankCalcState();
+        return;
+      }
+      if (calcAreaInput) calcAreaInput.value = p.areaHa != null ? p.areaHa : '';
+      if (calcAreaUnitSelect) calcAreaUnitSelect.value = 'ha';
+      if (calcCircleRateInput) calcCircleRateInput.value = p.baseMarketRatePerSqM || '';
+      if (calcCircleRateUnitSelect) calcCircleRateUnitSelect.value = 'sqm';
+
+      // Auto-detect and pre-fill statutory rural/urban multiplier
+      const isRural = p.landType ? !p.landType.toLowerCase().includes('urban') : (p.state === 'West Bengal');
+      const factor = isRural ? 1.12 : 1.00;
+      if (calcMultiplierInput) calcMultiplierInput.value = factor;
+      if (calcSimpleInputMultiplier) calcSimpleInputMultiplier.value = factor;
+      if (calcSimpleMultiplierText) {
+        calcSimpleMultiplierText.textContent = isRural
+          ? `Your area is classified as rural, so a ${factor}× multiplier applies.`
+          : `Your area is classified as urban, so a ${factor}× multiplier applies.`;
+      }
+
+      // Default assets to 0 and 'No' in simple mode
+      if (calcTreesInput) calcTreesInput.value = 0;
+      if (calcWellsInput) calcWellsInput.value = 0;
+      if (calcStructuresInput) calcStructuresInput.value = 0;
+      if (calcAssetsBtnNo && calcAssetsBtnYes) {
+        calcAssetsBtnNo.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all bg-primary text-on-primary shadow-xs cursor-pointer';
+        calcAssetsBtnYes.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer';
+      }
+      if (calcAssetsContent) calcAssetsContent.classList.add('hidden');
+
+      if (calcActiveParcelPill) {
+        calcActiveParcelPill.textContent = `${p.gutNumber || p.id} (${p.areaHa} Ha • ₹${(p.baseMarketRatePerSqM || 1000).toLocaleString('en-IN')}/m²)`;
+        calcActiveParcelPill.className = 'px-2 py-0.5 rounded bg-surface-container text-primary font-legal-code text-xs font-bold border border-outline-variant/30';
+      }
+      updateCalcInputPreviews();
+      executeBackendCompensationCalculation();
+    }
+
+    function resetCompensationCalculator() {
+      const p = getActiveCalcParcel();
+      if (p) {
+        populateCalcFromParcel(p);
+        showToast('Calculator Reset', `Inputs reset to statutory baseline of ${p.gutNumber || p.id}.`, 'info');
+      } else {
+        setBlankCalcState();
+        showToast('Calculator Reset', 'Inputs cleared for custom estimation.', 'info');
+      }
+    }
+
+    window.openCompensationCalculatorModal = function(parcelId, initialMode = null) {
+      const isAuth = isUserAuthenticated();
+      const currentUserRole = (isAuth && store.currentUser && store.currentUser.role) || '';
+      const isOfficial = ['dro-cala', 'state-revenue', 'central-ministry', 'requiring-body'].includes(currentUserRole);
+      const isCitizen = currentUserRole === 'citizen';
+
+      // 1. Determine view mode based on source & role
+      if (initialMode) {
+        setCompCalcMode(initialMode, false);
+      } else {
+        if (isOfficial) {
+          setCompCalcMode('detailed', false);
+        } else {
+          const savedMode = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('nlams_calc_mode')) || 'simple';
+          setCompCalcMode(savedMode, false);
+        }
+      }
+
+      // 2. Configure Auto-populate button state based on authentication
+      if (compCalcPopulateBtn) {
+        if (!isAuth) {
+          compCalcPopulateBtn.disabled = true;
+          compCalcPopulateBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          compCalcPopulateBtn.setAttribute('title', 'Sign in to auto-fill from your parcel');
+        } else if (isCitizen) {
+          compCalcPopulateBtn.disabled = false;
+          compCalcPopulateBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          compCalcPopulateBtn.setAttribute('title', `Auto-fill from your registered parcel (${store.currentUser.gutNumber || store.currentUser.parcelId})`);
+        } else {
+          // Official
+          const hasSelected = Boolean(parcelId || window.NLAMS_SELECTED_PARCEL_ID || selectedParcelId);
+          compCalcPopulateBtn.disabled = !hasSelected;
+          if (hasSelected) {
+            compCalcPopulateBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            compCalcPopulateBtn.setAttribute('title', 'Auto-populate from selected parcel');
+          } else {
+            compCalcPopulateBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            compCalcPopulateBtn.setAttribute('title', 'Select a parcel on the docket or map to auto-fill');
+          }
+        }
+      }
+
+      // 3. Resolve active parcel securely
+      let p = null;
+      if (isAuth) {
+        if (isCitizen) {
+          // Citizen can ONLY EVER load their own parcel
+          p = getActiveCalcParcel();
+        } else if (isOfficial) {
+          if (parcelId) {
+            window.NLAMS_SELECTED_PARCEL_ID = parcelId;
+          }
+          p = getActiveCalcParcel();
+        }
+      }
+
+      if (compCalcModal) {
+        compCalcModal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(compCalcModal);
+        }
+      }
+
+      // 4. Populate or set blank custom state
+      if (p) {
+        populateCalcFromParcel(p);
+      } else {
+        setBlankCalcState();
+      }
+    };
+
+    window.closeCompensationCalculatorModal = function() {
+      if (compCalcModal) compCalcModal.classList.add('hidden');
+    };
+
+    // Mode Switcher Listeners
+    if (calcModeBtnSimple) {
+      calcModeBtnSimple.addEventListener('click', () => setCompCalcMode('simple', true));
+    }
+    if (calcModeBtnDetailed) {
+      calcModeBtnDetailed.addEventListener('click', () => setCompCalcMode('detailed', true));
+    }
+    if (calcToggleViewLink) {
+      calcToggleViewLink.addEventListener('click', () => {
+        const nextMode = compCalcMode === 'simple' ? 'detailed' : 'simple';
+        setCompCalcMode(nextMode, true);
+      });
+    }
+    if (calcLearnMoreBtn && calcDisclaimerExpandable) {
+      calcLearnMoreBtn.addEventListener('click', () => {
+        calcDisclaimerExpandable.classList.toggle('hidden');
+      });
+    }
+
+    // Simple Multiplier Edit Toggle
+    if (btnToggleSimpleEditMultiplier && calcSimpleMultiplierEditPanel) {
+      btnToggleSimpleEditMultiplier.addEventListener('click', () => {
+        calcSimpleMultiplierEditPanel.classList.toggle('hidden');
+      });
+    }
+    if (btnApplySimpleMultiplier && calcSimpleInputMultiplier && calcMultiplierInput) {
+      btnApplySimpleMultiplier.addEventListener('click', () => {
+        const val = parseFloat(calcSimpleInputMultiplier.value) || 1.12;
+        calcMultiplierInput.value = val;
+        if (calcSimpleMultiplierText) {
+          calcSimpleMultiplierText.textContent = `Custom multiplier of ${val}× applied.`;
+        }
+        calcSimpleMultiplierEditPanel.classList.add('hidden');
+        triggerDebouncedCalculation();
+        showToast('Multiplier Updated', `Applied factor of ${val}×`, 'info');
+      });
+    }
+
+    // Simple Itemized Assets Yes/No Toggle
+    if (calcAssetsBtnNo && calcAssetsBtnYes && calcAssetsContent) {
+      calcAssetsBtnNo.addEventListener('click', () => {
+        calcAssetsBtnNo.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all bg-primary text-on-primary shadow-xs cursor-pointer';
+        calcAssetsBtnYes.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer';
+        calcAssetsContent.classList.add('hidden');
+        if (calcTreesInput) calcTreesInput.value = 0;
+        if (calcWellsInput) calcWellsInput.value = 0;
+        if (calcStructuresInput) calcStructuresInput.value = 0;
+        triggerDebouncedCalculation();
+      });
+
+      calcAssetsBtnYes.addEventListener('click', () => {
+        calcAssetsBtnYes.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all bg-primary text-on-primary shadow-xs cursor-pointer';
+        calcAssetsBtnNo.className = 'px-3 py-1 rounded-md text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface cursor-pointer';
+        calcAssetsContent.classList.remove('hidden');
+      });
+    }
+
+    // Modal Trigger Buttons
+    if (openCompCalcHeader) {
+      openCompCalcHeader.addEventListener('click', () => {
+        const isAuth = isUserAuthenticated();
+        const role = (isAuth && store.currentUser && store.currentUser.role) || '';
+        const isOfficial = isAuth && ['dro-cala', 'state-revenue', 'central-ministry', 'requiring-body'].includes(role);
+        window.openCompensationCalculatorModal(null, isOfficial ? 'detailed' : null);
+      });
+    }
+    if (openCompCalcCitizen) {
+      openCompCalcCitizen.addEventListener('click', () => window.openCompensationCalculatorModal(null, 'simple'));
+    }
+    if (openCompCalcCala) {
+      openCompCalcCala.addEventListener('click', () => window.openCompensationCalculatorModal(null, 'detailed'));
+    }
+
+    if (closeCompCalcBtn) closeCompCalcBtn.addEventListener('click', window.closeCompensationCalculatorModal);
+    if (closeCompCalcFooterBtn) closeCompCalcFooterBtn.addEventListener('click', window.closeCompensationCalculatorModal);
+    if (compCalcPopulateBtn) {
+      compCalcPopulateBtn.addEventListener('click', () => {
+        if (!isUserAuthenticated()) {
+          showToast('Authentication Required', 'Please sign in to auto-populate from your land records.', 'warning');
+          return;
+        }
+        const p = getActiveCalcParcel();
+        if (p) {
+          populateCalcFromParcel(p);
+          showToast('Parcel Loaded', `Auto-populated details for ${p.gutNumber || p.id}`, 'success');
+        } else {
+          showToast('No Parcel Selected', 'Select a cadastral parcel to auto-populate.', 'info');
+        }
+      });
+    }
+    if (compCalcResetBtn) compCalcResetBtn.addEventListener('click', resetCompensationCalculator);
+    if (compCalcSubmitBtn) compCalcSubmitBtn.addEventListener('click', executeBackendCompensationCalculation);
+
+    [calcAreaInput, calcAreaUnitSelect, calcCircleRateInput, calcCircleRateUnitSelect, calcMultiplierInput, calcTreesInput, calcWellsInput, calcStructuresInput, calcDateStartInput, calcDateEndInput, calcIncludeInterestCheck].forEach(inputEl => {
+      if (inputEl) {
+        inputEl.addEventListener('input', triggerDebouncedCalculation);
+        inputEl.addEventListener('change', triggerDebouncedCalculation);
+      }
+    });
+
+    document.querySelectorAll('.btn-multiplier-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const factor = btn.getAttribute('data-factor');
+        if (calcMultiplierInput && factor) {
+          calcMultiplierInput.value = factor;
+          if (calcSimpleInputMultiplier) calcSimpleInputMultiplier.value = factor;
+          if (calcSimpleMultiplierText) {
+            calcSimpleMultiplierText.textContent = `Applied multiplier factor of ${factor}×`;
+          }
+          triggerDebouncedCalculation();
+        }
+      });
+    });
+
+    if (compCalcToggleAssetsBtn && calcAssetsContent) {
+      compCalcToggleAssetsBtn.addEventListener('click', () => {
+        const isHidden = calcAssetsContent.classList.contains('hidden');
+        if (isHidden) {
+          calcAssetsContent.classList.remove('hidden');
+          if (calcAssetsToggleIcon) calcAssetsToggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+          calcAssetsContent.classList.add('hidden');
+          if (calcAssetsToggleIcon) calcAssetsToggleIcon.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+
+    if (compCalcModal) {
+      compCalcModal.addEventListener('click', (e) => {
+        if (e.target === compCalcModal) window.closeCompensationCalculatorModal();
       });
     }
   }

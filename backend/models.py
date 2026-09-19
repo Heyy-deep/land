@@ -184,6 +184,8 @@ class Objection(Base):
     status = Column(String(50), default="Hearing Listed")
     hearing_date = Column(String(100), default="15-Dec-2025")
     action_taken = Column(Text, default="CALA Notice Issued to Requiring Body")
+    document_name = Column(String(255), nullable=True, default="")
+    project_id = Column(String(64), nullable=True, index=True, default="")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 

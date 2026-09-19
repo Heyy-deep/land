@@ -4,5 +4,8 @@
   "private": true,
   "scripts": {
     "build": "mkdir -p public && cp -r index.html js geo public/ 2>/dev/null || true"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

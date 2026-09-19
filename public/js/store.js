@@ -753,25 +753,43 @@
       id: "OBJ-2024-884",
       parcelId: "GUT-147",
       khasraNo: "Gut No. 147",
+      projectId: "REQ-MH-PUN-2024-0112",
       claimant: "Mahendra Kulkarni",
-      type: "Tree & Crop Valuation",
+      type: "Tree / Well / Structure Valuation Dispute",
       filingDate: "05-Oct-2024",
       status: "Hearing Scheduled",
       hearingDate: "18-Nov-2024 (Before CALA Pune)",
       grounds: "Valuation omitted 48 mature mango trees and irrigation borewell per Horticulture Dept report.",
+      documentName: "Horticulture_Survey_Report_2024.pdf",
       actionTaken: "Independent valuer assigned by District Collector."
     },
     {
       id: "OBJ-2024-912",
       parcelId: "GUT-144-B",
       khasraNo: "Gut No. 144/B",
+      projectId: "REQ-MH-PUN-2024-0112",
       claimant: "Baburao Shankarrao Gaikwad",
-      type: "Cadastral Boundary Mismatch",
+      type: "Cadastral Boundary / Area Mismatch",
       filingDate: "14-Oct-2024",
-      status: "Field Verification",
-      hearingDate: "22-Nov-2024",
+      status: "Pending Hearing",
+      hearingDate: "22-Nov-2024 (Before CALA Pune)",
       grounds: "Adjoining Nala boundary shifted during digital GIS vectorization; 0.15 Ha discrepancy.",
+      documentName: "Cadastral_Discrepancy_Map.pdf",
       actionTaken: "JMS Re-survey ordered with DGPS instruments."
+    },
+    {
+      id: "OBJ-2024-741",
+      parcelId: "WB-HGY-DNK-01",
+      khasraNo: "Dag No. 412/1",
+      projectId: "REQ-WB-HGY-2023-0101",
+      claimant: "Subrata Ghosh",
+      type: "Tree / Well / Structure Valuation Dispute",
+      filingDate: "12-Sep-2024",
+      status: "Upheld",
+      hearingDate: "28-Sep-2024 (Before CALA Hooghly)",
+      grounds: "Initial joint survey overlooked 12 mature teak trees and masonry boundary wall.",
+      documentName: "Hooghly_Horticulture_Attestation.pdf",
+      actionTaken: "CALA Order passed: Additional ₹4,80,000 solatium-linked award credited in supplementary decree."
     }
   ];
 
@@ -1373,25 +1391,72 @@
       return proj;
     }
 
-    // Action: File Objection
+    // Action: File Objection (Section 15)
     fileObjection(data) {
+      const targetId = data.parcelId || (this.currentUser && this.currentUser.parcelId);
+      const currentParcel = targetId ? (this.parcels.find(p => (p.properties || p).id === targetId) || null) : null;
+      const pProps = currentParcel ? (currentParcel.properties || currentParcel) : {};
+
       const newObj = {
         id: `OBJ-2025-${Math.floor(1000 + Math.random()*9000)}`,
-        parcelId: data.parcelId || (this.currentUser.parcelId || 'WB-HGY-DNK-01'),
-        khasraNo: data.khasraNo || (this.currentUser.gutNumber || 'Dag No. 412/1'),
-        claimant: data.claimant || this.currentUser.name,
+        parcelId: data.parcelId || pProps.id || (this.currentUser && this.currentUser.parcelId) || '',
+        khasraNo: data.khasraNo || pProps.gutNumber || (this.currentUser && this.currentUser.gutNumber) || '',
+        projectId: data.projectId || pProps.projectId || (this.currentUser && this.currentUser.projectId) || '',
+        projectName: pProps.projectName || 'Infrastructure Land Acquisition Corridor',
+        claimant: data.claimant || (this.currentUser && this.currentUser.name) || 'Citizen Claimant',
         type: data.type || 'Valuation Dispute',
         filingDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-        status: 'Hearing Listed',
-        hearingDate: '15-Dec-2024 (Before CALA Desk)',
+        status: 'Pending Hearing',
+        hearingDate: '15-Dec-2025 (Before CALA Desk)',
         grounds: data.grounds || 'Claim for additional structure and tree valuation under Section 29.',
-        actionTaken: 'CALA notice issued to Requiring Body for rejoinder.'
+        documentName: data.documentName || 'Supporting_Affidavit.pdf',
+        actionTaken: 'CALA notice issued to Requiring Body for statutory rejoinder.'
       };
 
       this.objections.unshift(newObj);
-      this.logAudit(this.currentUser.name, 'Citizen', `Filed Section 15 Statutory Objection [${newObj.id}] for ${newObj.khasraNo}`);
+      try {
+        localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
+      } catch(e) {}
+
+      this.logAudit(this.currentUser.name, this.currentUser.badge || 'Citizen', `Filed Section 15 Statutory Objection [${newObj.id}] for ${newObj.khasraNo}`);
+      
+      if (window.NLAMS_API && typeof window.NLAMS_API.fileObjection === 'function') {
+        window.NLAMS_API.fileObjection(newObj).catch(() => {});
+      }
+
       this.dispatch('OBJECTION_FILED', newObj);
       return newObj;
+    }
+
+    // Action: Record Section 15 Hearing Outcome (District CALA Desk)
+    recordObjectionOutcome(objectionId, outcomeData) {
+      const obj = this.objections.find(o => o.id === objectionId);
+      if (!obj) return null;
+
+      obj.status = outcomeData.status || 'Upheld';
+      obj.actionTaken = outcomeData.outcomeNotes || outcomeData.actionTaken || 'Statutory order pronounced under Section 15(2).';
+      if (outcomeData.hearingDate) {
+        obj.hearingDate = outcomeData.hearingDate;
+      }
+      obj.resolvedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      obj.officerName = outcomeData.officerName || (this.currentUser && this.currentUser.name) || 'Competent Authority (CALA)';
+
+      try {
+        localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
+      } catch(e) {}
+
+      this.logAudit(
+        obj.officerName,
+        (this.currentUser && this.currentUser.badge) || 'District CALA',
+        `Pronounced Section 15 Hearing Order [${obj.status}] on ${obj.id} (${obj.khasraNo}): ${obj.actionTaken}`
+      );
+
+      if (window.NLAMS_API && typeof window.NLAMS_API.updateObjectionOutcome === 'function') {
+        window.NLAMS_API.updateObjectionOutcome(objectionId, outcomeData).catch(() => {});
+      }
+
+      this.dispatch('OBJECTION_UPDATED', obj);
+      return obj;
     }
 
     // Action: Stage 8 - Project Statutory Closure & Document Archival

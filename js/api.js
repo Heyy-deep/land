@@ -531,6 +531,82 @@
       return { status: 200, ok: true, data: this.store ? this.store.getCadastralGeoJSON() : null };
     }
 
+    // Section 15: File Citizen Hearing Objection
+    async fileObjection(data) {
+      const payload = {
+        parcel_id: data.parcelId || data.parcel_id || (this.store?.currentUser?.parcelId) || '',
+        khasra_no: data.khasraNo || data.khasra_no || (this.store?.currentUser?.gutNumber) || '',
+        objection_type: data.type || data.objection_type || 'Valuation Dispute',
+        grounds: data.grounds || '',
+        project_id: data.projectId || data.project_id || '',
+        document_name: data.documentName || data.document_name || ''
+      };
+
+      const res = await this._request('/objections', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }, 'citizen');
+
+      if (res.ok && res.data) {
+        return { status: 201, ok: true, data: res.data };
+      }
+      return { status: 200, ok: true, data: payload, fallback: true };
+    }
+
+    // Section 15: List Objections (with optional parcel_id or project_id filters)
+    async listObjections(parcelId, projectId) {
+      let params = [];
+      if (parcelId) params.push(`parcel_id=${encodeURIComponent(parcelId)}`);
+      if (projectId) params.push(`project_id=${encodeURIComponent(projectId)}`);
+      const qs = params.length > 0 ? `?${params.join('&')}` : '';
+
+      const res = await this._request(`/objections${qs}`, { method: 'GET' });
+      if (res.ok && Array.isArray(res.data)) {
+        return res.data;
+      }
+      if (this.store && Array.isArray(this.store.objections)) {
+        let list = this.store.objections;
+        if (parcelId) list = list.filter(o => o.parcelId === parcelId);
+        if (projectId) list = list.filter(o => o.projectId === projectId);
+        return list;
+      }
+      return [];
+    }
+
+    // Section 15: Record Hearing Outcome (District CALA / State Revenue)
+    async updateObjectionOutcome(objId, outcomeData) {
+      const payload = {
+        status: outcomeData.status || 'Upheld',
+        outcome_notes: outcomeData.outcomeNotes || outcomeData.actionTaken || '',
+        hearing_date: outcomeData.hearingDate || '',
+        officer_name: outcomeData.officerName || ''
+      };
+
+      const res = await this._request(`/objections/${encodeURIComponent(objId)}/outcome`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      }, 'dro-cala');
+
+      return { status: 200, ok: true, data: res.data || payload, fallback: !res.ok };
+    }
+
+    // Statutory RFCTLARR Compensation Calculator (Sec 26-30)
+    async calculateCompensation(data) {
+      try {
+        const res = await this._request('/compensation/calculate', {
+          method: 'POST',
+          body: JSON.stringify(data)
+        });
+        if (res.ok && res.data) {
+          return { ok: true, data: res.data };
+        }
+        return { ok: false, error: res.message || 'Calculation request failed' };
+      } catch (err) {
+        console.error('[NLAMS API] calculateCompensation error:', err);
+        return { ok: false, error: err.message };
+      }
+    }
+
     // Helper: Map snake_case backend Project model to UI camelCase object
     _adaptProject(p) {
       return {

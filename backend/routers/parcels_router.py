@@ -10,6 +10,7 @@ from backend.database import get_db
 from backend.models import LandParcel, Project, StatutoryStage, Compensation, AuditLog, User, model_to_dict
 from backend.auth import get_current_user
 from backend.notifications import send_notification
+from backend.routers.compensation_router import CompensationEstimateRequest, calculate_compensation
 
 router = APIRouter(prefix="/parcels", tags=["Stage 3, 4, 7: Parcels, Notification, Award & Possession"])
 
@@ -269,3 +270,14 @@ def confirm_possession(
     )
 
     return {"status": "success", "parcel": model_to_dict(parcel), "possession_date": parcel.possession_date}
+
+
+@router.post("/compensation/calculate")
+def calculate_parcel_compensation_alias(req: CompensationEstimateRequest):
+    """
+    Statutory Compensation Calculator endpoint under RFCTLARR Act 2013 (Sec 26-30).
+    Delegates directly to canonical compensation_router implementation.
+    """
+    return calculate_compensation(req)
+
+
