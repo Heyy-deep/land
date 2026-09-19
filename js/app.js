@@ -54,6 +54,9 @@
       if (inputEl) inputEl.value = defaultValue;
 
       modal.classList.remove('hidden');
+      if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+        window.i18n.applyTranslations(modal);
+      }
       if (inputEl) inputEl.focus();
 
       function onConfirm() {
@@ -355,6 +358,9 @@
     if (loginEl) loginEl.textContent = u.lastLogin || 'Today, 10:48 AM IST (TLS 1.3)';
 
     modal.classList.remove('hidden');
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(modal);
+    }
   }
 
   window.openMyProfileModal = openMyProfileModal;
@@ -450,15 +456,15 @@
 
   // Nav Tab Template Definitions (Preserves exact DOM classes, markup, and styling)
   const NAV_TAB_TEMPLATES = {
-    'view-login': '<button data-view="view-login" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">lock</span> SSO Portal</button>',
-    'view-national': '<button data-view="view-national" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">analytics</span> 1. National Dashboard</button>',
-    'view-state': '<button data-view="view-state" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">map</span> 2. State Dashboard</button>',
-    'view-district': '<button data-view="view-district" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">share_location</span> 3. District / CALA</button>',
-    'view-agency': '<button data-view="view-agency" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">add_box</span> 4. Implementing Agency</button>',
-    'view-citizen': '<button data-view="view-citizen" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">badge</span> 5. Citizen Portal</button>'
+    'view-login': '<button data-view="view-login" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">lock</span> <span data-i18n="nav.sso">SSO Portal</span></button>',
+    'view-national': '<button data-view="view-national" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">analytics</span> <span data-i18n="nav.national">1. National Dashboard</span></button>',
+    'view-state': '<button data-view="view-state" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">map</span> <span data-i18n="nav.state">2. State Dashboard</span></button>',
+    'view-district': '<button data-view="view-district" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">share_location</span> <span data-i18n="nav.district">3. District / CALA</span></button>',
+    'view-agency': '<button data-view="view-agency" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">add_box</span> <span data-i18n="nav.agency">4. Implementing Agency</span></button>',
+    'view-citizen': '<button data-view="view-citizen" class="dash-nav-btn px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md text-primary-fixed-dim hover:bg-primary-container hover:text-on-primary transition-colors cursor-pointer whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">badge</span> <span data-i18n="nav.citizen">5. Citizen Portal</span></button>'
   };
 
-  const LOGOUT_TAB_TEMPLATE = '<button id="btn-navbar-logout" class="px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md bg-error/15 text-error hover:bg-error hover:text-white transition-colors cursor-pointer whitespace-nowrap border border-error/30" title="Sign Out / साइन आउट"><span class="material-symbols-outlined text-[16px]">logout</span> Sign Out / साइन आउट</button>';
+  const LOGOUT_TAB_TEMPLATE = '<button id="btn-navbar-logout" class="px-spacing-sm py-1.5 rounded flex items-center gap-1 font-label-md text-label-md bg-error/15 text-error hover:bg-error hover:text-white transition-colors cursor-pointer whitespace-nowrap border border-error/30" title="Sign Out"><span class="material-symbols-outlined text-[16px]">logout</span> <span data-i18n="nav.sign_out_btn">Sign Out</span></button>';
 
   // Comprehensive State-to-District Mapping
   const STATE_DISTRICT_MAP = {
@@ -612,6 +618,10 @@
         authorizedTabHtml,
         LOGOUT_TAB_TEMPLATE
       ].join('');
+    }
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(navContainer);
     }
 
     navButtons = navContainer.querySelectorAll('.dash-nav-btn');
@@ -817,8 +827,14 @@
       }
     }
 
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(views[viewId]);
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  window.switchView = switchView;
 
   function updateActiveUserBadge(user) {
     const nameEl = document.getElementById('active-user-name');
@@ -862,6 +878,9 @@
     `;
 
     tray.appendChild(toast);
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(toast);
+    }
     setTimeout(() => {
       toast.classList.remove('translate-x-4', 'opacity-0');
     }, 10);
@@ -1475,6 +1494,10 @@
         </tr>
       `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(tbody);
+    }
   }
 
   // 3. Dynamic State Dashboard Controller (Fully Parameterized by State)
@@ -1540,14 +1563,17 @@
     const subtitleEl = document.getElementById('state-dashboard-subtitle');
     if (subtitleEl) {
       const subtitles = {
-        'West Bengal': 'রাজ্য ভূমি অধিগ্রহণ ও ব্যবস্থাপনা ড্যাশবোর্ড (পশ্চিমবঙ্গ সরকার) • ভূমি ও ভূমি সংস্কার দপ্তর',
-        'Maharashtra': 'राज्य भू-संपादन व महसूल संचालनालय (महाराष्ट्र शासन) • महसूल व वन विभाग',
-        'Gujarat': 'રાજ્ય જમીન સંપાદન નિયામક કચેરી (ગુજરાત સરકાર) • મહેસૂલ વિભાગ',
-        'Uttar Pradesh': 'राज्य भूमि अध्याप्ति एवं राजस्व निदेशालय (उत्तर प्रदेश शासन) • राजस्व परिषद',
-        'Tamil Nadu': 'நில எடுப்பு மற்றும் நில நிர்வாக இயக்ககம் (தமிழ்நாடு அரசு)',
-        'Rajasthan': 'राज्य भूमि अवाप्ति एवं राजस्व निदेशालय (राजस्थान सरकार) • राजस्व मंडल'
+        'West Bengal': 'State Directorate of Land Acquisition & Revenue Management (West Bengal) • Land & Land Reforms Dept',
+        'Maharashtra': 'State Directorate of Land Acquisition & Revenue (Government of Maharashtra) • Revenue & Forest Dept',
+        'Gujarat': 'State Directorate of Land Acquisition (Government of Gujarat) • Revenue Dept',
+        'Uttar Pradesh': 'State Land Acquisition & Revenue Directorate (Government of Uttar Pradesh) • Board of Revenue',
+        'Tamil Nadu': 'Directorate of Land Acquisition & Land Administration (Government of Tamil Nadu)',
+        'Rajasthan': 'State Land Acquisition & Revenue Directorate (Government of Rajasthan) • Board of Revenue'
       };
       subtitleEl.textContent = subtitles[targetState] || `State Directorate of Land Acquisition & Revenue Management (${targetState} Government)`;
+      if (window.i18n && window.i18n.applyTranslations) {
+        window.i18n.applyTranslations(subtitleEl.parentElement);
+      }
     }
 
     // 4. District Filter Options
@@ -1791,6 +1817,10 @@
         </tr>
       `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(tbody);
+    }
   }
 
   // 4. District / CALA Dashboard Controller
@@ -1987,6 +2017,11 @@
     if (stateBreadcrumbEl) stateBreadcrumbEl.textContent = props.state || 'West Bengal';
     const deskBreadcrumbEl = document.getElementById('district-breadcrumb-desk');
     if (deskBreadcrumbEl) deskBreadcrumbEl.textContent = `${props.district || 'Hooghly'} District CALA Clearance Desk`;
+
+    const docketDetails = document.getElementById('docket-parcel-details');
+    if (docketDetails && window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(docketDetails);
+    }
   }
 
   function renderDistrictCALAQueue() {
@@ -2005,6 +2040,10 @@
         </div>
       `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(listEl);
+    }
   }
 
   // Profile Setup Modal helper
@@ -2014,7 +2053,12 @@
     const roleEl = document.getElementById('profile-modal-role');
     if (nameEl) nameEl.textContent = store.currentUser.name;
     if (roleEl) roleEl.textContent = store.currentUser.badge || roleKey;
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+      modal.classList.remove('hidden');
+      if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+        window.i18n.applyTranslations(modal);
+      }
+    }
 
     const form = document.getElementById('form-profile-setup');
     if (form) {
@@ -2309,6 +2353,10 @@
         </div>
       `;
     }).join('');
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      window.i18n.applyTranslations(listEl);
+    }
   }
 
   function renderCitizenParcel(parcelId) {
@@ -2429,6 +2477,11 @@
 
     // 7. Dynamic Milestones
     renderCitizenMilestones(props);
+
+    if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+      const citPortal = document.getElementById('portal-citizen') || document.getElementById('view-citizen');
+      if (citPortal) window.i18n.applyTranslations(citPortal);
+    }
   }
 
   window.selectCitizenParcel = function(parcelId) {
@@ -2453,7 +2506,12 @@
       if (nameEl) nameEl.textContent = store.currentUser.name;
 
       const modal = document.getElementById('modal-dsc-sign');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
     };
 
     const closeDscBtn = document.getElementById('btn-close-dsc-modal');
@@ -2496,7 +2554,12 @@
       switchDossierTab('form1');
 
       const modal = document.getElementById('modal-scrutiny-dossier');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
     };
 
     const closeDossierBtn = document.getElementById('btn-close-dossier-modal');
@@ -2612,7 +2675,12 @@
       }
 
       const modal = document.getElementById('modal-possession-checklist');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
     };
 
     const closePossBtn = document.getElementById('btn-close-possession-modal');
@@ -2681,7 +2749,12 @@
       }
 
       const modal = document.getElementById('modal-rnr-resettlement');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+          window.i18n.applyTranslations(modal);
+        }
+      }
     };
 
     const btnCalaRnrModalTrigger = document.getElementById('btn-cala-rnr');
@@ -2981,16 +3054,37 @@
       });
     }
 
-    // 9. Language Selector
+    // 9. Multilingual (i18n) Language Selector Integration
     const langSelect = document.getElementById('lang-select');
     if (langSelect) {
       langSelect.addEventListener('change', (e) => {
         const val = e.target.value;
-        document.documentElement.lang = val;
-        const langName = val === 'hi' ? 'हिन्दी (Hindi)' : 'English';
+        if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+          window.i18n.setLanguage(val);
+        }
+        const supported = window.i18n ? window.i18n.getSupportedLanguages() : null;
+        const langObj = supported ? supported[val] : null;
+        const langName = langObj ? `${langObj.nativeName} (${langObj.name})` : val;
         showToast('Language Preference', `Switched display language to ${langName}.`, 'info');
       });
     }
+
+    // Global listener for language changes
+    window.addEventListener('nlams:language-change', () => {
+      renderNavbar();
+      renderNationalDashboard();
+      renderNationalProjectsTable();
+      renderStateProjectsTable();
+      renderDistrictCALAQueue();
+      if (store.currentUser && store.currentUser.parcelId) {
+        renderCitizenParcel(store.currentUser.parcelId);
+      } else if (typeof selectedParcelId !== 'undefined' && selectedParcelId) {
+        renderCitizenParcel(selectedParcelId);
+      }
+      if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
+        window.i18n.applyTranslations(document.body);
+      }
+    });
   }
 
   function setupAccessibility() {
