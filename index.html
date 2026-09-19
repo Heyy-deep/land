@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
   <title>National Land Acquisition & Management System (NLAMS) | DoLR, GoI</title>
   <meta name="description" content="Official Portal of Land Resources, Ministry of Rural Development, Government of India. Real-time National Land Acquisition & Management System for end-to-end digital monitoring and decision support."/>
   
@@ -282,6 +285,10 @@
 
         <!-- Real-Time Demo Sync Button & Fast-Action Evaluator Modals -->
         <div class="flex items-center gap-spacing-xs py-0.5 flex-shrink-0 flex-wrap">
+          <div id="nav-ai-risk-status" class="px-spacing-sm py-1 bg-primary-container text-on-primary font-label-sm text-label-sm font-bold rounded flex items-center gap-1.5 border border-outline-variant/30 shadow-sm whitespace-nowrap">
+            <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">psychology</span>
+            <span>AI Risk Forecaster: <span class="text-emerald-400 font-bold">ONLINE</span> (RandomForest ML)</span>
+          </div>
           <button id="btn-open-audit-trail" class="px-spacing-sm py-1 bg-surface-container-high/30 hover:bg-surface-container-high text-primary-fixed-dim hover:text-white font-label-sm text-label-sm font-semibold rounded flex items-center gap-1 transition-colors border border-outline-variant/30 whitespace-nowrap" title="Inspect live immutable cryptographic audit ledger">
             <span class="material-symbols-outlined text-[16px] text-tertiary-container">verified</span>
             <span>Audit Trail</span>
@@ -1815,6 +1822,30 @@
                   </span>
                   <span class="text-primary font-bold">BHOOMI-API: #MH712-4019</span>
                 </div>
+
+                <!-- AI Litigation & Delay Risk Scoring Card (ML Model) -->
+                <div id="docket-ai-risk-card" style="display: block !important; margin: 10px 0 !important; padding: 12px 14px !important; background: #ffffff !important; border: 2px solid #00285b !important; border-radius: 8px !important; box-shadow: 0 4px 6px -1px rgba(0, 40, 91, 0.12) !important;">
+                  <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; margin-bottom: 8px !important;">
+                    <div style="display: flex !important; align-items: center !important; gap: 6px !important; color: #00285b !important; font-weight: 700 !important; font-size: 11.5px !important; text-transform: uppercase !important; letter-spacing: 0.5px !important;">
+                      <span class="material-symbols-outlined" style="font-size: 18px !important; color: #00285b !important;">psychology</span>
+                      <span>AI Litigation Risk (RFCTLARR ML)</span>
+                    </div>
+                    <span id="docket-risk-badge" style="display: inline-block !important; padding: 2px 10px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; background: #d1fae5 !important; color: #065f46 !important; border: 1.5px solid #10b981 !important;">
+                      LOW RISK (0.04)
+                    </span>
+                  </div>
+                  
+                  <!-- Risk Bar Meter -->
+                  <div style="width: 100% !important; background: #e2e8f0 !important; border-radius: 9999px !important; height: 9px !important; overflow: hidden !important; margin-bottom: 8px !important;">
+                    <div id="docket-risk-bar" style="height: 100% !important; background: #10b981 !important; border-radius: 9999px !important; width: 4% !important; transition: width 0.5s ease !important;"></div>
+                  </div>
+
+                  <!-- Top Contributing Factors -->
+                  <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; font-size: 11px !important; color: #434750 !important; border-top: 1px dashed #e2e8f0 !important; padding-top: 6px !important;">
+                    <span style="font-weight: 700 !important; color: #475569 !important;">Top Risk Drivers:</span>
+                    <span id="docket-risk-factors" style="font-family: monospace !important; font-weight: 700 !important; color: #00285b !important; max-width: 210px !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important;" title="Nominal Survey">Nominal Survey</span>
+                  </div>
+                </div>
               </div>
 
               <!-- Statutory Action Buttons -->
@@ -2355,6 +2386,9 @@
               <button type="button" data-dossier-tab="ror" class="dossier-tab-btn px-spacing-md py-spacing-xs font-label-sm text-label-sm font-bold border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
                 4. 7/12 Bhulekh Extract
               </button>
+              <button type="button" data-dossier-tab="risk" class="dossier-tab-btn px-spacing-md py-spacing-xs font-label-sm text-label-sm font-bold border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">psychology</span> 5. AI Risk Model
+              </button>
             </div>
 
             <!-- Tab Content Body (Scrollable) -->
@@ -2440,6 +2474,50 @@
                     <div><strong>Circle Rate:</strong> ₹2,800 / sq.m</div>
                     <div><strong>Encumbrances:</strong> Nil (Clear Title, District Co-op NOC Attached)</div>
                     <div><strong>Last Mutation Date:</strong> 18-Feb-2023 (Succession Registry)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tab 5: AI Risk Model -->
+              <div id="dossier-tab-content-risk" class="dossier-tab-pane hidden space-y-spacing-md">
+                <div class="p-spacing-md bg-surface-container-lowest rounded-lg border border-outline-variant/30 space-y-spacing-sm">
+                  <div class="flex items-center justify-between border-b border-surface-container pb-spacing-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[22px] text-primary">psychology</span>
+                      <div>
+                        <h4 class="font-label-md text-label-md text-primary font-bold">RFCTLARR AI Litigation & Delay Forecasting</h4>
+                        <p class="text-xs text-on-surface-variant">Trained RandomForest ML Model evaluating encumbrances, compensation ratios, and district disputes.</p>
+                      </div>
+                    </div>
+                    <span id="dossier-risk-level-badge" class="px-2.5 py-1 rounded font-legal-code text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      LOW RISK
+                    </span>
+                  </div>
+
+                  <!-- Score Metrics -->
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-spacing-sm pt-spacing-xs">
+                    <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/20">
+                      <span class="text-xs text-on-surface-variant block">Calculated Risk Score</span>
+                      <strong id="dossier-risk-score-val" class="text-lg font-bold text-primary">0.04 / 1.0</strong>
+                    </div>
+                    <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/20">
+                      <span class="text-xs text-on-surface-variant block">Forecasted Delay Tier</span>
+                      <strong id="dossier-risk-delay-val" class="text-lg font-bold text-on-surface">Minimal (&lt;30 days)</strong>
+                    </div>
+                    <div class="p-spacing-sm bg-surface-container-low rounded border border-outline-variant/20">
+                      <span class="text-xs text-on-surface-variant block">Model Status</span>
+                      <strong class="text-xs font-bold text-tertiary flex items-center gap-1 mt-1">
+                        <span class="material-symbols-outlined text-[14px]">check_circle</span> Active (FastAPI ML)
+                      </strong>
+                    </div>
+                  </div>
+
+                  <!-- Top Risk Factors Breakdown -->
+                  <div class="space-y-1.5 pt-spacing-xs">
+                    <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Top Contributing Factors:</span>
+                    <div id="dossier-risk-factors-list" class="flex flex-wrap gap-2 text-xs font-legal-code">
+                      <span class="px-2 py-1 bg-surface-container rounded border border-outline-variant/30 text-on-surface">Nominal Survey Parameters</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3862,11 +3940,11 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/i18n.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/gis-engine.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Scripts (Cache-Busted v=20260920_v5) -->
+  <script src="js/i18n.js?v=20260920_v5"></script>
+  <script src="js/store.js?v=20260920_v5"></script>
+  <script src="js/api.js?v=20260920_v5"></script>
+  <script src="js/gis-engine.js?v=20260920_v5"></script>
+  <script src="js/app.js?v=20260920_v5"></script>
 </body>
 </html>

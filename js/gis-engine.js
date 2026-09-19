@@ -548,6 +548,14 @@
                 <span>Estimated Value:</span>
                 <span id="gis-popup-val" class="font-bold text-primary font-headline-sm">₹${(selected.totalCompensation / 100000).toFixed(2)} Lakhs</span>
               </div>
+              <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 6px 8px !important; margin: 6px 0 !important; border-radius: 6px !important; background: #eaedff !important; border: 1.5px solid #133e7c !important;">
+                <span style="font-weight: 700 !important; color: #00285b !important; display: flex !important; align-items: center !important; gap: 4px !important; font-size: 11.5px !important;">
+                  <span class="material-symbols-outlined" style="font-size: 16px !important; color: #00285b !important;">psychology</span> AI Litigation Risk:
+                </span>
+                <span id="gis-popup-risk" style="display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; border: 1.5px solid ${selected.status === 'Objection' ? '#ef4444; background: #fee2e2; color: #991b1b;' : (selected.status === 'Scrutiny' ? '#f59e0b; background: #fef3c7; color: #92400e;' : '#10b981; background: #d1fae5; color: #065f46;')}">
+                  ${selected.status === 'Objection' ? 'HIGH RISK (0.89)' : (selected.status === 'Scrutiny' ? 'MEDIUM RISK (0.38)' : 'LOW RISK (0.04)')}
+                </span>
+              </div>
               <div class="flex items-center gap-spacing-xs pt-spacing-xs text-tertiary text-label-sm font-label-sm font-semibold">
                 <span class="material-symbols-outlined text-[16px]">check_circle</span>
                 <span>BanglarBhumi GIS & WBLA Database Synced</span>

@@ -15,7 +15,8 @@ from backend.routers import (
     compensation_router,
     rehabilitation_router,
     documents_router,
-    objections_router
+    objections_router,
+    risk_router
 )
 
 UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
@@ -84,6 +85,7 @@ app.include_router(compensation_router.router)
 app.include_router(rehabilitation_router.router)
 app.include_router(documents_router.router)
 app.include_router(objections_router.router)
+app.include_router(risk_router.router)
 
 # Health Check Endpoints (Render Health Check Path: /health)
 @app.get("/health", tags=["System Health"])

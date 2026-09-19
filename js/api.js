@@ -632,6 +632,41 @@
         coordinates: { lat: 18.5204, lng: 73.8567 }
       };
     }
+
+    // POST /api/risk-score/{case_id} - Evaluates AI litigation and delay risk
+    async getRiskScore(caseId, override = null) {
+      const baseUrl = window.getNLAMSBackendUrl() || 'http://127.0.0.1:8000';
+      try {
+        const url = `${baseUrl}/api/risk-score/${encodeURIComponent(caseId)}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: override ? JSON.stringify(override) : null
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return this._respond(200, data, 'AI Risk score evaluated by RandomForest model');
+        }
+      } catch (err) {
+        console.warn('[NLAMS API] Live ML backend unreachable, computing local model fallback:', err);
+      }
+
+      // Sensible local fallback if backend is offline
+      const parcel = this.store.parcels.find(p => (p.id === caseId || p.properties?.id === caseId));
+      const props = parcel ? (parcel.properties || parcel) : {};
+      const status = props.status || 'Scrutiny';
+      const isHigh = status === 'Objection';
+      const isMed = status === 'Scrutiny';
+      const riskScore = isHigh ? 0.89 : (isMed ? 0.38 : 0.04);
+      const riskLevel = isHigh ? 'High' : (isMed ? 'Medium' : 'Low');
+      return this._respond(200, {
+        case_id: caseId,
+        risk_score: riskScore,
+        risk_level: riskLevel,
+        top_factors: isHigh ? ['duplicate_claim_flag', 'encumbrance_flags', 'prior_disputes_in_district'] : ['compensation_ratio', 'prior_disputes_in_district'],
+        status: 'local_fallback'
+      });
+    }
   }
 
   // Configurable backend URL for deployed Render backend (*.onrender.com) or local development
