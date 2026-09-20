@@ -13,11 +13,11 @@
 
   const ROLE_CREDENTIALS = {
     'central-ministry': { email: 'admin@dolr.gov.in', password: 'nlams2025' },
-    'state-revenue': { email: 'state.mh@dolr.gov.in', password: 'nlams2025' },
-    'dro-cala': { email: 'dro.pune@dolr.gov.in', password: 'nlams2025' },
-    'requiring-body': { email: 'nhai.officer@nhai.gov.in', password: 'nlams2025' },
-    'citizen': { email: 'ramesh.patil@gmail.com', password: 'nlams2025' },
-    'rehab-authority': { email: 'rehab.officer@dolr.gov.in', password: 'nlams2025' }
+    'state-revenue': { email: 'secretary.rev@wb.gov.in', password: 'nlams2025' },
+    'dro-cala': { email: 'dro.hooghly@wb.gov.in', password: 'nlams2025' },
+    'requiring-body': { email: 'kmda.officer@kmda.wb.gov.in', password: 'nlams2025' },
+    'citizen': { email: 'subrata.ghosh@gmail.com', password: 'nlams2025' },
+    'rehab-authority': { email: 'rehab.officer@wb.gov.in', password: 'nlams2025' }
   };
 
   class NLAMSAPI {
@@ -521,14 +521,28 @@
       return { status: 200, ok: true, data: (this.store && this.store.parcels) || [] };
     }
 
-    // GET /parcels - Returns PostGIS spatial FeatureCollection
-    async getCadastralGeoJSON() {
-      const res = await this._request('/parcels', { method: 'GET' }, 'central-ministry');
+    // GET /api/parcels - Returns PostGIS spatial FeatureCollection with role token
+    async getCadastralGeoJSON(params = {}, role = null) {
+      const activeRole = role || (this.store && this.store.currentUser ? this.store.currentUser.role : 'central-ministry');
+      const queryParams = new URLSearchParams();
+      if (params.state && params.state !== 'ALL') queryParams.append('state', params.state);
+      if (params.district && params.district !== 'ALL') queryParams.append('district', params.district);
+      if (params.projectId) queryParams.append('project_id', params.projectId);
+      const queryStr = queryParams.toString();
+      const endpoint = queryStr ? `/api/parcels?${queryStr}` : '/api/parcels';
+      const res = await this._request(endpoint, { method: 'GET' }, activeRole);
       if (res.ok && res.data) {
         return res;
       }
       // Return store GeoJSON fallback if backend offline
       return { status: 200, ok: true, data: this.store ? this.store.getCadastralGeoJSON() : null };
+    }
+
+    // GET /api/parcels/{id}/geometry - Returns GeoJSON Feature for single parcel with citizen RBAC
+    async getParcelGeometry(parcelId, role = null) {
+      const activeRole = role || (this.store && this.store.currentUser ? this.store.currentUser.role : 'central-ministry');
+      const res = await this._request(`/api/parcels/${parcelId}/geometry`, { method: 'GET' }, activeRole);
+      return res;
     }
 
     // Section 15: File Citizen Hearing Objection
@@ -688,5 +702,7 @@
 
   // Initialize global NLAMS API Client
   window.NLAMS_API = new NLAMSAPI(window.NLAMS_STORE);
+  window.NLAMSAPI = window.NLAMS_API;
 
 })(window);
+

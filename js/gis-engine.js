@@ -388,221 +388,383 @@
       });
     },
 
-    // 3. Render Cadastral Land Parcel Viewer (for District/CALA Dashboard)
-    renderCadastralViewer: function(containerId, activeParcelId, onParcelSelect) {
+    // Active Leaflet map instances keyed by container ID
+    _leafletMaps: {},
+
+    // 3. Render Interactive Cadastral Land Parcel Viewer (Leaflet + OpenStreetMap)
+    renderCadastralViewer: async function(containerId, activeParcelId, onParcelSelect, options = {}) {
       const container = document.getElementById(containerId);
       if (!container) return;
 
       const store = window.NLAMS_STORE;
-      const parcels = store ? store.parcels : [];
-      const rawSelected = parcels.find(p => p.id === activeParcelId || (p.properties && p.properties.id === activeParcelId)) || parcels[0] || {};
-      const selected = rawSelected.properties ? { ...rawSelected.properties, coordinates: rawSelected.properties.svgCoordinates || { x: 230, y: 190 } } : { ...rawSelected };
+      const isCitizen = Boolean(options.isCitizen || containerId.includes('citizen') || (store?.currentUser?.role === 'citizen'));
+      const activeState = options.state || 'West Bengal';
+      const activeDistrict = options.district || 'Hooghly';
 
-      if (!selected.coordinates) selected.coordinates = { x: 230, y: 190 };
-      if (!selected.gutNumber) selected.gutNumber = 'Dag No. 412/1';
-      if (!selected.village) selected.village = 'Dankuni (JL 34)';
-      if (!selected.statusLabel) selected.statusLabel = 'Possessed / Vested';
-      if (!selected.ownerName) selected.ownerName = 'Subrata Ghosh';
-      if (!selected.areaHa) selected.areaHa = 1.42;
-      if (!selected.areaSqM) selected.areaSqM = 14200;
-      if (!selected.landType) selected.landType = 'Agricultural (Sali / Bastu)';
-      if (!selected.overlapPercent) selected.overlapPercent = 100;
-      if (!selected.totalCompensation) selected.totalCompensation = 31808000;
+      // Clean up previous Leaflet map on this container if it exists
+      if (this._leafletMaps[containerId]) {
+        try {
+          this._leafletMaps[containerId].remove();
+        } catch (e) {
+          console.warn('[NLAMS GIS] Map cleanup note:', e);
+        }
+        delete this._leafletMaps[containerId];
+      }
 
-      const getParcelColor = (id, fallback) => {
-        const p = parcels.find(item => item.id === id || item.properties?.id === id);
-        return p?.properties?.statusColor || p?.statusColor || fallback;
-      };
-      const getParcelStatus = (id, fallback) => {
-        const p = parcels.find(item => item.id === id || item.properties?.id === id);
-        return p?.properties?.status || p?.status || fallback;
-      };
-
+      // Container layout with Top Control Bar, Map Mount, Inspector Card, and Choropleth Toggle
+      const mapHeight = isCitizen ? '360px' : '580px';
       container.innerHTML = `
-        <div class="relative w-full h-[580px] max-h-[580px] bg-surface-dim overflow-hidden select-none rounded border border-outline-variant/30" style="height: 580px; max-height: 580px; overflow: hidden;">
-          <!-- Cartographic Grid Lines and RoW Corridor Background -->
-          <svg id="cadastral-svg" class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="cadastralGridPattern" width="48" height="48" patternUnits="userSpaceOnUse">
-                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" stroke-width="0.5" class="text-surface-variant opacity-80"/>
-              </pattern>
-              
-              <linearGradient id="rowBufferGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#133e7c" stop-opacity="0.25" />
-                <stop offset="50%" stop-color="#fe932c" stop-opacity="0.35" />
-                <stop offset="100%" stop-color="#133e7c" stop-opacity="0.25" />
-              </linearGradient>
-            </defs>
-
-            <!-- Grid Background -->
-            <rect width="100%" height="100%" fill="url(#cadastralGridPattern)"></rect>
-
-            <!-- Authentic Mouza Boundaries (Hooghly Acquisition Corridor) -->
-            <!-- Mouza 1: Dankuni (JL 34) -->
-            <path d="M 120,60 L 380,40 L 410,260 L 150,280 Z" fill="#f8fafc" fill-opacity="0.12" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="170" y="75" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
-              MOUZA: DANKUNI (JL NO. 34) • CHANDITALA-II
-            </text>
-
-            <!-- Mouza 2: Janai (JL 49) -->
-            <path d="M 380,40 L 680,20 L 710,240 L 410,260 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="440" y="55" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
-              MOUZA: JANAI (JL NO. 49) • CHANDITALA-II
-            </text>
-
-            <!-- Mouza 3: Begampur (JL 41) -->
-            <path d="M 150,280 L 410,260 L 430,480 L 170,500 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="190" y="475" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
-              MOUZA: BEGAMPUR (JL NO. 41) • SH-13 CORRIDOR
-            </text>
-
-            <!-- Mouza 4: Garalgachha (JL 52) -->
-            <path d="M 410,260 L 710,240 L 740,460 L 430,480 Z" fill="#f8fafc" fill-opacity="0.10" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4"></path>
-            <text x="430" y="475" fill="#475569" class="font-legal-code text-legal-code font-bold uppercase tracking-wider">
-              MOUZA: GARALGACHHA (JL NO. 52) • DANKUNI YARD
-            </text>
-
-            <!-- Central 110m EDFC Alignment Right-of-Way Buffer -->
-            <polygon points="100,200 750,110 750,210 100,300" fill="url(#rowBufferGrad)" stroke="#133e7c" stroke-width="1.5" stroke-dasharray="4,4"></polygon>
-            <text x="280" y="250" fill="#133e7c" fill-opacity="0.65" class="font-legal-code text-legal-code font-bold uppercase tracking-widest pointer-events-none">
-              EDFC DANKUNI FREIGHT TERMINAL &amp; RAIL LINKAGE (110m RoW BUFFER)
-            </text>
-
-            <!-- Cadastral Parcels Layer (Grounded in Authentic Hooghly Mouzas) -->
-            <!-- Parcel 1: WB-HGY-DNK-01 (Dankuni JL 34, Dag 412/1) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-01"
-                     points="160,140 280,115 295,215 180,230" fill="${getParcelColor('WB-HGY-DNK-01', '#15803d')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-DNK-01', '#15803d')}" stroke-width="2.5"></polygon>
-            <text x="185" y="175" fill="#003112" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/1 [${getParcelStatus('WB-HGY-DNK-01', 'Possessed')}]</text>
-            <text x="185" y="190" fill="#003112" class="text-label-sm font-label-sm pointer-events-none">Subrata Ghosh</text>
-
-            <!-- Parcel 2: WB-HGY-DNK-02 (Dankuni JL 34, Dag 412/2) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-DNK-02"
-                     points="290,110 400,90 415,185 305,205" fill="${getParcelColor('WB-HGY-DNK-02', '#d97706')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-DNK-02', '#d97706')}" stroke-width="2"></polygon>
-            <text x="315" y="145" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 412/2 [${getParcelStatus('WB-HGY-DNK-02', 'Scrutiny')}]</text>
-            <text x="315" y="160" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">A. Mukherjee</text>
-
-            <!-- Parcel 3: WB-HGY-JNI-03 (Janai JL 49, Dag 218/4) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-JNI-03"
-                     points="450,75 580,55 600,160 470,175" fill="${getParcelColor('WB-HGY-JNI-03', '#133e7c')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-JNI-03', '#133e7c')}" stroke-width="2.5"></polygon>
-            <text x="480" y="110" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 218/4 [${getParcelStatus('WB-HGY-JNI-03', 'Awarded')}]</text>
-            <text x="480" y="125" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">D. Banerjee (Sec 3G)</text>
-
-            <!-- Parcel 4: WB-HGY-BGP-04 (Begampur JL 41, Dag 105/3) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-BGP-04"
-                     points="220,320 340,300 360,400 240,415" fill="${getParcelColor('WB-HGY-BGP-04', '#d97706')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-BGP-04', '#d97706')}" stroke-width="2"></polygon>
-            <text x="245" y="360" fill="#904d00" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 105/3 [${getParcelStatus('WB-HGY-BGP-04', 'Scrutiny')}]</text>
-            <text x="245" y="375" fill="#904d00" class="text-label-sm font-label-sm pointer-events-none">Mousumi Das</text>
-
-            <!-- Parcel 5: WB-HGY-SNG-05 (Beraberi Singur JL 24, Dag 520/1A) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HGY-SNG-05"
-                     points="490,270 630,245 660,370 520,390" fill="${getParcelColor('WB-HGY-SNG-05', '#133e7c')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HGY-SNG-05', '#133e7c')}" stroke-width="2.5"></polygon>
-            <text x="525" y="315" fill="#00285b" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 520/1A [${getParcelStatus('WB-HGY-SNG-05', 'Awarded')}]</text>
-            <text x="525" y="330" fill="#00285b" class="text-label-sm font-label-sm pointer-events-none">P. P. Roy (PHE Scheme)</text>
-
-            <!-- Parcel 6: WB-HWH-SLP-06 (Salap JL 12, Dag 88/2) -->
-            <polygon class="parcel-polygon cursor-pointer transition-all hover:opacity-90" data-id="WB-HWH-SLP-06"
-                     points="360,390 490,370 515,480 385,495" fill="${getParcelColor('WB-HWH-SLP-06', '#dc2626')}" fill-opacity="0.6" stroke="${getParcelColor('WB-HWH-SLP-06', '#dc2626')}" stroke-width="2.5"></polygon>
-            <text x="395" y="435" fill="#93000a" class="font-legal-code text-legal-code font-bold pointer-events-none">Dag 88/2 [${getParcelStatus('WB-HWH-SLP-06', 'CIVIL STAY')}]</text>
-            <text x="395" y="450" fill="#93000a" class="text-label-sm font-label-sm pointer-events-none">T. K. Mondal (Sec 64)</text>
-          </svg>
-
-          <!-- Selected Active Marker Pin -->
-          <div id="gis-marker-pin" class="absolute pointer-events-none z-10 transition-all duration-300"
-               style="top: ${selected.coordinates.y}px; left: ${selected.coordinates.x}px; transform: translate(-50%, -100%);">
-            <div class="flex items-center gap-spacing-xs bg-primary text-on-primary px-spacing-sm py-spacing-2xs rounded shadow-xl text-legal-code font-legal-code font-bold tracking-wider">
-              <span class="w-2 h-2 rounded-full bg-secondary-container animate-ping"></span>
-              <span>ACTIVE SELECTION: ${selected.gutNumber}</span>
-            </div>
-            <span class="material-symbols-outlined text-secondary text-[36px] drop-shadow-md block text-center">location_on</span>
-          </div>
-
-          <!-- Floating Detailed Cadastral Callout / Tooltip -->
-          <div class="absolute bottom-spacing-lg left-spacing-lg w-84 bg-surface-container-lowest/95 backdrop-blur-sm rounded shadow-xl p-spacing-md z-20 border border-outline-variant/30">
-            <div class="flex items-start justify-between gap-spacing-xs mb-spacing-xs">
-              <div>
-                <span class="text-legal-code font-legal-code text-primary uppercase font-bold tracking-wider">Cadastral Inspector</span>
-                <h3 id="gis-popup-title" class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight">${selected.gutNumber} • ${selected.village}</h3>
-              </div>
-              <span id="gis-popup-badge" class="px-spacing-xs py-spacing-2xs rounded bg-secondary-fixed text-on-secondary-fixed font-legal-code text-legal-code font-bold uppercase">
-                ${selected.statusLabel.slice(0, 18)}
+        <div class="relative w-full h-[${mapHeight}] max-h-[${mapHeight}] bg-surface-dim overflow-hidden select-none rounded-lg border border-outline-variant/30 flex flex-col" style="height: ${mapHeight}; max-height: ${mapHeight};">
+          <!-- Top Floating Control Bar -->
+          <div class="absolute top-2.5 left-2.5 right-2.5 z-[500] flex items-center justify-between pointer-events-none gap-2">
+            <div class="pointer-events-auto bg-surface-container-lowest/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-md border border-outline-variant/40 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[18px]">travel_explore</span>
+              <span class="text-xs font-bold text-primary font-headline-sm">
+                ${isCitizen ? 'Registered Cadastral Parcel Holding' : 'Cadastral GIS Vector Viewer (Hooghly EDFC)'}
+              </span>
+              <span id="${containerId}-coords-badge" class="text-[11px] font-mono px-2 py-0.5 bg-surface-container text-on-surface rounded font-semibold">
+                GPS: 22.685° N, 88.291° E
               </span>
             </div>
-            <div class="space-y-spacing-xs text-body-sm font-body-sm text-on-surface-variant">
-              <div class="flex justify-between py-spacing-2xs">
-                <span>Landowner:</span>
-                <strong id="gis-popup-owner" class="font-bold text-on-surface">${selected.ownerName}</strong>
-              </div>
-              <div class="flex justify-between py-spacing-2xs">
-                <span>Acquisition Extent:</span>
-                <span id="gis-popup-area" class="font-bold text-on-surface">${selected.areaHa} Hectares (${selected.areaSqM} m²)</span>
-              </div>
-              <div class="flex justify-between py-spacing-2xs">
-                <span>Classification:</span>
-                <span id="gis-popup-type" class="font-bold text-on-surface">${selected.landType}</span>
-              </div>
-              <div class="flex justify-between py-spacing-2xs">
-                <span>Right of Way Impact:</span>
-                <span id="gis-popup-overlap" class="font-bold text-secondary font-headline-sm">${selected.overlapPercent}% Corridor Overlap</span>
-              </div>
-              <div class="flex justify-between py-spacing-2xs">
-                <span>Estimated Value:</span>
-                <span id="gis-popup-val" class="font-bold text-primary font-headline-sm">₹${(selected.totalCompensation / 100000).toFixed(2)} Lakhs</span>
-              </div>
-              <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 6px 8px !important; margin: 6px 0 !important; border-radius: 6px !important; background: #eaedff !important; border: 1.5px solid #133e7c !important;">
-                <span style="font-weight: 700 !important; color: #00285b !important; display: flex !important; align-items: center !important; gap: 4px !important; font-size: 11.5px !important;">
-                  <span class="material-symbols-outlined" style="font-size: 16px !important; color: #00285b !important;">psychology</span> AI Litigation Risk:
-                </span>
-                <span id="gis-popup-risk" style="display: inline-block !important; padding: 2px 8px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; border: 1.5px solid ${selected.status === 'Objection' ? '#ef4444; background: #fee2e2; color: #991b1b;' : (selected.status === 'Scrutiny' ? '#f59e0b; background: #fef3c7; color: #92400e;' : '#10b981; background: #d1fae5; color: #065f46;')}">
-                  ${selected.status === 'Objection' ? 'HIGH RISK (0.89)' : (selected.status === 'Scrutiny' ? 'MEDIUM RISK (0.38)' : 'LOW RISK (0.04)')}
-                </span>
-              </div>
-              <div class="flex items-center gap-spacing-xs pt-spacing-xs text-tertiary text-label-sm font-label-sm font-semibold">
-                <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                <span>BanglarBhumi GIS & WBLA Database Synced</span>
-              </div>
+
+            <div class="pointer-events-auto flex items-center gap-1.5 bg-surface-container-lowest/95 backdrop-blur-md p-1 rounded-lg shadow-md border border-outline-variant/40">
+              ${!isCitizen ? `
+                <button id="${containerId}-btn-toggle-choropleth" class="px-2.5 py-1 text-xs font-bold rounded bg-surface-container text-primary hover:bg-primary hover:text-on-primary transition-all flex items-center gap-1 cursor-pointer">
+                  <span class="material-symbols-outlined text-[15px]">layers</span>
+                  <span id="${containerId}-toggle-mode-text">Macro Choropleth</span>
+                </button>
+              ` : ''}
+              <button id="${containerId}-btn-recenter" class="p-1.5 text-on-surface hover:text-primary rounded hover:bg-surface-container transition-colors cursor-pointer" title="Recenter on Active Parcel">
+                <span class="material-symbols-outlined text-[18px]">my_location</span>
+              </button>
+              <button id="${containerId}-btn-export" class="p-1.5 text-on-surface hover:text-primary rounded hover:bg-surface-container transition-colors cursor-pointer" title="Export Cadastral GeoJSON">
+                <span class="material-symbols-outlined text-[18px]">download</span>
+              </button>
             </div>
           </div>
 
-          <!-- Floating GIS Layer Overlay Selector Control -->
-          <div class="absolute top-spacing-md right-spacing-md bg-surface-container-lowest/95 backdrop-blur-sm p-spacing-sm rounded shadow-lg z-20 flex flex-col gap-spacing-xs border border-outline-variant/30">
-            <span class="text-legal-code font-legal-code uppercase text-on-surface-variant font-bold tracking-wider mb-spacing-2xs">Active Layers</span>
-            <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
-              <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>Mouza Cadastre (1:4000)</span>
-            </label>
-            <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
-              <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>110m EDFC Alignment Buffer</span>
-            </label>
-            <label class="flex items-center gap-spacing-xs cursor-pointer text-label-sm font-label-sm text-on-surface hover:text-primary">
-              <input type="checkbox" checked class="w-4 h-4 accent-primary rounded">
-              <span>BanglarBhumi Khasra Grid</span>
-            </label>
-            <div class="pt-spacing-xs border-t border-outline-variant/30 mt-1">
-              <button id="btn-export-geojson-gis" class="w-full flex items-center justify-center gap-1 px-2 py-1 bg-primary text-on-primary text-legal-code font-legal-code font-bold rounded hover:bg-primary-container transition-colors shadow-sm">
-                <span class="material-symbols-outlined text-[14px]">download</span>
-                Export RFC 7946 GeoJSON
-              </button>
+          <!-- Leaflet Interactive Vector Map Mount -->
+          <div id="${containerId}-lmap" class="w-full h-full" style="height: 100%; min-height: 100%; z-index: 1;"></div>
+
+          <!-- District Macro Choropleth Mount (Toggled via Macro Button) -->
+          <div id="${containerId}-choropleth-view" class="hidden w-full h-full p-2 bg-surface-container-lowest" style="height: 100%; min-height: 100%; z-index: 2;"></div>
+
+          <!-- Bottom Floating Cadastral Inspector Detail Card -->
+          <div id="${containerId}-inspector-card" class="absolute bottom-2.5 left-2.5 z-[500] w-80 bg-surface-container-lowest/95 backdrop-blur-md rounded-xl shadow-xl p-3 border border-outline-variant/40 space-y-1 text-xs font-body-sm transition-all duration-300 pointer-events-auto">
+            <div class="flex items-start justify-between gap-1 border-b border-surface-container pb-1">
+              <div>
+                <span class="text-[10px] font-legal-code uppercase font-bold text-primary tracking-wider">Cadastral Vector</span>
+                <h4 id="${containerId}-insp-title" class="font-bold text-sm text-on-surface leading-tight">Loading Parcel...</h4>
+              </div>
+              <span id="${containerId}-insp-badge" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-legal-code bg-tertiary-fixed text-on-tertiary-fixed">
+                Status
+              </span>
+            </div>
+            <div class="space-y-1 pt-1 text-on-surface-variant">
+              <div class="flex justify-between">
+                <span>Landowner:</span>
+                <strong id="${containerId}-insp-owner" class="text-on-surface font-semibold">-</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>Acquired Extent:</span>
+                <span id="${containerId}-insp-area" class="text-on-surface font-semibold">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Award Value:</span>
+                <span id="${containerId}-insp-val" class="font-bold text-primary">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span>DBT Status:</span>
+                <span id="${containerId}-insp-dbt" class="font-semibold text-tertiary truncate max-w-[180px]">-</span>
+              </div>
             </div>
           </div>
         </div>
       `;
 
-      // Add click handlers on polygons
-      const polys = container.querySelectorAll('.parcel-polygon');
-      polys.forEach(poly => {
-        poly.addEventListener('click', () => {
-          const parcelId = poly.getAttribute('data-id');
-          if (onParcelSelect) onParcelSelect(parcelId);
-        });
-      });
+      // Helper to ensure Leaflet is loaded before initializing
+      const initLeaflet = async () => {
+        if (typeof window.L === 'undefined') {
+          console.warn('[NLAMS GIS] Leaflet not yet ready, awaiting script...');
+          setTimeout(initLeaflet, 100);
+          return;
+        }
 
-      const exportGeoJsonBtn = container.querySelector('#btn-export-geojson-gis');
-      if (exportGeoJsonBtn) {
-        exportGeoJsonBtn.addEventListener('click', () => {
-          GISEngine.downloadCadastralGeoJSON();
+        const mapEl = document.getElementById(`${containerId}-lmap`);
+        if (!mapEl) return;
+
+        // Create Leaflet Map Instance
+        const map = L.map(`${containerId}-lmap`, {
+          zoomControl: true,
+          attributionControl: true,
+          scrollWheelZoom: true
         });
-      }
+        GISEngine._leafletMaps[containerId] = map;
+
+        // Add OpenStreetMap Standard Tile Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+        }).addTo(map);
+
+        // Fetch Cadastral GeoJSON from Backend with Citizen Token
+        let geoData = null;
+        try {
+          const apiClient = window.NLAMS_API || window.NLAMSAPI;
+          if (apiClient) {
+            const role = isCitizen ? 'citizen' : (options.role || store?.currentUser?.role || 'dro-cala');
+            const params = isCitizen ? {} : { state: activeState, district: activeDistrict };
+            console.log(`[NLAMS GIS] Requesting cadastral GeoJSON from /api/parcels with role: '${role}' (Authenticated: ${isCitizen})`);
+            const res = await apiClient.getCadastralGeoJSON(params, role);
+            if (res && res.data && res.data.features && res.data.features.length > 0) {
+              geoData = res.data;
+              console.log(`[NLAMS GIS] Successfully loaded ${geoData.features.length} GIS cadastral feature(s) from backend API.`);
+            }
+          }
+        } catch (err) {
+          console.warn('[NLAMS GIS] API fetch notice:', err);
+        }
+
+        // Fallback to client-side store if API unavailable
+        if (!geoData || !geoData.features || geoData.features.length === 0) {
+          geoData = store ? store.getCadastralGeoJSON() : { type: 'FeatureCollection', features: [] };
+          if (isCitizen && geoData && geoData.features) {
+            const user = store?.currentUser || {};
+            const userAadhaarLast4 = (user.ownerAadhaar || '').replace(/\D/g, '').slice(-4);
+            geoData = {
+              type: 'FeatureCollection',
+              features: geoData.features.filter(f => {
+                const p = f.properties || f;
+                if (user.parcelId && (f.id === user.parcelId || p.id === user.parcelId)) return true;
+                if (userAadhaarLast4 && p.ownerAadhaar && p.ownerAadhaar.replace(/\D/g, '').endsWith(userAadhaarLast4)) return true;
+                if (user.name && p.ownerName && p.ownerName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+                return false;
+              })
+            };
+          }
+        }
+
+        // Status color mapping per RFCTLARR statutory stages
+        const statusColors = {
+          'Possessed': '#15803d',
+          'Awarded': '#133e7c',
+          'Scrutiny': '#d97706',
+          'Objection': '#dc2626'
+        };
+
+        const getFeatureColor = (f) => {
+          const props = f.properties || f;
+          return props.statusColor || statusColors[props.status] || '#d97706';
+        };
+
+        let activeLayer = null;
+        const layersByParcelId = {};
+
+        // Inspector Card updater
+        const updateInspector = (props) => {
+          const title = document.getElementById(`${containerId}-insp-title`);
+          const badge = document.getElementById(`${containerId}-insp-badge`);
+          const owner = document.getElementById(`${containerId}-insp-owner`);
+          const area = document.getElementById(`${containerId}-insp-area`);
+          const val = document.getElementById(`${containerId}-insp-val`);
+          const dbt = document.getElementById(`${containerId}-insp-dbt`);
+          const coords = document.getElementById(`${containerId}-coords-badge`);
+
+          if (title) title.textContent = `${props.gutNumber || props.khasra_no || props.id} • ${props.village || ''}`;
+          if (badge) {
+            badge.textContent = (props.statusLabel || props.status || 'Active').slice(0, 20);
+            badge.style.backgroundColor = props.statusColor || statusColors[props.status] || '#15803d';
+            badge.style.color = '#ffffff';
+          }
+          if (owner) owner.textContent = props.ownerName || props.owner_name || 'Landowner';
+          if (area) area.textContent = `${props.areaHa || props.area_ha || 1.0} Ha (${props.landType || props.land_type || 'Agricultural'})`;
+          if (val) {
+            const comp = props.totalCompensation || props.total_compensation || 0;
+            val.textContent = `₹${(comp / 100000).toFixed(2)} Lakhs`;
+          }
+          if (dbt) dbt.textContent = props.dbtStatus || props.dbt_status || 'PFMS In Progress';
+        };
+
+        // Guard: check if map is still active and mounted in DOM
+        if (GISEngine._leafletMaps[containerId] !== map || !document.body.contains(map.getContainer())) {
+          return;
+        }
+
+        // Render GeoJSON Layer
+        const geoLayer = L.geoJSON(geoData, {
+          style: function(feature) {
+            const isSelected = (feature.id === activeParcelId || feature.properties?.id === activeParcelId);
+            const color = getFeatureColor(feature);
+            return {
+              color: isSelected ? '#fe932c' : color,
+              weight: isSelected ? 4 : 2,
+              fillColor: color,
+              fillOpacity: isSelected ? 0.75 : 0.50,
+              dashArray: isSelected ? '' : '3, 3'
+            };
+          },
+          onEachFeature: function(feature, layer) {
+            const props = feature.properties || {};
+            const pId = feature.id || props.id;
+            layersByParcelId[pId] = layer;
+
+            // Popup HTML
+            const popupHtml = `
+              <div class="p-1.5 space-y-1 font-sans text-xs min-w-[210px]">
+                <div class="flex items-center justify-between gap-2 border-b border-gray-200 pb-1">
+                  <strong class="text-[#00285b] font-bold text-sm">${props.gutNumber || props.khasra_no || pId}</strong>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold text-white uppercase" style="background:${getFeatureColor(feature)};">
+                    ${props.status || 'Active'}
+                  </span>
+                </div>
+                <div class="text-gray-700"><strong>Owner:</strong> ${props.ownerName || props.owner_name || '-'}</div>
+                <div class="text-gray-700"><strong>Village:</strong> ${props.village || '-'}, ${props.district || '-'}</div>
+                <div class="text-gray-700"><strong>Extent:</strong> ${props.areaHa || props.area_ha || '-'} Ha</div>
+                <div class="text-gray-700"><strong>Award:</strong> <span class="font-bold text-[#00285b]">₹${(((props.totalCompensation || props.total_compensation) || 0) / 100000).toFixed(2)} Lakhs</span></div>
+                <div class="text-[11px] text-green-800 font-semibold pt-0.5">${props.dbtStatus || props.dbt_status || 'PFMS Direct Benefit Transfer'}</div>
+                <button onclick="window.handleCadastralParcelClick('${pId}')" class="w-full mt-1.5 py-1 px-2 bg-[#00285b] text-white text-[11px] font-bold rounded hover:bg-[#133e7c] transition-colors cursor-pointer text-center block">
+                  Track Parcel Details &rarr;
+                </button>
+              </div>
+            `;
+            layer.bindPopup(popupHtml, { maxWidth: 280, closeButton: false });
+
+            // Layer Interactions
+            layer.on({
+              mouseover: function(e) {
+                const target = e.target;
+                if (target !== activeLayer) {
+                  target.setStyle({ weight: 3, fillOpacity: 0.70 });
+                }
+              },
+              mouseout: function(e) {
+                const target = e.target;
+                if (target !== activeLayer) {
+                  geoLayer.resetStyle(target);
+                }
+              },
+              click: function(e) {
+                if (activeLayer) geoLayer.resetStyle(activeLayer);
+                activeLayer = layer;
+                layer.setStyle({ color: '#fe932c', weight: 4, fillOpacity: 0.80 });
+                layer.openPopup();
+                updateInspector(props);
+
+                // Update coordinate pill
+                const bounds = layer.getBounds();
+                const center = bounds.getCenter();
+                const coordBadge = document.getElementById(`${containerId}-coords-badge`);
+                if (coordBadge) coordBadge.textContent = `GPS: ${center.lat.toFixed(4)}° N, ${center.lng.toFixed(4)}° E`;
+
+                if (onParcelSelect) onParcelSelect(pId);
+              }
+            });
+
+            // If this is the active parcel, prime it
+            if (pId === activeParcelId) {
+              activeLayer = layer;
+              updateInspector(props);
+            }
+          }
+        }).addTo(map);
+
+        // Global click bridge for popup action button
+        window.handleCadastralParcelClick = function(id) {
+          if (onParcelSelect) onParcelSelect(id);
+          const citDetail = document.getElementById('cit-gut-title');
+          if (citDetail) citDetail.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        // Recenter & Fit bounds to parcels
+        const fitMapToBounds = () => {
+          if (GISEngine._leafletMaps[containerId] !== map || !document.body.contains(map.getContainer())) return;
+          try {
+            if (activeParcelId && layersByParcelId[activeParcelId]) {
+              const targetLayer = layersByParcelId[activeParcelId];
+              const b = targetLayer.getBounds();
+              map.fitBounds(b, { padding: [40, 40], maxZoom: isCitizen ? 17 : 16 });
+              const c = b.getCenter();
+              const coordBadge = document.getElementById(`${containerId}-coords-badge`);
+              if (coordBadge) coordBadge.textContent = `GPS: ${c.lat.toFixed(4)}° N, ${c.lng.toFixed(4)}° E`;
+              const citHeaderBadge = document.getElementById('cit-map-coords-badge');
+              if (citHeaderBadge) citHeaderBadge.textContent = `${c.lat.toFixed(4)}° N, ${c.lng.toFixed(4)}° E`;
+            } else if (geoLayer.getLayers().length > 0) {
+              map.fitBounds(geoLayer.getBounds(), { padding: [30, 30], maxZoom: isCitizen ? 17 : 14 });
+            } else {
+              // Default center on Dankuni, Hooghly
+              map.setView([22.685, 88.291], 15);
+            }
+          } catch (e) {
+            // Handled safely
+          }
+        };
+
+        fitMapToBounds();
+        setTimeout(() => {
+          try {
+            if (GISEngine._leafletMaps[containerId] === map && document.body.contains(map.getContainer())) {
+              map.invalidateSize();
+            }
+          } catch(e) {}
+        }, 250);
+
+        // Recenter Button Click
+        const recenterBtn = container.querySelector(`#${containerId}-btn-recenter`);
+        if (recenterBtn) {
+          recenterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fitMapToBounds();
+          });
+        }
+
+        // Export GeoJSON Button Click
+        const exportBtn = container.querySelector(`#${containerId}-btn-export`);
+        if (exportBtn) {
+          exportBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            GISEngine.downloadCadastralGeoJSON();
+          });
+        }
+
+        // Toggle View: Cadastral Survey Polygons vs Macro Choropleth View
+        const toggleBtn = container.querySelector(`#${containerId}-btn-toggle-choropleth`);
+        if (toggleBtn) {
+          let showingChoropleth = false;
+          toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const mapDiv = document.getElementById(`${containerId}-lmap`);
+            const choroDiv = document.getElementById(`${containerId}-choropleth-view`);
+            const label = document.getElementById(`${containerId}-toggle-mode-text`);
+            const inspector = document.getElementById(`${containerId}-inspector-card`);
+
+            showingChoropleth = !showingChoropleth;
+            if (showingChoropleth) {
+              mapDiv.classList.add('hidden');
+              choroDiv.classList.remove('hidden');
+              if (inspector) inspector.classList.add('hidden');
+              if (label) label.textContent = 'Cadastral Parcels';
+              GISEngine.renderStateChoropleth(`${containerId}-choropleth-view`, activeState, (dist) => {
+                console.log(`[Choropleth Selected] ${dist}`);
+              });
+            } else {
+              choroDiv.classList.add('hidden');
+              mapDiv.classList.remove('hidden');
+              if (inspector) inspector.classList.remove('hidden');
+              if (label) label.textContent = 'Macro Choropleth';
+              map.invalidateSize();
+              fitMapToBounds();
+            }
+          });
+        }
+
+        // Ensure proper sizing after DOM render
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 150);
+      };
+
+      // Execute Leaflet setup
+      initLeaflet();
     },
 
     // 4. RFC 7946 GeoJSON Direct File Download Utility

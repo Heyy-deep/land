@@ -70,6 +70,24 @@ def seed_database(db: Session):
             jurisdiction_scope="Hooghly",
             linked_parcel_id="WB-HGY-DNK-01",
             department="Landowner (Aadhaar: •••• •••• 1012, Mouza: Dankuni JL 34)"
+        ),
+        User(
+            email="ramesh.patil@gmail.com",
+            password_hash=get_password_hash("nlams2025"),
+            full_name="Ramesh Narayan Patil",
+            role="citizen",
+            jurisdiction_scope="Pune",
+            linked_parcel_id="MH-PUN-HIN-01",
+            department="Landowner (Aadhaar: •••• •••• 8921, Hinjewadi Phase-1)"
+        ),
+        User(
+            email="ram.swarup@gmail.com",
+            password_hash=get_password_hash("nlams2025"),
+            full_name="Ram Swarup Yadav",
+            role="citizen",
+            jurisdiction_scope="Gautam Buddha Nagar",
+            linked_parcel_id="UP-YEIDA-JEW-01",
+            department="Landowner (Aadhaar: •••• •••• 6534, Jewar Phase-II)"
         )
     ]
     db.add_all(users)
@@ -318,6 +336,26 @@ def seed_database(db: Session):
             "affected_families": 310,
             "rehabilitated_families": 310,
             "current_milestone": "Land Vested in NHAI. Paving Underway."
+        },
+        {
+            "id": "REQ-UP-JWR-2023-0512",
+            "name": "Noida International Airport (Jewar Phase-II Corridor)",
+            "sector": "Aviation & Industrial Corridor",
+            "agency": "YEIDA / NIAL",
+            "state": "Uttar Pradesh",
+            "district": "Gautam Buddha Nagar",
+            "division": "Jewar Sub-Division",
+            "required_land_ha": 115.0,
+            "khasra_count": 82,
+            "budget_cr": 680.0,
+            "disbursed_cr": 590.0,
+            "status": "Awarded",
+            "status_badge": "Award (Sec 23)",
+            "gazette_date": "12-Nov-2024",
+            "sla_status": "PFMS DBT in Progress",
+            "affected_families": 210,
+            "rehabilitated_families": 195,
+            "current_milestone": "Section 23 Statutory Award Declared. PFMS DBT Disbursal Active."
         }
     ]
 
@@ -325,7 +363,9 @@ def seed_database(db: Session):
         project = Project(**pdata)
         db.add(project)
 
-    # 3. Seed Realistic Cadastral Land Parcels (Grounded in Hooghly Mouzas)
+    from backend.migrations.migration_001_add_parcel_geometry import PARCEL_GEOMETRIES, ADDITIONAL_PARCELS
+
+    # 3. Seed Realistic Cadastral Land Parcels (Grounded in Hooghly Mouzas & National Corridors)
     parcels_data = [
         {
             "id": "WB-HGY-DNK-01",
@@ -338,10 +378,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Subrata Ghosh",
             "owner_aadhaar": "•••• •••• 1012",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.291, 22.685], [88.295, 22.683], [88.296, 22.687], [88.292, 22.688], [88.291, 22.685]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HGY-DNK-01"]),
             "area_ha": 1.42,
             "land_type": "Agricultural (Sali / Bastu)",
             "market_rate_sqm": 1000.0,
@@ -368,10 +405,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Anirban Mukherjee & Bros",
             "owner_aadhaar": "•••• •••• 4519",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.296, 22.682], [88.300, 22.680], [88.301, 22.684], [88.297, 22.685], [88.296, 22.682]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HGY-DNK-02"]),
             "area_ha": 0.85,
             "land_type": "Commercial / Bastu (Dokan)",
             "market_rate_sqm": 2500.0,
@@ -396,10 +430,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Debashis Banerjee",
             "owner_aadhaar": "•••• •••• 8820",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.248, 22.705], [88.252, 22.703], [88.254, 22.707], [88.249, 22.708], [88.248, 22.705]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HGY-JNI-03"]),
             "area_ha": 1.15,
             "land_type": "Agricultural (Aman Sali)",
             "market_rate_sqm": 900.0,
@@ -424,10 +455,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Mousumi Das",
             "owner_aadhaar": "•••• •••• 6314",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.265, 22.731], [88.269, 22.729], [88.270, 22.733], [88.266, 22.734], [88.265, 22.731]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HGY-BGP-04"]),
             "area_ha": 0.62,
             "land_type": "Residential (Bastu)",
             "market_rate_sqm": 1500.0,
@@ -452,10 +480,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Partha Pratim Roy",
             "owner_aadhaar": "•••• •••• 9245",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.225, 22.812], [88.229, 22.810], [88.230, 22.815], [88.226, 22.816], [88.225, 22.812]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HGY-SNG-05"]),
             "area_ha": 1.95,
             "land_type": "Agricultural (Do-Fasli Sali)",
             "market_rate_sqm": 850.0,
@@ -480,10 +505,7 @@ def seed_database(db: Session):
             "state": "West Bengal",
             "owner_name": "Tapas Kumar Mondal",
             "owner_aadhaar": "•••• •••• 3190",
-            "geometry": json.dumps({
-                "type": "Polygon",
-                "coordinates": [[[88.275, 22.615], [88.280, 22.612], [88.282, 22.617], [88.277, 22.619], [88.275, 22.615]]]
-            }),
+            "geometry": json.dumps(PARCEL_GEOMETRIES["WB-HWH-SLP-06"]),
             "area_ha": 0.78,
             "land_type": "Commercial (Highway Frontage)",
             "market_rate_sqm": 3200.0,
@@ -497,21 +519,27 @@ def seed_database(db: Session):
             "status_color": "#dc2626",
             "dbt_status": "Escrow Deposited with Land Acquisition Tribunal"
         }
-    ]
+    ] + ADDITIONAL_PARCELS
 
     import shapely.geometry
     from geoalchemy2.elements import WKTElement
 
+    is_sqlite = ("sqlite" in str(db.bind.dialect.name)) if db.bind else False
+
     for parcel_data in parcels_data:
         raw_geom = parcel_data.get("geometry")
-        if isinstance(raw_geom, str):
-            geom_dict = json.loads(raw_geom)
-            shape = shapely.geometry.shape(geom_dict)
-            parcel_data["geometry"] = WKTElement(shape.wkt, srid=4326)
-        elif isinstance(raw_geom, dict):
-            shape = shapely.geometry.shape(raw_geom)
-            parcel_data["geometry"] = WKTElement(shape.wkt, srid=4326)
-        parcel = LandParcel(**parcel_data)
+        p_dict = dict(parcel_data)
+        if is_sqlite:
+            p_dict["geometry"] = raw_geom if isinstance(raw_geom, str) else json.dumps(raw_geom)
+        else:
+            if isinstance(raw_geom, str):
+                geom_dict = json.loads(raw_geom)
+                shape = shapely.geometry.shape(geom_dict)
+                p_dict["geometry"] = WKTElement(shape.wkt, srid=4326)
+            elif isinstance(raw_geom, dict):
+                shape = shapely.geometry.shape(raw_geom)
+                p_dict["geometry"] = WKTElement(shape.wkt, srid=4326)
+        parcel = LandParcel(**p_dict)
         db.add(parcel)
 
     # 4. Seed Audit Logs

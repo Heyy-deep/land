@@ -1,8 +1,29 @@
 import datetime
 from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import TypeDecorator
 from geoalchemy2 import Geometry
 from backend.database import Base
+
+class SpatialGeometry(TypeDecorator):
+    """
+    Spatial geometry column type that compiles to PostGIS geometry(Geometry, 4326) on PostgreSQL,
+    and falls back to TEXT with GeoJSON spatial simulation on SQLite for zero-config local dev.
+    Supports boundary Polygons and fallback Point geometries.
+    """
+    impl = Text
+    cache_ok = True
+
+    def __init__(self, geometry_type="GEOMETRY", srid=4326, **kwargs):
+        super().__init__()
+        self.geometry_type = geometry_type
+        self.srid = srid
+        self.kwargs = kwargs
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(Geometry(geometry_type=self.geometry_type, srid=self.srid, **self.kwargs))
+        return dialect.type_descriptor(Text())
 
 class User(Base):
     __tablename__ = "users"
@@ -59,7 +80,7 @@ class LandParcel(Base):
     state = Column(String(100), nullable=False, index=True)
     owner_name = Column(String(255), nullable=False)
     owner_aadhaar = Column(String(50), default="•••• •••• 8921")
-    geometry = Column(Geometry(geometry_type="POLYGON", srid=4326), nullable=False)
+    geometry = Column(SpatialGeometry(geometry_type="GEOMETRY", srid=4326), nullable=False)
     area_ha = Column(Float, nullable=False, default=1.0)
     land_type = Column(String(100), default="Agricultural (Jirayat)")
     market_rate_sqm = Column(Float, default=500.0)
@@ -215,6 +236,12 @@ def model_to_dict(obj):
                 res[c.name] = shapely.geometry.mapping(shape)
             except Exception:
                 res[c.name] = str(val)
+        elif c.name == "geometry" and isinstance(val, str):
+            try:
+                import json
+                res[c.name] = json.loads(val)
+            except Exception:
+                res[c.name] = val
         else:
             res[c.name] = val
     return res

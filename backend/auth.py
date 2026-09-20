@@ -67,6 +67,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_optional_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Optional[User]:
+    """Returns the authenticated user if token is present and valid, otherwise None."""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_email: str = payload.get("sub")
+        if user_email is None:
+            return None
+        return db.query(User).filter(User.email == user_email).first()
+    except Exception:
+        return None
+
 def require_role(allowed_roles: List[str]):
     """Enforces server-side Role-Based Access Control (RBAC)."""
     def role_checker(current_user: User = Depends(get_current_user)):

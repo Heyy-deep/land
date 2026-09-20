@@ -1,16 +1,98 @@
 import json
 import hashlib
 import datetime
+import re
 from typing import Optional, List
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from geoalchemy2.functions import ST_AsGeoJSON
 from backend.database import get_db
 from backend.models import LandParcel, Project, StatutoryStage, Compensation, AuditLog, User, model_to_dict
-from backend.auth import get_current_user
+from backend.auth import get_current_user, get_optional_current_user
 from backend.notifications import send_notification
 from backend.routers.compensation_router import CompensationEstimateRequest, calculate_compensation
+
+def parcel_geometry_to_geojson(parcel: LandParcel) -> Optional[dict]:
+    """
+    Converts parcel PostGIS geometry or SQLite simulated geometry into a valid GeoJSON dict.
+    Uses geoalchemy2.shape.to_shape + shapely.geometry.mapping() for true PostGIS geometries.
+    """
+    val = parcel.geometry
+    if isinstance(val, dict):
+        return val
+    if isinstance(val, str):
+        try:
+            return json.loads(val)
+        except Exception:
+            return None
+    try:
+        from geoalchemy2.shape import to_shape
+        import shapely.geometry
+        shape = to_shape(val)
+        return shapely.geometry.mapping(shape)
+    except Exception:
+        return None
+
+def parcel_to_feature(parcel: LandParcel) -> dict:
+    """Serializes a LandParcel model instance into a standard GeoJSON Feature."""
+    geom = parcel_geometry_to_geojson(parcel)
+    return {
+        "type": "Feature",
+        "id": parcel.id,
+        "geometry": geom,
+        "properties": {
+            "id": parcel.id,
+            "project_id": parcel.project_id,
+            "khasra_no": parcel.khasra_no,
+            "gut_number": parcel.gut_number,
+            "village": parcel.village,
+            "taluka": parcel.taluka,
+            "district": parcel.district,
+            "state": parcel.state,
+            "owner_name": parcel.owner_name,
+            "owner_aadhaar": parcel.owner_aadhaar,
+            "area_ha": parcel.area_ha,
+            "land_type": parcel.land_type,
+            "market_rate_sqm": parcel.market_rate_sqm,
+            "base_market_value": parcel.base_market_value,
+            "solatium_amount": parcel.solatium_amount,
+            "additional_interest": parcel.additional_interest,
+            "total_compensation": parcel.total_compensation,
+            "overlap_percent": parcel.overlap_percent,
+            "status": parcel.status,
+            "status_label": parcel.status_label,
+            "status_color": parcel.status_color,
+            "dbt_status": parcel.dbt_status,
+            "possession_date": parcel.possession_date,
+            "possession_officer": parcel.possession_officer
+        }
+    }
+
+def is_citizen_authorized_for_parcel(user: User, parcel: LandParcel) -> bool:
+    """
+    Enforces strict ownership scoping for citizens:
+    Matches linked_parcel_id, owner name, or Aadhaar last 4 digits.
+    """
+    if not user or user.role != "citizen":
+        return True
+
+    # 1. Exact linked parcel ID or holding ref match
+    if user.linked_parcel_id and (user.linked_parcel_id == parcel.id or user.linked_parcel_id == parcel.gut_number):
+        return True
+
+    # 2. Owner name match (case-insensitive)
+    if user.full_name and parcel.owner_name and user.full_name.strip().lower() == parcel.owner_name.strip().lower():
+        return True
+
+    # 3. Aadhaar last 4 digits match
+    user_text = f"{user.department or ''} {user.email or ''}"
+    user_digits = re.findall(r'\d{4}', user_text)
+    if user_digits and parcel.owner_aadhaar:
+        parcel_digits = re.findall(r'\d{4}', parcel.owner_aadhaar)
+        if parcel_digits and user_digits[-1] == parcel_digits[-1]:
+            return True
+
+    return False
 
 router = APIRouter(prefix="/parcels", tags=["Stage 3, 4, 7: Parcels, Notification, Award & Possession"])
 
@@ -32,15 +114,48 @@ class PossessionRequest(BaseModel):
     geo_lat: Optional[float] = 18.5204
     geo_lng: Optional[float] = 73.8567
 
+# GET /parcels/{id}/geometry - GeoJSON Feature for a single parcel with RBAC ownership check
+@router.get("/{id}/geometry")
+def get_parcel_geometry(
+    id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns a GeoJSON Feature (geometry + properties: owner, status, award value, etc.) for one parcel.
+    Enforces strict RBAC / ownership scoping for citizens:
+    A citizen can only retrieve their own parcel geometry.
+    """
+    parcel = db.query(LandParcel).filter(LandParcel.id == id).first()
+    if not parcel:
+        parcel = db.query(LandParcel).filter(LandParcel.gut_number == id).first()
+    if not parcel:
+        raise HTTPException(status_code=404, detail=f"Parcel '{id}' not found")
+
+    if current_user and current_user.role == "citizen":
+        if not is_citizen_authorized_for_parcel(current_user, parcel):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied. You are only authorized to view geometry for your own registered land holding."
+            )
+
+    return parcel_to_feature(parcel)
+
 # GET /parcels - Returns GeoJSON FeatureCollection
 @router.get("")
+@router.get("/")
 def get_parcels(
     state: Optional[str] = None,
     district: Optional[str] = None,
     project_id: Optional[str] = None,
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
 ):
-    q = db.query(LandParcel, ST_AsGeoJSON(LandParcel.geometry).label("geom_geojson"))
+    """
+    Returns a GeoJSON FeatureCollection for parcels in the requested jurisdiction.
+    If accessed by an authenticated citizen, strictly scopes output to their own parcel(s).
+    """
+    q = db.query(LandParcel)
     if state and state != "ALL":
         q = q.filter(LandParcel.state == state)
     if district and district != "ALL":
@@ -48,35 +163,13 @@ def get_parcels(
     if project_id:
         q = q.filter(LandParcel.project_id == project_id)
 
-    results = q.all()
-    features = []
-    for p, geom_json in results:
-        geom = json.loads(geom_json) if geom_json else (json.loads(p.geometry) if isinstance(p.geometry, str) else model_to_dict(p).get("geometry"))
-        features.append({
-            "type": "Feature",
-            "id": p.id,
-            "geometry": geom,
-            "properties": {
-                "id": p.id,
-                "project_id": p.project_id,
-                "khasra_no": p.khasra_no,
-                "gut_number": p.gut_number,
-                "village": p.village,
-                "district": p.district,
-                "state": p.state,
-                "owner_name": p.owner_name,
-                "owner_aadhaar": p.owner_aadhaar,
-                "area_ha": p.area_ha,
-                "land_type": p.land_type,
-                "total_compensation": p.total_compensation,
-                "overlap_percent": p.overlap_percent,
-                "status": p.status,
-                "status_label": p.status_label,
-                "status_color": p.status_color,
-                "dbt_status": p.dbt_status
-            }
-        })
+    parcels = q.all()
 
+    # RBAC: If request is from an authenticated citizen, strictly filter down to their owned parcel(s)
+    if current_user and current_user.role == "citizen":
+        parcels = [p for p in parcels if is_citizen_authorized_for_parcel(current_user, p)]
+
+    features = [parcel_to_feature(p) for p in parcels]
     return {
         "type": "FeatureCollection",
         "features": features

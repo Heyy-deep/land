@@ -2448,7 +2448,6 @@
       selectedParcelId = parcelId;
       updateDocketView(parcelId);
       renderDistrictCALAQueue();
-      mountDistrictGIS();
     });
   }
 
@@ -3208,6 +3207,15 @@
     // 6. Dynamic Milestones & Filed Objections Status
     renderCitizenMilestones(props);
     renderCitizenObjections(props);
+
+    // 7. Interactive Leaflet GIS Cadastral Boundary (Authenticated Citizen Scoped)
+    if (window.GISEngine && typeof window.GISEngine.renderCadastralViewer === 'function') {
+      window.GISEngine.renderCadastralViewer('citizen-cadastral-gis-mount', props.id, (clickedId) => {
+        if (clickedId && clickedId !== props.id) {
+          window.selectCitizenParcel(clickedId);
+        }
+      }, { isCitizen: true, role: 'citizen', state: props.state, district: props.district });
+    }
 
     if (window.i18n && typeof window.i18n.applyTranslations === 'function') {
       const citPortal = document.getElementById('portal-citizen') || document.getElementById('view-citizen');
