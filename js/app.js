@@ -437,11 +437,20 @@
   };
 
   const HASH_TO_VIEW_MAP = {
+    '': 'view-login',
+    '#': 'view-login',
+    '#/': 'view-login',
     '#/login': 'view-login',
+    '#/sso': 'view-login',
+    '#/national': 'view-national',
     '#/national-dashboard': 'view-national',
+    '#/state': 'view-state',
     '#/state-dashboard': 'view-state',
+    '#/district': 'view-district',
     '#/district-dashboard': 'view-district',
+    '#/agency': 'view-agency',
     '#/agency-dashboard': 'view-agency',
+    '#/citizen': 'view-citizen',
     '#/citizen-dashboard': 'view-citizen'
   };
 
@@ -506,6 +515,64 @@
     return sessionStorage.getItem('nlams_session_role') || store.currentUser?.role || 'central-ministry';
   }
 
+  let currentGeneratedOTP = null;
+  let otpCountdownTimer = null;
+
+  function resetLoginForm() {
+    // 1. Clear all OTP digit input boxes
+    const otpInputs = document.querySelectorAll('.otp-box');
+    otpInputs.forEach(input => {
+      input.value = '';
+      input.classList.remove('border-error');
+    });
+
+    // 2. Clear Captcha input and errors
+    const captchaInput = document.getElementById('captcha-code-input');
+    if (captchaInput) {
+      captchaInput.value = '';
+      captchaInput.classList.remove('border-error');
+    }
+
+    // 3. Reset and hide OTP delivery pill
+    const otpPill = document.getElementById('otp-delivery-pill');
+    if (otpPill) {
+      otpPill.textContent = '';
+      otpPill.classList.add('hidden');
+    }
+
+    // 4. Reset and hide OTP error banner
+    const otpErrorMsg = document.getElementById('otp-error-msg');
+    if (otpErrorMsg) {
+      otpErrorMsg.classList.add('hidden');
+    }
+
+    // 5. Reset Get OTP button and countdown timer
+    const btnGetOtp = document.getElementById('btn-get-otp');
+    if (btnGetOtp) {
+      btnGetOtp.disabled = false;
+      btnGetOtp.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    const otpCountdownEl = document.getElementById('otp-countdown');
+    if (otpCountdownEl) {
+      otpCountdownEl.textContent = 'Resend in 00:30';
+      otpCountdownEl.classList.add('hidden');
+    }
+    if (otpCountdownTimer) {
+      clearInterval(otpCountdownTimer);
+      otpCountdownTimer = null;
+    }
+
+    // 6. Reset generated OTP codes
+    currentGeneratedOTP = null;
+    window.__NLAMS_CURRENT_OTP = null;
+
+    // 7. Regenerate fresh Security Captcha
+    const refreshCaptchaBtn = document.getElementById('btn-refresh-captcha');
+    if (refreshCaptchaBtn) {
+      refreshCaptchaBtn.click();
+    }
+  }
+
   function handleLogout() {
     sessionStorage.removeItem('nlams_is_authenticated');
     sessionStorage.removeItem('nlams_session_role');
@@ -522,6 +589,10 @@
     const headerLogout = document.getElementById('btn-header-logout');
     if (headerLogout) headerLogout.classList.add('hidden');
     showToast('Session Terminated', 'Signed out successfully from NLAMS. Returning to SSO Portal.', 'info');
+    
+    // Completely clear all login inputs and reset OTP state
+    resetLoginForm();
+
     renderNavbar();
     window.location.hash = '#/login';
     switchView('view-login', true);
@@ -529,6 +600,13 @@
 
   // Initialize Application
   function init() {
+    // If navigating explicitly to root or #/login or with ?reset, clear any old session so user lands on login page
+    if (window.location.search.includes('reset') || window.location.hash === '#/login' || window.location.hash === '#/sso' || !window.location.hash || window.location.hash === '#') {
+      sessionStorage.removeItem('nlams_is_authenticated');
+      sessionStorage.removeItem('nlams_session_role');
+      sessionStorage.removeItem('nlams_token');
+    }
+
     cacheDOM();
 
     // 1. Session Restoration & RBAC Initialization
@@ -576,10 +654,19 @@
 
     // Initial View resolution: check session & URL hash
     const initialHash = window.location.hash;
-    if (isUserAuthenticated()) {
+    if (initialHash === '#/login' || initialHash === '#/sso') {
+      if (isUserAuthenticated()) {
+        sessionStorage.removeItem('nlams_is_authenticated');
+        sessionStorage.removeItem('nlams_session_role');
+        updateActiveUserBadge({ name: 'Public Portal', badge: 'Not Authenticated', jurisdiction: 'Guest' });
+        renderNavbar();
+      }
+      switchView('view-login', true);
+    } else if (isUserAuthenticated()) {
       const currentRole = getUserRole();
       const roleConfig = ROLE_DASHBOARD_MAP[currentRole] || ROLE_DASHBOARD_MAP['central-ministry'];
-      switchView(roleConfig.viewId, true);
+      const targetView = HASH_TO_VIEW_MAP[initialHash] || roleConfig.viewId;
+      switchView(targetView === 'view-login' ? roleConfig.viewId : targetView, true);
     } else {
       // Pre-authentication: unauthenticated users are restricted to view-login
       if (initialHash && initialHash !== '#/login') {
@@ -665,21 +752,32 @@
 
   // Route Protection & Hash Change Handler (Requirement 5)
   function handleHashRouting() {
-    const rawHash = window.location.hash || '';
-    if (!rawHash) return;
-
+    const rawHash = (window.location.hash || '#/login').replace(/\/$/, '');
     const targetView = HASH_TO_VIEW_MAP[rawHash];
-    if (!targetView) return;
+    if (!targetView) {
+      if (isUserAuthenticated()) {
+        const userRole = getUserRole();
+        const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+        switchView(roleConfig.viewId, true);
+      } else {
+        switchView('view-login', true);
+      }
+      return;
+    }
+
+    if (targetView === 'view-login') {
+      if (isUserAuthenticated()) {
+        handleLogout();
+      } else {
+        switchView('view-login', true);
+      }
+      return;
+    }
 
     if (isUserAuthenticated()) {
       const userRole = getUserRole();
       const roleConfig = ROLE_DASHBOARD_MAP[userRole] || ROLE_DASHBOARD_MAP['central-ministry'];
       const allowedViewId = roleConfig.viewId;
-
-      if (targetView === 'view-login') {
-        handleLogout();
-        return;
-      }
 
       if (targetView !== allowedViewId) {
         showToast(
@@ -806,7 +904,9 @@
     }
 
     // Mount GIS components when corresponding view is opened
-    if (viewId === 'view-national') {
+    if (viewId === 'view-login') {
+      resetLoginForm();
+    } else if (viewId === 'view-national') {
       window.GISEngine.renderNationalMap('national-gis-map-container', (selectedState) => {
         if (isUserAuthenticated() && getUserRole() !== 'central-ministry') {
           showToast('Access Restricted', 'State drilldown view is restricted to Central Ministry / State Revenue.', 'info');
@@ -966,9 +1066,6 @@
   }
 
   // 1. SSO Portal & Login Controller (Requirements 1, 6)
-    let currentGeneratedOTP = null;
-  let otpCountdownTimer = null;
-
   function setupAuthInteractions() {
     const roleSelect = document.getElementById('user-role-select');
     const roleDesc = document.getElementById('role-desc');
@@ -1016,6 +1113,71 @@
       updateLabel(labelAuthParichay, method === 'parichay');
     }
 
+    // Direct 1-Click Automatic Authentication Engine
+    // Reads the current dropdown value — tab click handlers already synced it to the right default.
+    // If user manually changes the dropdown after clicking a tab, that choice is respected.
+    function performAutoLogin(authMethod) {
+      const selectedRole = roleSelect ? roleSelect.value : 'central-ministry';
+
+      const roleConfig = ROLE_DASHBOARD_MAP[selectedRole] || ROLE_DASHBOARD_MAP['central-ministry'];
+
+      sessionStorage.setItem('nlams_is_authenticated', 'true');
+      sessionStorage.setItem('nlams_session_role', selectedRole);
+
+      if (selectedRole === 'citizen') {
+        let personaId = sessionStorage.getItem('nlams_citizen_persona');
+        const devSelect = document.getElementById('dev-citizen-persona-select');
+        if (devSelect && devSelect.value) {
+          personaId = devSelect.value;
+        }
+        if (!personaId) {
+          personaId = 'WB-CIT-01';
+        }
+        store.setUserRole('citizen', personaId);
+      } else {
+        store.setUserRole(selectedRole);
+      }
+
+      updateActiveUserBadge(store.currentUser);
+      if (window.NLAMS_API) {
+        window.NLAMS_API.login(selectedRole);
+        window.NLAMS_API.getProjects(selectedRole);
+      }
+      renderNavbar();
+
+      store.currentUser.profileComplete = true;
+
+      if (authMethod === 'dsc') {
+        showToast('DSC Attestation Approved', `Cryptographic hardware token authenticated for ${store.currentUser.name} (${store.currentUser.badge}). Logging in...`, 'success');
+      } else if (authMethod === 'parichay') {
+        showToast('Parichay SSO Authorized', `Single Sign-On verified for ${store.currentUser.email || 'Official Account'}. Logging in...`, 'success');
+      }
+
+      switchView(roleConfig.viewId, true);
+    }
+
+    // Switch auth method tabs on click without prematurely logging in
+    if (labelAuthAadhaar) {
+      labelAuthAadhaar.addEventListener('click', () => {
+        selectAuthMethod('aadhaar');
+        if (authRadioAadhaar) authRadioAadhaar.checked = true;
+      });
+    }
+
+    if (labelAuthDsc) {
+      labelAuthDsc.addEventListener('click', () => {
+        selectAuthMethod('dsc');
+        if (authRadioDsc) authRadioDsc.checked = true;
+      });
+    }
+
+    if (labelAuthParichay) {
+      labelAuthParichay.addEventListener('click', () => {
+        selectAuthMethod('parichay');
+        if (authRadioParichay) authRadioParichay.checked = true;
+      });
+    }
+
     document.querySelectorAll('input[name="auth-method"]').forEach(radio => {
       radio.addEventListener('change', (e) => {
         selectAuthMethod(e.target.value);
@@ -1033,24 +1195,9 @@
           }
         }
         if (val === 'citizen') {
-          if (authRadioAadhaar) {
-            authRadioAadhaar.checked = true;
-            selectAuthMethod('aadhaar');
-          }
           if (uid1 && uid2 && uid3) {
             uid1.value = '9876'; uid2.value = '5432'; uid3.value = '1012';
             validateAadhaarDigits();
-          }
-        }
-        if (val === 'dro-cala' || val === 'state-revenue') {
-          if (authRadioDsc) {
-            authRadioDsc.checked = true;
-            selectAuthMethod('dsc');
-          }
-        } else if (val === 'central-ministry') {
-          if (authRadioParichay) {
-            authRadioParichay.checked = true;
-            selectAuthMethod('parichay');
           }
         }
       });
@@ -1137,6 +1284,32 @@
         console.log('%c[UIDAI OTP GATEWAY] Mock OTP delivered to registered mobile:', 'color: #007bff; font-weight: bold; font-size: 14px;', currentGeneratedOTP);
         showToast('UIDAI OTP Dispatched', `Mock OTP sent to linked mobile: ${currentGeneratedOTP}. Valid for 10 minutes.`, 'success');
 
+        const otpPill = document.getElementById('otp-delivery-pill');
+        if (otpPill) {
+          otpPill.innerHTML = `OTP Sent: <span class="font-mono font-bold tracking-wider text-primary">${currentGeneratedOTP}</span> <button type="button" class="cursor-pointer underline text-[11px] ml-1 text-primary hover:text-primary-container font-semibold" id="btn-autofill-otp" title="Click to auto-fill OTP">(Click to auto-fill)</button>`;
+          otpPill.classList.remove('hidden');
+          const autoFillBtn = document.getElementById('btn-autofill-otp');
+          if (autoFillBtn) {
+            autoFillBtn.onclick = (ev) => {
+              ev.preventDefault();
+              const digits = currentGeneratedOTP.split('');
+              const allOtps = document.querySelectorAll('.otp-box');
+              allOtps.forEach((inp, idx) => {
+                if (digits[idx]) inp.value = digits[idx];
+              });
+              if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
+              allOtps.forEach(i => i.classList.remove('border-error'));
+              const captchaInp = document.getElementById('captcha-code-input');
+              if (captchaInp && !captchaInp.value) {
+                const captchaDisp = document.getElementById('captcha-display');
+                if (captchaDisp) {
+                  captchaInp.value = (captchaDisp.getAttribute('data-code') || captchaDisp.textContent || 'N8K4W').replace(/[^A-Za-z0-9]/g, '').trim();
+                }
+              }
+            };
+          }
+        }
+
         if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
 
         const firstOtp = document.querySelector('.otp-box');
@@ -1145,6 +1318,7 @@
           if (firstOtp.select) firstOtp.select();
         }
 
+        if (otpCountdownEl) otpCountdownEl.classList.remove('hidden');
         if (otpCountdownTimer) clearInterval(otpCountdownTimer);
         let secondsLeft = 30;
         btnGetOtp.disabled = true;
@@ -1211,11 +1385,14 @@
         for (let i = 0; i < 5; i++) {
           newCode += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+        captchaDisplay.setAttribute('data-code', newCode);
         captchaDisplay.innerHTML = newCode.split('').map((c, idx) => {
           const colors = ['text-primary', 'text-secondary', 'text-tertiary'];
           return `<span class="inline-block ${colors[idx % colors.length]}">${c}</span>`;
-        }).join('');
-        captchaInput.value = newCode;
+        }).join('') + '<div class="absolute inset-x-0 top-1/2 h-0.5 bg-primary/20 -rotate-6 pointer-events-none"></div>';
+        captchaInput.value = '';
+        captchaInput.classList.remove('border-error');
+        captchaInput.focus();
       });
     }
 
@@ -1237,30 +1414,36 @@
           if (!enteredOtp || (enteredOtp !== expectedOtp && enteredOtp !== '482910' && enteredOtp !== '742983')) {
             if (otpErrorMsg) {
               otpErrorMsg.classList.remove('hidden');
-              if (otpErrorText) otpErrorText.textContent = enteredOtp.length < 6 
-                ? 'Please enter all 6 digits of the OTP.' 
-                : 'Invalid OTP code entered. Please check the code or click "Get OTP".';
+              if (otpErrorText) otpErrorText.textContent = enteredOtp.length === 0
+                ? 'Please click "Get OTP" and enter the 6-digit verification code.'
+                : enteredOtp.length < 6 
+                  ? 'Please enter all 6 digits of the OTP.' 
+                  : 'Invalid OTP code entered. Please check the code or click "Get OTP".';
             }
             otpInputs.forEach(i => i.classList.add('border-error'));
-            showToast('Authentication Failed', 'Invalid OTP code entered. Please check your OTP.', 'error');
+            showToast('Authentication Failed', enteredOtp.length === 0 ? 'Please click "Get OTP" and enter the 6-digit code.' : 'Invalid OTP code entered. Please check your OTP.', 'error');
             return;
           }
           if (otpErrorMsg) otpErrorMsg.classList.add('hidden');
           otpInputs.forEach(i => i.classList.remove('border-error'));
+
+          if (captchaInput) {
+            const expectedCaptcha = (captchaDisplay.getAttribute('data-code') || captchaDisplay.textContent || 'N8K4W').replace(/[^A-Za-z0-9]/g, '').trim().toUpperCase();
+            const userCaptcha = (captchaInput.value || '').trim().toUpperCase();
+            if (!userCaptcha || userCaptcha !== expectedCaptcha) {
+              showToast('Security Captcha Mismatch', 'Please enter the characters shown in the security captcha.', 'warning');
+              captchaInput.classList.add('border-error');
+              captchaInput.focus();
+              return;
+            }
+            captchaInput.classList.remove('border-error');
+          }
         } else if (activeMethod === 'dsc') {
-          const pin = document.getElementById('dsc-login-pin');
-          if (!pin || pin.value.trim().length < 4) {
-            showToast('DSC Authentication Error', 'Please enter your 4-digit Cryptographic Hardware Token PIN.', 'warning');
-            return;
-          }
-          showToast('Hardware DSC Verified', 'e-Mudhra Class 3 Government Digital Certificate attestation approved.', 'success');
+          performAutoLogin('dsc');
+          return;
         } else if (activeMethod === 'parichay') {
-          const email = document.getElementById('parichay-email-input');
-          if (!email || !email.value.includes('@')) {
-            showToast('Parichay SSO Error', 'Please enter a valid government email address (@gov.in / @nic.in).', 'warning');
-            return;
-          }
-          showToast('Parichay SSO Authorized', `Single Sign-On verified for ${email.value}.`, 'success');
+          performAutoLogin('parichay');
+          return;
         }
 
         sessionStorage.setItem('nlams_is_authenticated', 'true');
@@ -1687,6 +1870,149 @@
         }
       }
     }
+
+    // 6. Update Dynamic District Share & Top Collectorates Widgets
+    updateStateDashboardWidgets(targetState);
+  }
+
+  function updateStateDashboardWidgets(stateName) {
+    const targetState = stateName || getCurrentTargetState();
+    const countPill = document.getElementById('state-district-count-pill');
+    const legendEl = document.getElementById('state-district-share-legend');
+    const collListEl = document.getElementById('state-top-collectorates-list');
+    const dirTextEl = document.getElementById('state-directive-text');
+
+    if (targetState === 'West Bengal') {
+      if (countPill) countPill.textContent = '23 Districts (West Bengal)';
+      if (legendEl) {
+        legendEl.innerHTML = `
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary-container"></span> Hooghly</span>
+            <span class="font-legal-code font-bold">78 (36%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary"></span> Howrah</span>
+            <span class="font-legal-code font-bold">54 (25%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-tertiary-container"></span> North 24 Parganas</span>
+            <span class="font-legal-code font-bold">46 (21%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-secondary-container"></span> Paschim Bardhaman</span>
+            <span class="font-legal-code font-bold">36 (18%)</span>
+          </div>
+        `;
+      }
+      if (collListEl) {
+        collListEl.innerHTML = `
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Hooghly Collectorate (EDFC Dankuni Link)</span>
+              <span class="text-on-surface-variant font-legal-code">7 Projects • 342.8 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 48%"></div>
+              <div class="bg-primary-container h-full" style="width: 25%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 17%"></div>
+              <div class="bg-secondary h-full" style="width: 10%"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Howrah Collectorate (Kona Expressway)</span>
+              <span class="text-on-surface-variant font-legal-code">4 Projects • 188.4 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 52%"></div>
+              <div class="bg-primary-container h-full" style="width: 28%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 12%"></div>
+              <div class="bg-secondary h-full" style="width: 8%"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Paschim Bardhaman Collectorate (NH-19 Expansion)</span>
+              <span class="text-on-surface-variant font-legal-code">6 Projects • 412.0 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 42%"></div>
+              <div class="bg-primary-container h-full" style="width: 31%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 17%"></div>
+              <div class="bg-secondary h-full" style="width: 10%"></div>
+            </div>
+          </div>
+        `;
+      }
+      if (dirTextEl) {
+        dirTextEl.innerHTML = `<strong>Notification Action:</strong> Hooghly Collectorate requires expedited Section 19 declaration to prevent 12-month statutory lapse under Section 25.`;
+      }
+    } else if (targetState === 'Maharashtra') {
+      if (countPill) countPill.textContent = '36 Districts (Maharashtra)';
+      if (legendEl) {
+        legendEl.innerHTML = `
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary-container"></span> Thane</span>
+            <span class="font-legal-code font-bold">56 (26%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-primary"></span> Pune</span>
+            <span class="font-legal-code font-bold">47 (22%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-tertiary-container"></span> Palghar</span>
+            <span class="font-legal-code font-bold">39 (18%)</span>
+          </div>
+          <div class="flex items-center justify-between p-spacing-xs bg-surface-container-low rounded">
+            <span class="flex items-center gap-1 font-semibold"><span class="w-3 h-3 rounded bg-secondary-container"></span> Raigad</span>
+            <span class="font-legal-code font-bold">30 (14%)</span>
+          </div>
+        `;
+      }
+      if (collListEl) {
+        collListEl.innerHTML = `
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Palghar Collectorate (Bullet Train)</span>
+              <span class="text-on-surface-variant font-legal-code">39 Projects • 6,420 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 48%"></div>
+              <div class="bg-primary-container h-full" style="width: 25%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 17%"></div>
+              <div class="bg-secondary h-full" style="width: 10%"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Thane Collectorate (Metro & Freight)</span>
+              <span class="text-on-surface-variant font-legal-code">56 Projects • 8,920 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 52%"></div>
+              <div class="bg-primary-container h-full" style="width: 28%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 12%"></div>
+              <div class="bg-secondary h-full" style="width: 8%"></div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between text-body-sm font-body-sm">
+              <span class="font-semibold text-on-surface">Pune Collectorate (Ring Road Corridor)</span>
+              <span class="text-on-surface-variant font-legal-code">47 Projects • 5,840 Ha</span>
+            </div>
+            <div class="h-4 w-full bg-surface-container rounded overflow-hidden flex shadow-inner">
+              <div class="bg-tertiary-container h-full" style="width: 33%"></div>
+              <div class="bg-primary-container h-full" style="width: 21%"></div>
+              <div class="bg-primary-fixed-dim h-full" style="width: 36%"></div>
+              <div class="bg-secondary h-full" style="width: 10%"></div>
+            </div>
+          </div>
+        `;
+      }
+      if (dirTextEl) {
+        dirTextEl.innerHTML = `<strong>Notification Action:</strong> Palghar requires expedited Section 19 declaration to prevent 12-month statutory lapse under Section 25.`;
+      }
+    }
   }
 
   function mountStateGIS(stateName) {
@@ -1894,7 +2220,16 @@
     const countBadge = document.getElementById('state-objection-pendency-count');
     if (!tableBody) return;
 
-    const objections = store.objections || [];
+    const stateToFilter = targetState || getCurrentTargetState();
+    const allObjections = store.objections || [];
+    const objections = allObjections.filter(o => {
+      if (!stateToFilter || stateToFilter === 'ALL') return true;
+      if (o.state) return o.state.toLowerCase() === stateToFilter.toLowerCase();
+      if (stateToFilter === 'West Bengal') return (o.projectId || '').includes('WB') || (o.hearingDate || '').includes('Hooghly') || (o.hearingDate || '').includes('Howrah');
+      if (stateToFilter === 'Maharashtra') return (o.projectId || '').includes('MH') || (o.hearingDate || '').includes('Pune') || (o.hearingDate || '').includes('Palghar');
+      return true;
+    });
+
     if (countBadge) {
       const pendingCount = objections.filter(o => {
         const st = (o.status || '').toLowerCase();
@@ -1907,7 +2242,7 @@
       tableBody.innerHTML = `
         <tr>
           <td colspan="6" class="py-6 text-center text-on-surface-variant font-body-sm">
-            No active Section 15 hearing petitions registered in the State directory.
+            No active Section 15 hearing petitions registered in ${stateToFilter} directory.
           </td>
         </tr>
       `;

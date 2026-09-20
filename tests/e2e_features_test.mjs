@@ -113,6 +113,14 @@ async function runTests() {
     await page.selectOption('#user-role-select', 'citizen');
     await page.waitForTimeout(300);
 
+    // Click Get OTP
+    await page.click('#btn-get-otp');
+    await page.waitForTimeout(300);
+
+    // Auto-fill generated OTP or click the auto-fill pill
+    await page.click('#btn-autofill-otp');
+    await page.waitForTimeout(200);
+
     // Submit SSO form
     await page.click('#btn-login-submit');
     await page.waitForTimeout(1200);

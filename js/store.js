@@ -750,7 +750,57 @@
   // Objections Registry
   const INITIAL_OBJECTIONS = [
     {
+      id: "OBJ-2024-741",
+      state: "West Bengal",
+      district: "Hooghly",
+      parcelId: "WB-HGY-DNK-01",
+      khasraNo: "Dag No. 412/1",
+      projectId: "REQ-WB-HGY-2023-0101",
+      claimant: "Subrata Ghosh",
+      type: "Tree / Structure Valuation Dispute",
+      filingDate: "12-Sep-2024",
+      status: "Upheld",
+      hearingDate: "28-Sep-2024 (Before CALA Hooghly)",
+      grounds: "Initial joint survey overlooked 12 mature teak trees and masonry boundary wall.",
+      documentName: "Hooghly_Horticulture_Attestation.pdf",
+      actionTaken: "CALA Order passed: Additional ₹4,80,000 solatium-linked award credited in supplementary decree."
+    },
+    {
+      id: "OBJ-2024-782",
+      state: "West Bengal",
+      district: "Hooghly",
+      parcelId: "WB-HGY-DNK-02",
+      khasraNo: "Dag No. 412/2",
+      projectId: "REQ-WB-HGY-2023-0101",
+      claimant: "Anirban Mukherjee & Bros",
+      type: "Commercial Land Classification Dispute",
+      filingDate: "02-Oct-2024",
+      status: "Hearing Scheduled",
+      hearingDate: "25-Nov-2024 (Before CALA Hooghly)",
+      grounds: "Holding registered as commercial Dokan/Bastu but assessed under agricultural market multiplier.",
+      documentName: "Commercial_Tax_Assessment_Hooghly.pdf",
+      actionTaken: "Hearing notice issued under Section 15(2); Joint inspection listed with ADM (LA)."
+    },
+    {
+      id: "OBJ-2024-805",
+      state: "West Bengal",
+      district: "Howrah",
+      parcelId: "WB-HWH-SLP-04",
+      khasraNo: "Dag No. 208/3",
+      projectId: "REQ-WB-HWH-2023-0104",
+      claimant: "Tapan Kumar Das",
+      type: "Cadastral Boundary Discrepancy",
+      filingDate: "18-Oct-2024",
+      status: "Pending Hearing",
+      hearingDate: "29-Nov-2024 (Before CALA Howrah)",
+      grounds: "Kona expressway alignment overlaps 0.08 Ha of unacquired ancestral pond boundary.",
+      documentName: "Kona_Bypass_Cadastral_Survey.pdf",
+      actionTaken: "JMS Re-survey ordered with Banglarbhumi e-Bhuchitra nodal surveyor."
+    },
+    {
       id: "OBJ-2024-884",
+      state: "Maharashtra",
+      district: "Pune",
       parcelId: "GUT-147",
       khasraNo: "Gut No. 147",
       projectId: "REQ-MH-PUN-2024-0112",
@@ -765,6 +815,8 @@
     },
     {
       id: "OBJ-2024-912",
+      state: "Maharashtra",
+      district: "Pune",
       parcelId: "GUT-144-B",
       khasraNo: "Gut No. 144/B",
       projectId: "REQ-MH-PUN-2024-0112",
@@ -776,20 +828,6 @@
       grounds: "Adjoining Nala boundary shifted during digital GIS vectorization; 0.15 Ha discrepancy.",
       documentName: "Cadastral_Discrepancy_Map.pdf",
       actionTaken: "JMS Re-survey ordered with DGPS instruments."
-    },
-    {
-      id: "OBJ-2024-741",
-      parcelId: "WB-HGY-DNK-01",
-      khasraNo: "Dag No. 412/1",
-      projectId: "REQ-WB-HGY-2023-0101",
-      claimant: "Subrata Ghosh",
-      type: "Tree / Well / Structure Valuation Dispute",
-      filingDate: "12-Sep-2024",
-      status: "Upheld",
-      hearingDate: "28-Sep-2024 (Before CALA Hooghly)",
-      grounds: "Initial joint survey overlooked 12 mature teak trees and masonry boundary wall.",
-      documentName: "Hooghly_Horticulture_Attestation.pdf",
-      actionTaken: "CALA Order passed: Additional ₹4,80,000 solatium-linked award credited in supplementary decree."
     }
   ];
 
@@ -820,8 +858,8 @@
 
   class NLAMSStore {
     constructor() {
-      this.projects = JSON.parse(localStorage.getItem('nlams_projects_v2')) || INITIAL_PROJECTS;
-      this.parcels = JSON.parse(localStorage.getItem('nlams_parcels_v2')) || INITIAL_GEOJSON_PARCELS;
+      this.projects = JSON.parse(localStorage.getItem('nlams_projects_v3')) || INITIAL_PROJECTS;
+      this.parcels = JSON.parse(localStorage.getItem('nlams_parcels_v3')) || INITIAL_GEOJSON_PARCELS;
       // Ensure multi-state parcels exist
       const existingIds = new Set(this.parcels.map(p => (p.properties || p).id));
       INITIAL_GEOJSON_PARCELS.forEach(p => {
@@ -830,9 +868,9 @@
           this.parcels.push(p);
         }
       });
-      this.objections = JSON.parse(localStorage.getItem('nlams_objections_v2')) || INITIAL_OBJECTIONS;
-      this.audit = JSON.parse(localStorage.getItem('nlams_audit_v2')) || INITIAL_AUDIT;
-      this.rnrFamilies = JSON.parse(localStorage.getItem('nlams_rnr_families_v2')) || [
+      this.objections = JSON.parse(localStorage.getItem('nlams_objections_v3')) || INITIAL_OBJECTIONS;
+      this.audit = JSON.parse(localStorage.getItem('nlams_audit_v3')) || INITIAL_AUDIT;
+      this.rnrFamilies = JSON.parse(localStorage.getItem('nlams_rnr_families_v3')) || [
         { id: 'FAM-001', headName: 'Sh. Ramesh Narayan Patil', members: 5, category: 'Small Farmer / Landless', plotNo: 'Plot #B-14 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
         { id: 'FAM-002', headName: 'Smt. Shantabai Tukaram Shinde', members: 4, category: 'Agricultural Laborer', plotNo: 'Plot #B-15 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
         { id: 'FAM-003', headName: 'Sh. Dattatraya V. Kulkarni', members: 6, category: 'Titleholder Farmer', plotNo: 'Plot #C-08 (Hinjewadi Model Colony)', housingGrant: '₹2,50,000 Credited (DBT)', annuity: '₹3,000/mo Active', status: 'Settled' },
@@ -870,11 +908,11 @@
 
     save() {
       try {
-        localStorage.setItem('nlams_projects_v2', JSON.stringify(this.projects));
-        localStorage.setItem('nlams_parcels_v2', JSON.stringify(this.parcels));
-        localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
-        localStorage.setItem('nlams_audit_v2', JSON.stringify(this.audit));
-        localStorage.setItem('nlams_rnr_families_v2', JSON.stringify(this.rnrFamilies));
+        localStorage.setItem('nlams_projects_v3', JSON.stringify(this.projects));
+        localStorage.setItem('nlams_parcels_v3', JSON.stringify(this.parcels));
+        localStorage.setItem('nlams_objections_v3', JSON.stringify(this.objections));
+        localStorage.setItem('nlams_audit_v3', JSON.stringify(this.audit));
+        localStorage.setItem('nlams_rnr_families_v3', JSON.stringify(this.rnrFamilies));
       } catch (e) {
         console.warn('Storage quota or local access limitation', e);
       }
@@ -1415,7 +1453,7 @@
 
       this.objections.unshift(newObj);
       try {
-        localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
+        localStorage.setItem('nlams_objections_v3', JSON.stringify(this.objections));
       } catch(e) {}
 
       this.logAudit(this.currentUser.name, this.currentUser.badge || 'Citizen', `Filed Section 15 Statutory Objection [${newObj.id}] for ${newObj.khasraNo}`);
@@ -1442,7 +1480,7 @@
       obj.officerName = outcomeData.officerName || (this.currentUser && this.currentUser.name) || 'Competent Authority (CALA)';
 
       try {
-        localStorage.setItem('nlams_objections_v2', JSON.stringify(this.objections));
+        localStorage.setItem('nlams_objections_v3', JSON.stringify(this.objections));
       } catch(e) {}
 
       this.logAudit(
